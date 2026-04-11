@@ -42,7 +42,7 @@ def create_app():
 #### USER ENDPOINTS ####
 
 @app.route('/register', methods=['POST'])
-def create_user_endpoint(request):
+def create_user_endpoint():
     return create_user(request)
 
 @app.route('/register/<int:user_id>/', methods=['PUT'])
@@ -53,6 +53,12 @@ def update_user_endpoint(user_id):
 def delete_user_endpoint(user_id):
     return delete_user(user_id)
 
+@app.route('/account/<int:user_id>/', methods=['GET'])
+def test_get_user(user_id):
+    user = UserModel.query.get(user_id)
+    if not user:
+        return {"message": "User not found"}, 404
+    return {"email": user.email, "username": user.username, "date_created": user.date_created}, 200
 
 ### LOGIN ENDPOINTS ###
 
@@ -73,4 +79,5 @@ def main(db_name: str = "data-local") -> None:
         db.create_all()
 
 if __name__ == '__main__':
+    main()
     app.run(port=8082, debug=True)
