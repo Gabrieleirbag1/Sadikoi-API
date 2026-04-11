@@ -3,6 +3,15 @@ from db import db
 from sqlalchemy.orm import validates
 from exceptions import ValueTooLongException, UppercaseException
 
+class GroupUser(db.Model):
+    """Association table for users and groups."""
+    __tablename__ = 'group_user'  # Nom de la table
+    user_id = db.Column(db.Integer, db.ForeignKey('user_model.id'), primary_key=True)  # Clé étrangère vers UserModel
+    group_id = db.Column(db.Integer, db.ForeignKey('group_model.id'), primary_key=True)  # Clé étrangère vers GroupModel
+    # Optionnel : ajoutez des champs comme rôle ou date
+    role = db.Column(db.String(50), default='member')  # Exemple : 'admin', 'member'
+    joined_at = db.Column(db.DateTime, server_default=db.func.now())
+    
 class UserModel(UserMixin, db.Model):
     """User model for the database."""
     id = db.Column(db.Integer, primary_key=True)
@@ -53,3 +62,20 @@ class UserModel(UserMixin, db.Model):
         :rtype: str
         """
         return f'User: {self.username}'
+    
+class GroupModel(db.Model):
+    """Group model for the database."""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(200))
+    date_created = db.Column(db.DateTime, server_default=db.func.now())
+
+    users = db.relationship('UserModel', secondary='group_user', backref=db.backref('groups', lazy='dynamic'))
+
+    def __repr__(self) -> str:
+        """Return the group's name.
+        
+        :return: The group's name.
+        :rtype: str
+        """
+        return f'Group: {self.name}'
