@@ -1,8 +1,11 @@
-from flask import Flask
-from flask_login import LoginManager, login_user, current_user, login_required, logout_user
+from flask import Flask, Request, request, session
+from flask_login import LoginManager
 from models import UserModel
-from db import db, add_to_db
+from db import db
 import os
+from lite_logging.lite_logging import log
+
+from auth import create_user, login, update_user, delete_user
 
 app = Flask(__name__)
 
@@ -35,35 +38,27 @@ def create_app():
         # since the user_id is just the primary key of our user table, use it in the query for the user
         return UserModel.query.get(int(user_id))
 
-@app.route('/create_user', methods=['POST'])
-def create_user(request):
-    email = request.json.get('email')
-    username = request.json.get('username')
-    password = request.json.get('password')
 
-    if not email or not username or not password:
-        return {"message": "Email, username, and password are required"}, 400
+#### USER ENDPOINTS ####
 
-    user = UserModel(email=email, username=username, password=password)
+@app.route('/register', methods=['POST'])
+def create_user_endpoint(request):
+    return create_user(request)
 
-    result = add_to_db(user)
-    if result.get("error"):
-        return result, 500
-    
-    return {"message": "User created successfully"}, 201
+@app.route('/register/<int:user_id>/', methods=['PUT'])
+def update_user_endpoint(user_id):
+    return update_user(user_id)
 
-@app.route('/delete_user/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
-    user = UserModel.query.get(user_id)
-    if not user:
-        return {"message": "User not found"}, 404
+@app.route('/register/<int:user_id>/', methods=['DELETE'])
+def delete_user_endpoint(user_id):
+    return delete_user(user_id)
 
-    result = add_to_db(user)
-    if result.get("error"):
-        return result, 500
 
-    return {"message": "User deleted successfully"}, 200
+### LOGIN ENDPOINTS ###
 
+@app.route('/login', methods=['POST'])
+def login_endpoint():
+    return login(request)
 
 def main(db_name: str = "data-local") -> None:
     """Main function to create the app and initialize the database."
