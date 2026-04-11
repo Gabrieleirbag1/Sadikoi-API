@@ -39,7 +39,7 @@ def create_app():
         return UserModel.query.get(int(user_id))
 
 
-#### USER ENDPOINTS ####
+#### REGISTER ENDPOINTS ####
 
 @app.route('/register', methods=['POST'])
 def create_user_endpoint():
