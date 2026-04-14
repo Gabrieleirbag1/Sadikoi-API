@@ -40,7 +40,17 @@ def does_exist_question_today(group) -> bool:
     question = group.questions.order_by(QuestionModel.date.desc()).first()
     if not question:
         return False
-    return question.date.date() == datetime.datetime.now(datetime.timezone.utc)
+    return question.date.date() == datetime.datetime.now(datetime.timezone.utc).date()
+
+def build_question_data(question) -> dict:
+    return {
+        "questionId": question.questionId,
+        "content": question.content,
+        "theme": question.theme,
+        "voteMyself": question.voteMyself,
+        "canWrite": question.canWrite,
+        "item": question.item
+    }
 
 def get_question(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
@@ -48,7 +58,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
         return {"message": "Group not found"}, 404
     elif does_exist_question_today(group):
         question = group.questions.order_by(QuestionModel.date.desc()).first()
-        return {"questions": [question]}, 200
+        return {"question": build_question_data(question)}, 200
     else:
         question_data = chose_question(group)
         print("Chosen question:", question_data)
@@ -64,4 +74,4 @@ def get_question(group_id: int) -> tuple[dict, int]:
         result = add_to_db(question)
         if result.get("error"):
             return result, 500
-        return {"question": question_data}, 200
+        return {"question": build_question_data(question)}, 200
