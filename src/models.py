@@ -67,7 +67,7 @@ class GroupModel(db.Model):
     """Group model for the database."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(200))
+    description = db.Column(db.String(200), server_default="")
     date_created = db.Column(db.DateTime, server_default=db.func.now())
 
     users = db.relationship('UserModel', secondary='group_user', backref=db.backref('groups', lazy='dynamic'))
