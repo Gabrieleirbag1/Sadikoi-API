@@ -111,11 +111,11 @@ def send_message_endpoint(group_id):
 
 ############## QUESTIONS ENDPOINTS ##############
 
-@app.route('/questions/<int:group_id>', methods=['GET'])
+@app.route('/question/<int:group_id>', methods=['GET'])
 def get_questions_endpoint(group_id):
     return get_question(group_id)
 
-@app.route('/questions/<int:group_id>/vote', methods=['POST'])
+@app.route('/question/<int:group_id>/vote', methods=['POST'])
 def vote_question_endpoint(group_id):
     return vote_question(request)
 
