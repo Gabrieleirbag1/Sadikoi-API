@@ -1,6 +1,7 @@
 from flask import Flask, Request, request, session
 from flask_login import LoginManager
 from models import UserModel
+from group import create_group, update_group, delete_group, add_user_to_group, remove_user_from_group
 from db import db
 import os
 from lite_logging.lite_logging import log
@@ -39,7 +40,9 @@ def create_app():
         return UserModel.query.get(int(user_id))
 
 
-#### USER ENDPOINTS ####
+############## AUTH ENDPOINTS ##############
+
+#### REGISTER ENDPOINTS ####
 
 @app.route('/register', methods=['POST'])
 def create_user_endpoint():
@@ -65,6 +68,34 @@ def test_get_user(user_id):
 @app.route('/login', methods=['POST'])
 def login_endpoint():
     return login(request)
+
+
+############## USER-GROUP ENDPOINTS ##############
+
+### GROUP ENDPOINTS ###
+
+@app.route('/groups', methods=['POST'])
+def create_group_endpoint():
+    return create_group(request)
+
+@app.route('/groups/<int:group_id>/', methods=['PUT'])
+def update_group_endpoint(group_id):
+    return update_group(group_id)
+
+@app.route('/groups/<int:group_id>/', methods=['DELETE'])
+def delete_group_endpoint(group_id):
+    return delete_group(group_id)
+
+### USERS IN GROUP ENDPOINTS ###
+
+@app.route('/groups/<int:group_id>/<int:user_id>/', methods=['POST'])
+def add_user_to_group_endpoint(group_id, user_id):
+    return add_user_to_group(group_id, user_id)
+
+@app.route('/groups/<int:group_id>/<int:user_id>/', methods=['DELETE'])
+def remove_user_from_group_endpoint(group_id, user_id):
+    return remove_user_from_group(group_id, user_id)
+
 
 def main(db_name: str = "data-local") -> None:
     """Main function to create the app and initialize the database."
