@@ -1,5 +1,5 @@
 from models import ChatMessageModel, GroupModel, UserModel
-from flask import Request, request
+from flask import Request
 from db import add_to_db
 
 def get_messages(group_id: int) -> tuple[dict, int]:
