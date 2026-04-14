@@ -32,7 +32,7 @@ def chose_question(group, offset = 0) -> dict :
     iteration = get_mean_iterations_question(group)
     for _ in range(len(questions)):
         question = chose_random_question()
-        if not is_question_already_asked(group, question, iteration):
+        if not is_question_already_asked(group, question, iteration + offset):
             return question
     return chose_question(group, offset + 1)
 
@@ -64,4 +64,4 @@ def get_question(group_id: int) -> tuple[dict, int]:
         result = add_to_db(question)
         if result.get("error"):
             return result, 500
-        return {"questions": [question]}, 200
+        return {"question": question_data}, 200
