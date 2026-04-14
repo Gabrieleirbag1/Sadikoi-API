@@ -79,3 +79,24 @@ class GroupModel(db.Model):
         :rtype: str
         """
         return f'Group: {self.name}'
+    
+class ChatMessageModel(db.Model):
+    """Chat message model for the database."""
+    __tablename__ = 'chat_message'
+
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(500), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('user_model.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('group_model.id'), nullable=False)
+
+    user = db.relationship('UserModel', backref=db.backref('messages', lazy='dynamic'))
+    group = db.relationship('GroupModel', backref=db.backref('messages', lazy='dynamic'))
+
+    def __repr__(self) -> str:
+        """Return the message content and timestamp.
+        
+        :return: The message content and timestamp.
+        :rtype: str
+        """
+        return f'Message: {self.content} at {self.timestamp}'
