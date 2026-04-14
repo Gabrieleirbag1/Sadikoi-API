@@ -6,7 +6,7 @@ from lite_logging.lite_logging import log
 
 from db import add_to_db, delete_from_db, update_from_db
 
-def create_user(request):
+def create_user(request: Request) -> tuple[dict, int]:
     email = request.json.get('email')
     username = request.json.get('username')
     password = request.json.get('password')
@@ -22,7 +22,7 @@ def create_user(request):
     
     return {"message": "User created successfully"}, 201
 
-def update_user(user_id):
+def update_user(user_id: int, request: Request) -> tuple[dict, int]:
     user = UserModel.query.get(user_id)
     if not user:
         return {"message": "User not found"}, 404
@@ -41,7 +41,7 @@ def update_user(user_id):
     
     return {"message": "User updated successfully"}, 200
 
-def delete_user(user_id):
+def delete_user(user_id: int):
     user = UserModel.query.get(user_id)
     if not user:
         return {"message": "User not found"}, 404
