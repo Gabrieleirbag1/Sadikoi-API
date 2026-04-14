@@ -5,15 +5,18 @@ from exceptions import ValueTooLongException, UppercaseException
 
 class GroupUser(db.Model):
     """Association table for users and groups."""
-    __tablename__ = 'group_user'  # Nom de la table
-    user_id = db.Column(db.Integer, db.ForeignKey('user_model.id'), primary_key=True)  # Clé étrangère vers UserModel
-    group_id = db.Column(db.Integer, db.ForeignKey('group_model.id'), primary_key=True)  # Clé étrangère vers GroupModel
+    __tablename__ = 'group_user'
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)  # Clé étrangère vers UserModel
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)  # Clé étrangère vers GroupModel
     # Optionnel : ajoutez des champs comme rôle ou date
     role = db.Column(db.String(50), default='member')  # Exemple : 'admin', 'member'
     joined_at = db.Column(db.DateTime, server_default=db.func.now())
     
 class UserModel(UserMixin, db.Model):
     """User model for the database."""
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80), unique=True)
     username = db.Column(db.String(40), unique=True)
@@ -65,6 +68,8 @@ class UserModel(UserMixin, db.Model):
     
 class GroupModel(db.Model):
     """Group model for the database."""
+    __tablename__ = 'groups'
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(200), server_default="")
@@ -83,11 +88,13 @@ class GroupModel(db.Model):
     
 class ChatMessageModel(db.Model):
     """Chat message model for the database."""
+    __tablename__ = 'chat_messages'
+
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(500), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
-    user_id = db.Column(db.Integer, db.ForeignKey('user_model.id'), nullable=False)
-    group_id = db.Column(db.Integer, db.ForeignKey('group_model.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
 
     user = db.relationship('UserModel', backref=db.backref('messages', lazy='dynamic'))
     group = db.relationship('GroupModel', backref=db.backref('messages', lazy='dynamic'))
@@ -102,6 +109,8 @@ class ChatMessageModel(db.Model):
     
 class QuestionModel(db.Model):
     """Question model for the database."""
+    __tablename__ = 'questions'
+
     id = db.Column(db.Integer, primary_key=True)
     questionId = db.Column(db.Integer, unique=True, nullable=False)
     content = db.Column(db.String(500), nullable=False)
@@ -111,13 +120,13 @@ class QuestionModel(db.Model):
     canWrite = db.Column(db.Boolean, default=False)
     item = db.Column(db.String(100))
     iteration = db.Column(db.Integer, default=1)
-    group_id = db.Column(db.Integer, db.ForeignKey('group_model.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
 
-    usersVoted = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voted_questions', lazy='dynamic'))
-    userWhoVoted = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voters', lazy='dynamic'))
+    # usersVoted = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voted_questions', lazy='dynamic'))
+    # userWhoVoted = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voters', lazy='dynamic'))
 
 class QuestionVote(db.Model):
     """Association table for users and questions."""
     __tablename__ = 'question_vote'
-    user_id = db.Column(db.Integer, db.ForeignKey('user_model.id'), primary_key=True)
-    question_id = db.Column(db.Integer, db.ForeignKey('question_model.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), primary_key=True)
