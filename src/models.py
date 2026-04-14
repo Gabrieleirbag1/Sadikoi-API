@@ -71,6 +71,7 @@ class GroupModel(db.Model):
     date_created = db.Column(db.DateTime, server_default=db.func.now())
 
     users = db.relationship('UserModel', secondary='group_user', backref=db.backref('groups', lazy='dynamic'))
+    questions = db.relationship('QuestionModel', backref='group', lazy='dynamic')
 
     def __repr__(self) -> str:
         """Return the group's name.
@@ -82,8 +83,6 @@ class GroupModel(db.Model):
     
 class ChatMessageModel(db.Model):
     """Chat message model for the database."""
-    __tablename__ = 'chat_message'
-
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(500), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
@@ -100,3 +99,25 @@ class ChatMessageModel(db.Model):
         :rtype: str
         """
         return f'Message: {self.content} at {self.timestamp}'
+    
+class QuestionModel(db.Model):
+    """Question model for the database."""
+    id = db.Column(db.Integer, primary_key=True)
+    questionId = db.Column(db.Integer, unique=True, nullable=False)
+    content = db.Column(db.String(500), nullable=False)
+    date = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+    theme = db.Column(db.String(50), nullable=False)
+    voteMyself = db.Column(db.Boolean, default=True)
+    canWrite = db.Column(db.Boolean, default=False)
+    item = db.Column(db.String(100))
+    iteration = db.Column(db.Integer, default=1)
+    group_id = db.Column(db.Integer, db.ForeignKey('group_model.id'), nullable=False)
+
+    usersVoted = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voted_questions', lazy='dynamic'))
+    userWhoVoted = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voters', lazy='dynamic'))
+
+class QuestionVote(db.Model):
+    """Association table for users and questions."""
+    __tablename__ = 'question_vote'
+    user_id = db.Column(db.Integer, db.ForeignKey('user_model.id'), primary_key=True)
+    question_id = db.Column(db.Integer, db.ForeignKey('question_model.id'), primary_key=True)
