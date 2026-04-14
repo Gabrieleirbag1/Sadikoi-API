@@ -1,0 +1,16 @@
+[
+  {
+    "questionId": 1,
+    "content": {
+      "fr": "qui est con comme une table ?",
+      "en": "who is a jerk like a table ?"
+    },
+    "theme": {
+      "fr": "connerie",
+      "en": "stupidity"
+    },
+    "voteMyself": true,
+    "canWrite": false,
+    "item": "bonnet"
+  }
+]
