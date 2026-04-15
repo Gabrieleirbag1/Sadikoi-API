@@ -7,9 +7,8 @@ class GroupUser(db.Model):
     """Association table for users and groups."""
     __tablename__ = 'group_user'
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)  # Clé étrangère vers UserModel
-    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)  # Clé étrangère vers GroupModel
-    # Optionnel : ajoutez des champs comme rôle ou date
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)
     role = db.Column(db.String(50), default='member')  # Exemple : 'admin', 'member'
     joined_at = db.Column(db.DateTime, server_default=db.func.now())
     
@@ -112,21 +111,24 @@ class QuestionModel(db.Model):
     __tablename__ = 'questions'
 
     id = db.Column(db.Integer, primary_key=True)
-    questionId = db.Column(db.Integer, unique=True, nullable=False)
+    question_id = db.Column(db.Integer, unique=True, nullable=False)
     content = db.Column(db.String(500), nullable=False)
     date = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     theme = db.Column(db.String(50), nullable=False)
-    voteMyself = db.Column(db.Boolean, default=True)
+    enableSelfVote = db.Column(db.Boolean, default=True)
+    enableMultipleVoting = db.Column(db.Boolean, default=False)
     canWrite = db.Column(db.Boolean, default=False)
     item = db.Column(db.String(100))
     iteration = db.Column(db.Integer, default=1)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
 
-    # usersVoted = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voted_questions', lazy='dynamic'))
-    # userWhoVoted = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voters', lazy='dynamic'))
+    votedUsers = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voted_questions', lazy='dynamic'))
 
 class QuestionVote(db.Model):
     """Association table for users and questions."""
     __tablename__ = 'question_vote'
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    userVoting_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    usersVoted = db.relationship('UserModel', backref=db.backref('question_votes', lazy='dynamic'))
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)
