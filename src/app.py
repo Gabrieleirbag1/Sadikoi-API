@@ -3,7 +3,7 @@ from flask_login import LoginManager
 from models import UserModel
 from group import create_group, update_group, delete_group, add_user_to_group, remove_user_from_group
 from chat import get_messages, send_message
-from question import get_question
+from question import get_question, vote_question
 from db import db
 import os
 from lite_logging.lite_logging import log
@@ -117,7 +117,7 @@ def get_questions_endpoint(group_id):
 
 @app.route('/question/<int:group_id>/vote', methods=['POST'])
 def vote_question_endpoint(group_id):
-    return vote_question(request)
+    return vote_question(group_id, request)
 
 
 def main(db_name: str = "data-local") -> None:
