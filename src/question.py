@@ -57,6 +57,7 @@ def build_question_data(question) -> dict:
         "theme": question.theme,
         "enableSelfVote": question.enableSelfVote,
         "enableMultipleVoting": question.enableMultipleVoting,
+        "voteNumberLimit": question.voteNumberLimit,
         "canWrite": question.canWrite,
         "item": question.item
     }
@@ -68,6 +69,7 @@ def build_question_model(question_data, iteration, group) -> QuestionModel:
         theme=question_data['theme'][language],
         enableSelfVote=question_data['enableSelfVote'],
         enableMultipleVoting=question_data['enableMultipleVoting'],
+        voteNumberLimit=question_data['voteNumberLimit'],
         canWrite=question_data['canWrite'],
         item=question_data['item'],
         iteration=iteration,

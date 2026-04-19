@@ -117,6 +117,7 @@ class QuestionModel(db.Model):
     theme = db.Column(db.String(50), nullable=False)
     enableSelfVote = db.Column(db.Boolean, default=True)
     enableMultipleVoting = db.Column(db.Boolean, default=False)
+    voteNumberLimit = db.Column(db.Integer, default=1)
     canWrite = db.Column(db.Boolean, default=False)
     item = db.Column(db.String(100))
     iteration = db.Column(db.Integer, default=1)
