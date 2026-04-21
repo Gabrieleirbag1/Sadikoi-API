@@ -71,7 +71,7 @@ def build_question_model(question_data, iteration, group) -> QuestionModel:
         enableMultipleVoting=question_data['enableMultipleVoting'],
         voteNumberLimit=question_data['voteNumberLimit'],
         canWrite=question_data['canWrite'],
-        item=question_data['item'],
+        item=question_data['item']["id"],
         iteration=iteration,
         group=group
     )
