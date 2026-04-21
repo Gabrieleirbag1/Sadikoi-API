@@ -1,6 +1,6 @@
 [
   {
-    "questionId": 1,
+    "question_id": 9,
     "content": {
       "fr": "qui est con comme une table ?",
       "en": "who is a jerk like a table ?"
@@ -9,8 +9,14 @@
       "fr": "connerie",
       "en": "stupidity"
     },
-    "voteMyself": true,
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
     "canWrite": false,
-    "item": "bonnet"
+    "item": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap of Shame"
+    }
   }
 ]
