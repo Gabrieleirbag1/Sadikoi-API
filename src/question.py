@@ -102,6 +102,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
         return {"question": build_question_data(question if iteration is None else existing_question)}, 200
     
 def vote_question(group_id, request) -> tuple[dict, int]:
+    written_answer = None
     question_data = get_question(group_id)
     question = question_data[0].get("question")
     log(f"Voting on question: {question}")
@@ -116,19 +117,57 @@ def vote_question(group_id, request) -> tuple[dict, int]:
     if not user:
         return {"message": "User not found"}, 404
     
-    users_voted = request.json.get("usersVoted", [])
-    if not question.get("enableSelfVote") and user.username in users_voted:
-        return {"message": "User cannot vote for themselves"}, 400
-    
-    if question.get("enableMultipleVoting") and users_voted.count(user.username) > 1:
-        return {"message": "User cannot vote multiple times"}, 400
-    
-    if len(users_voted) > question.get("voteNumberLimit"):
-        return {"message": f"User cannot vote more than {question.get('voteNumberLimit')} times"}, 400
-    
-    vote = QuestionVote(userVoting_id=user.id, question_id=question['question_id'], group_id=group_id)
+    votedUsers = request.json.get("votedUsers")
 
-    result = add_to_db(vote)
+    if question.get("canWrite"):
+        written_answer = request.json.get("writtenAnswer")
+        if not written_answer:
+            return {"message": "No answer provided"}, 400
+        votes = [
+            QuestionVote(
+                voterUser_id=user.id,
+                question_id=question['question_id'],
+                group_id=group_id,
+                written_answer=written_answer,
+            )
+        ]
+    else:
+        if not votedUsers:
+            return {"message": "No users voted"}, 400
+        if not isinstance(votedUsers, list):
+            return {"message": "votedUsers must be a list"}, 400
+
+        if all(isinstance(item, int) for item in votedUsers):
+            votedUser_ids = votedUsers
+        elif all(isinstance(item, str) for item in votedUsers):
+            votedUsers = UserModel.query.filter(UserModel.username.in_(votedUsers)).all()
+            if len(votedUsers) != len(votedUsers):
+                return {"message": "One or more voted users not found"}, 404
+            votedUser_ids = [votedUser.id for votedUser in votedUsers]
+        else:
+            return {"message": "votedUsers must contain only ids or usernames"}, 400
+
+        if not question.get("enableSelfVote") and user.id in votedUser_ids:
+            return {"message": "User cannot vote for themselves"}, 400
+
+        if question.get("enableMultipleVoting") and len(set(votedUser_ids)) != len(votedUser_ids):
+            return {"message": "User cannot vote multiple times"}, 400
+
+        if question.get("voteNumberLimit") != 0 and len(votedUser_ids) > question.get("voteNumberLimit"):
+            return {"message": f"User cannot vote more than {question.get('voteNumberLimit')} times"}, 400
+
+        votes = [
+            QuestionVote(
+                voterUser_id=user.id,
+                votedUser_id=votedUser_id,
+                question_id=question['question_id'],
+                group_id=group_id,
+            )
+            for votedUser_id in votedUser_ids
+        ]
+
+    db.session.add_all(votes)
+    result = update_from_db()
     if result.get("error"):
         return result, 500
-    return {"message": f"Vote recorded successfully: {vote}"}, 200
+    return {"message": "Vote recorded successfully"}, 200
