@@ -52,7 +52,7 @@ def create_user_endpoint():
 
 @app.route('/register/<int:user_id>/', methods=['PUT'])
 def update_user_endpoint(user_id):
-    return update_user(user_id)
+    return update_user(user_id, request)
 
 @app.route('/register/<int:user_id>/', methods=['DELETE'])
 def delete_user_endpoint(user_id):
