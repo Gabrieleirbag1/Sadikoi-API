@@ -83,11 +83,39 @@ def main() -> int:
             {201},
         )
 
+        user2_payload = {"email": "test2@example.com", "username": "testuser2", "password": "pass1234"}
+        _run_step(
+            results,
+            "POST /register (user2)",
+            lambda: _request_json(client, "POST", "/register", user2_payload),
+            {201},
+        )
+
+        user3_payload = {"email": "test3@example.com", "username": "testuser3", "password": "pass1234"}
+        _run_step(
+            results,
+            "POST /register (user3)",
+            lambda: _request_json(client, "POST", "/register", user3_payload),
+            {201},
+        )
+
         user = UserModel.query.filter_by(username="testuser").first()
         if not user:
             _record_result(results, "Fetch user after register", False, "user not found")
             return _print_summary(results)
         _record_result(results, "Fetch user after register", True, f"user_id={user.id}")
+
+        user2 = UserModel.query.filter_by(username="testuser2").first()
+        if not user2:
+            _record_result(results, "Fetch user2 after register", False, "user not found")
+            return _print_summary(results)
+        _record_result(results, "Fetch user2 after register", True, f"user_id={user2.id}")
+
+        user3 = UserModel.query.filter_by(username="testuser3").first()
+        if not user3:
+            _record_result(results, "Fetch user3 after register", False, "user not found")
+            return _print_summary(results)
+        _record_result(results, "Fetch user3 after register", True, f"user_id={user3.id}")
 
         update_payload = {"email": "test2@example.com", "username": "testuser"}
         _run_step(
@@ -180,9 +208,9 @@ def main() -> int:
                 client,
                 "POST",
                 f"/question/{group.id}/vote",
-                {"username": "testuser", "usersVoted": ["someone_else"]},
+                {"username": "testuser", "votedUsers": [user2.id, user3.id]},
             ),
-            {200, 400, 404, 500},
+            {200},
         )
 
         _run_step(
@@ -196,6 +224,20 @@ def main() -> int:
             results,
             "DELETE /register/<user_id>",
             lambda: _request_json(client, "DELETE", f"/register/{user.id}/", {}),
+            {200},
+        )
+
+        _run_step(
+            results,
+            "DELETE /register/<user_id> (user2)",
+            lambda: _request_json(client, "DELETE", f"/register/{user2.id}/", {}),
+            {200},
+        )
+
+        _run_step(
+            results,
+            "DELETE /register/<user_id> (user3)",
+            lambda: _request_json(client, "DELETE", f"/register/{user3.id}/", {}),
             {200},
         )
 
