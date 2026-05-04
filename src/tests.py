@@ -215,6 +215,18 @@ def main() -> int:
 
         _run_step(
             results,
+            "POST /question/<group_id>/vote with too many votes",
+            lambda: _request_json(
+                client,
+                "POST",
+                f"/question/{group.id}/vote",
+                {"username": "testuser", "writtenAnswer": "my answer"},
+            ),
+            {400},
+        )
+
+        _run_step(
+            results,
             "DELETE /groups/<group_id>",
             lambda: _request_json(client, "DELETE", f"/groups/{group.id}/"),
             {200},
