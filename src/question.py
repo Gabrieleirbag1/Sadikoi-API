@@ -6,6 +6,8 @@ import datetime
 from models import GroupModel, QuestionModel, UserModel, QuestionVote
 from db import add_to_db, delete_from_db, update_from_db, db
 
+from lite_logging.lite_logging import log
+
 language = "en"
 
 json_path = os.path.join(os.path.dirname(__file__), 'data', 'questions.json')
@@ -102,6 +104,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
 def vote_question(group_id, request) -> tuple[dict, int]:
     question_data = get_question(group_id)
     question = question_data[0].get("question")
+    log(f"Voting on question: {question}")
     if not question:
         return {"message": "Question not found"}, 404
     
@@ -114,16 +117,16 @@ def vote_question(group_id, request) -> tuple[dict, int]:
         return {"message": "User not found"}, 404
     
     users_voted = request.json.get("usersVoted", [])
-    if not question.enableSelfVote and user.username in users_voted:
+    if not question.get("enableSelfVote") and user.username in users_voted:
         return {"message": "User cannot vote for themselves"}, 400
     
-    if question.enableMultipleVoting and users_voted.count(user.username) > 1:
+    if question.get("enableMultipleVoting") and users_voted.count(user.username) > 1:
         return {"message": "User cannot vote multiple times"}, 400
     
-    if len(users_voted) > question.voteNumberLimit:
-        return {"message": f"User cannot vote more than {question.voteNumberLimit} times"}, 400
+    if len(users_voted) > question.get("voteNumberLimit"):
+        return {"message": f"User cannot vote more than {question.get('voteNumberLimit')} times"}, 400
     
-    vote = QuestionVote(userVoting_id=user.id, users_voted=users_voted, question_id=question['question_id'], group_id=group_id)
+    vote = QuestionVote(userVoting_id=user.id, question_id=question['question_id'], group_id=group_id)
 
     result = add_to_db(vote)
     if result.get("error"):

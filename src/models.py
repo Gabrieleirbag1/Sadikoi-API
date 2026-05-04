@@ -21,6 +21,7 @@ class UserModel(UserMixin, db.Model):
     username = db.Column(db.String(40), unique=True)
     password = db.Column(db.String(80))
     date_created = db.Column(db.DateTime, server_default=db.func.now())
+    voted_questions = db.relationship('QuestionModel', secondary='question_vote', back_populates='voted_users', lazy='dynamic')
 
     @validates('email')
     def validate_email(self, _key: str, email: str) -> str:
@@ -122,14 +123,12 @@ class QuestionModel(db.Model):
     item = db.Column(db.String(100))
     iteration = db.Column(db.Integer, default=1)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
-
-    votedUsers = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voted_questions', lazy='dynamic'))
+    voted_users = db.relationship('UserModel', secondary='question_vote', back_populates='voted_questions', lazy='dynamic')
 
 class QuestionVote(db.Model):
     """Association table for users and questions."""
     __tablename__ = 'question_vote'
 
     userVoting_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    usersVoted = db.relationship('UserModel', backref=db.backref('question_votes', lazy='dynamic'))
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)
