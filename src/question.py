@@ -3,7 +3,7 @@ import os
 import json
 import datetime
 
-from models import GroupModel, QuestionModel, UserModel
+from models import GroupModel, QuestionModel, UserModel, QuestionVote
 from db import add_to_db, delete_from_db, update_from_db, db
 
 language = "en"
@@ -120,3 +120,12 @@ def vote_question(group_id, request) -> tuple[dict, int]:
     if question.enableMultipleVoting and users_voted.count(user.username) > 1:
         return {"message": "User cannot vote multiple times"}, 400
     
+    if len(users_voted) > question.voteNumberLimit:
+        return {"message": f"User cannot vote more than {question.voteNumberLimit} times"}, 400
+    
+    vote = QuestionVote(userVoting_id=user.id, users_voted=users_voted, question_id=question['question_id'], group_id=group_id)
+
+    result = add_to_db(vote)
+    if result.get("error"):
+        return result, 500
+    return {"message": f"Vote recorded successfully: {vote}"}, 200
