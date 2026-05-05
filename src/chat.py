@@ -26,16 +26,19 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
         return {"message": "Group not found"}, 404
 
     content = request.json.get('content')
-    user_id = request.json.get('user_id')
+    username = request.json.get('username')
 
-    if not content or not user_id:
-        return {"message": "Content and user_id are required"}, 400
+    if not content or not username:
+        return {"message": "Content and username are required"}, 400
 
-    user = UserModel.query.get(user_id)
+    user = UserModel.query.filter_by(username=username).first()
     if not user:
         return {"message": "User not found"}, 404
+    
+    if user not in group.users:
+        return {"message": "User is not a member of the group"}, 403
 
-    message = ChatMessageModel(content=content, user_id=user_id, group_id=group_id)
+    message = ChatMessageModel(content=content, user_id=user.id, group_id=group_id)
 
     result = add_to_db(message)
     if result.get("error"):

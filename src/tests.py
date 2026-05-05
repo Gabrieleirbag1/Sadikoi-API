@@ -196,7 +196,7 @@ def main() -> int:
                 client,
                 "POST",
                 f"/groups/{group.id}/messages",
-                {"content": "hello", "user_id": user.id},
+                {"content": "hello", "username": user.username},
             ),
             {201},
         )
