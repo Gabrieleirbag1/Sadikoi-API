@@ -156,13 +156,13 @@ class QuestionVote(db.Model):
         db.UniqueConstraint(
             'voterUser_id',
             'group_id',
-            'vote_date',
+            'date',
             name='uq_question_vote_daily_user_group',
         ),
     )
 
     id = db.Column(db.Integer, primary_key=True)
-    vote_date = db.Column(db.Date, nullable=False, server_default=db.func.current_date())
+    date = db.Column(db.DateTime, nullable=False, server_default=db.func.current_date())
     voterUser_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)

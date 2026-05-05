@@ -52,6 +52,15 @@ def does_exist_question_today(group) -> bool:
         return False
     return question.date.date() == datetime.datetime.now(datetime.timezone.utc).date()
 
+def does_exist_vote_today(group, user) -> bool:
+    vote = QuestionVote.query.filter_by(group_id=group.id, voterUser_id=user.id).order_by(QuestionVote.date.desc()).first()
+    if not vote:
+        return False
+    return vote.date.date() == datetime.datetime.now(datetime.timezone.utc).date()
+
+def is_user_in_group(user, group) -> bool:
+    return user in group.users
+
 def build_question_data(question) -> dict:
     return {
         "question_id": question.question_id,
@@ -116,6 +125,16 @@ def vote_question(group_id, request) -> tuple[dict, int]:
     user = UserModel.query.filter_by(username=username).first()
     if not user:
         return {"message": "User not found"}, 404
+    
+    group = GroupModel.query.get(group_id)
+    if not group:
+        return {"message": "Group not found"}, 404
+    
+    if not is_user_in_group(user, group):
+        return {"message": "User is not a member of the group"}, 403
+
+    if does_exist_vote_today(group, user):
+        return {"message": "User has already voted today"}, 400
     
     votedUsers = request.json.get("votedUsers")
 
