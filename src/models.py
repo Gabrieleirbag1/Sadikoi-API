@@ -1,6 +1,7 @@
 from flask_login import UserMixin
 from db import db
 from sqlalchemy.orm import validates
+from sqlalchemy import CheckConstraint
 from exceptions import ValueTooLongException, UppercaseException
 
 class GroupUser(db.Model):
@@ -21,6 +22,18 @@ class UserModel(UserMixin, db.Model):
     username = db.Column(db.String(40), unique=True)
     password = db.Column(db.String(80))
     date_created = db.Column(db.DateTime, server_default=db.func.now())
+    question_votes_cast = db.relationship(
+        'QuestionVote',
+        back_populates='voter',
+        foreign_keys='QuestionVote.voterUser_id',
+        lazy='dynamic',
+    )
+    question_vote_targets = db.relationship(
+        'QuestionVoteTarget',
+        back_populates='votedUser',
+        foreign_keys='QuestionVoteTarget.votedUser_id',
+        lazy='dynamic',
+    )
 
     @validates('email')
     def validate_email(self, _key: str, email: str) -> str:
@@ -111,7 +124,7 @@ class QuestionModel(db.Model):
     __tablename__ = 'questions'
 
     id = db.Column(db.Integer, primary_key=True)
-    question_id = db.Column(db.Integer, unique=True, nullable=False)
+    question_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.String(500), nullable=False)
     date = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     theme = db.Column(db.String(50), nullable=False)
@@ -122,14 +135,39 @@ class QuestionModel(db.Model):
     item = db.Column(db.String(100))
     iteration = db.Column(db.Integer, default=1)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
+    votes = db.relationship('QuestionVote', back_populates='question', lazy='dynamic')
 
-    votedUsers = db.relationship('UserModel', secondary='question_vote', backref=db.backref('voted_questions', lazy='dynamic'))
+class QuestionVoteTarget(db.Model):
+    """Association table for votes and the users who were voted for."""
+    __tablename__ = 'question_vote_target'
+
+    vote_id = db.Column(db.Integer, db.ForeignKey('question_vote.id'), primary_key=True)
+    votedUser_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    vote = db.relationship('QuestionVote', back_populates='targets')
+    votedUser = db.relationship('UserModel', back_populates='question_vote_targets')
+
 
 class QuestionVote(db.Model):
-    """Association table for users and questions."""
+    """Vote for a question (one per user per group per day)."""
     __tablename__ = 'question_vote'
 
-    userVoting_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    usersVoted = db.relationship('UserModel', backref=db.backref('question_votes', lazy='dynamic'))
-    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), primary_key=True)
-    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)
+    __table_args__ = (
+        db.UniqueConstraint(
+            'voterUser_id',
+            'group_id',
+            'date',
+            name='uq_question_vote_daily_user_group',
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime, nullable=False, server_default=db.func.current_date())
+    voterUser_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
+    written_answer = db.Column(db.String(500))
+
+    voter = db.relationship('UserModel', foreign_keys=[voterUser_id], back_populates='question_votes_cast')
+    question = db.relationship('QuestionModel', back_populates='votes')
+    targets = db.relationship('QuestionVoteTarget', back_populates='vote', lazy='dynamic')

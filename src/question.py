@@ -3,8 +3,10 @@ import os
 import json
 import datetime
 
-from models import GroupModel, QuestionModel, UserModel
+from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote
 from db import add_to_db, delete_from_db, update_from_db, db
+
+from lite_logging.lite_logging import log
 
 language = "en"
 
@@ -49,6 +51,15 @@ def does_exist_question_today(group) -> bool:
     if not question:
         return False
     return question.date.date() == datetime.datetime.now(datetime.timezone.utc).date()
+
+def does_exist_vote_today(group, user) -> bool:
+    vote = QuestionVote.query.filter_by(group_id=group.id, voterUser_id=user.id).order_by(QuestionVote.date.desc()).first()
+    if not vote:
+        return False
+    return vote.date.date() == datetime.datetime.now(datetime.timezone.utc).date()
+
+def is_user_in_group(user, group) -> bool:
+    return user in group.users
 
 def build_question_data(question) -> dict:
     return {
@@ -100,8 +111,10 @@ def get_question(group_id: int) -> tuple[dict, int]:
         return {"question": build_question_data(question if iteration is None else existing_question)}, 200
     
 def vote_question(group_id, request) -> tuple[dict, int]:
+    written_answer = None
     question_data = get_question(group_id)
     question = question_data[0].get("question")
+    log(f"Voting on question: {question}")
     if not question:
         return {"message": "Question not found"}, 404
     
@@ -113,10 +126,62 @@ def vote_question(group_id, request) -> tuple[dict, int]:
     if not user:
         return {"message": "User not found"}, 404
     
-    users_voted = request.json.get("usersVoted", [])
-    if not question.enableSelfVote and user.username in users_voted:
-        return {"message": "User cannot vote for themselves"}, 400
+    group = GroupModel.query.get(group_id)
+    if not group:
+        return {"message": "Group not found"}, 404
     
-    if question.enableMultipleVoting and users_voted.count(user.username) > 1:
-        return {"message": "User cannot vote multiple times"}, 400
+    if not is_user_in_group(user, group):
+        return {"message": "User is not a member of the group"}, 403
+
+    if does_exist_vote_today(group, user):
+        return {"message": "User has already voted today"}, 400
     
+    votedUsers = request.json.get("votedUsers")
+
+    if question.get("canWrite"):
+        written_answer = request.json.get("writtenAnswer")
+        if not written_answer:
+            return {"message": "No answer provided"}, 400
+        vote = QuestionVote(
+            voterUser_id=user.id,
+            question_id=question['question_id'],
+            group_id=group_id,
+            written_answer=written_answer,
+        )
+    else:
+        if not votedUsers:
+            return {"message": "No users voted"}, 400
+        if not isinstance(votedUsers, list):
+            return {"message": "votedUsers must be a list"}, 400
+
+        if all(isinstance(item, int) for item in votedUsers):
+            votedUser_ids = votedUsers
+        elif all(isinstance(item, str) for item in votedUsers):
+            votedUsers = UserModel.query.filter(UserModel.username.in_(votedUsers)).all()
+            if len(votedUsers) != len(votedUsers):
+                return {"message": "One or more voted users not found"}, 404
+            votedUser_ids = [votedUser.id for votedUser in votedUsers]
+        else:
+            return {"message": "votedUsers must contain only ids or usernames"}, 400
+
+        if not question.get("enableSelfVote") and user.id in votedUser_ids:
+            return {"message": "User cannot vote for themselves"}, 400
+
+        if question.get("enableMultipleVoting") and len(set(votedUser_ids)) != len(votedUser_ids):
+            return {"message": "User cannot vote multiple times"}, 400
+
+        if question.get("voteNumberLimit") != 0 and len(votedUser_ids) > question.get("voteNumberLimit"):
+            return {"message": f"User cannot vote more than {question.get('voteNumberLimit')} times"}, 400
+
+        vote = QuestionVote(
+            voterUser_id=user.id,
+            question_id=question['question_id'],
+            group_id=group_id,
+            targets=[QuestionVoteTarget(votedUser_id=votedUser_id) for votedUser_id in votedUser_ids]
+        )
+
+    db.session.add(vote)
+    result = update_from_db()
+    if result.get("error"):
+        return result, 500
+    return {"message": "Vote recorded successfully"}, 200
