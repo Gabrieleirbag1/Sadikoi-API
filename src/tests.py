@@ -148,7 +148,7 @@ def main() -> int:
             {201},
         )
 
-        group2_payload = {"username": "testuser", "name": "group2", "description": "test group 2"}
+        group2_payload = {"username": "testuser2", "name": "group2", "description": "test group 2"}
         _run_step(
             results,
             "POST /groups (group2)",
@@ -178,14 +178,14 @@ def main() -> int:
         _run_step(
             results,
             "POST /groups/<group_id>/<user_id>",
-            lambda: _request_json(client, "POST", f"/groups/{group.id}/{user.id}/", {}),
+            lambda: _request_json(client, "POST", f"/groups/{group2.id}/{user.id}/", {}),
             {200},
         )
 
         _run_step(
             results,
             "DELETE /groups/<group_id>/<user_id>",
-            lambda: _request_json(client, "DELETE", f"/groups/{group.id}/{user.id}/", {}),
+            lambda: _request_json(client, "DELETE", f"/groups/{group2.id}/{user.id}/", {}),
             {200},
         )
 
@@ -241,7 +241,7 @@ def main() -> int:
                 client,
                 "POST",
                 f"/question/{group2.id}/vote",
-                {"username": "testuser", "writtenAnswer": "my answer"},
+                {"username": "testuser2", "writtenAnswer": "my answer"},
             ),
             {400},
         )
