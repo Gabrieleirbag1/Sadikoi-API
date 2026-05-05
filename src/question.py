@@ -3,7 +3,7 @@ import os
 import json
 import datetime
 
-from models import GroupModel, QuestionModel, UserModel, QuestionVote
+from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote
 from db import add_to_db, delete_from_db, update_from_db, db
 
 from lite_logging.lite_logging import log
@@ -123,14 +123,12 @@ def vote_question(group_id, request) -> tuple[dict, int]:
         written_answer = request.json.get("writtenAnswer")
         if not written_answer:
             return {"message": "No answer provided"}, 400
-        votes = [
-            QuestionVote(
-                voterUser_id=user.id,
-                question_id=question['question_id'],
-                group_id=group_id,
-                written_answer=written_answer,
-            )
-        ]
+        vote = QuestionVote(
+            voterUser_id=user.id,
+            question_id=question['question_id'],
+            group_id=group_id,
+            written_answer=written_answer,
+        )
     else:
         if not votedUsers:
             return {"message": "No users voted"}, 400
@@ -156,17 +154,14 @@ def vote_question(group_id, request) -> tuple[dict, int]:
         if question.get("voteNumberLimit") != 0 and len(votedUser_ids) > question.get("voteNumberLimit"):
             return {"message": f"User cannot vote more than {question.get('voteNumberLimit')} times"}, 400
 
-        votes = [
-            QuestionVote(
-                voterUser_id=user.id,
-                votedUser_id=votedUser_id,
-                question_id=question['question_id'],
-                group_id=group_id,
-            )
-            for votedUser_id in votedUser_ids
-        ]
+        vote = QuestionVote(
+            voterUser_id=user.id,
+            question_id=question['question_id'],
+            group_id=group_id,
+            targets=[QuestionVoteTarget(votedUser_id=votedUser_id) for votedUser_id in votedUser_ids]
+        )
 
-    db.session.add_all(votes)
+    db.session.add(vote)
     result = update_from_db()
     if result.get("error"):
         return result, 500

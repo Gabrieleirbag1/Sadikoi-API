@@ -28,10 +28,10 @@ class UserModel(UserMixin, db.Model):
         foreign_keys='QuestionVote.voterUser_id',
         lazy='dynamic',
     )
-    question_votes_received = db.relationship(
-        'QuestionVote',
+    question_vote_targets = db.relationship(
+        'QuestionVoteTarget',
         back_populates='votedUser',
-        foreign_keys='QuestionVote.votedUser_id',
+        foreign_keys='QuestionVoteTarget.votedUser_id',
         lazy='dynamic',
     )
 
@@ -137,24 +137,37 @@ class QuestionModel(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     votes = db.relationship('QuestionVote', back_populates='question', lazy='dynamic')
 
+class QuestionVoteTarget(db.Model):
+    """Association table for votes and the users who were voted for."""
+    __tablename__ = 'question_vote_target'
+
+    vote_id = db.Column(db.Integer, db.ForeignKey('question_vote.id'), primary_key=True)
+    votedUser_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    vote = db.relationship('QuestionVote', back_populates='targets')
+    votedUser = db.relationship('UserModel', back_populates='question_vote_targets')
+
+
 class QuestionVote(db.Model):
-    """Association table for users and questions."""
+    """Vote for a question (one per user per group per day)."""
     __tablename__ = 'question_vote'
 
     __table_args__ = (
-        CheckConstraint(
-            '(votedUser_id IS NOT NULL) OR (written_answer IS NOT NULL)',
-            name='ck_question_vote_target_or_answer',
+        db.UniqueConstraint(
+            'voterUser_id',
+            'group_id',
+            'vote_date',
+            name='uq_question_vote_daily_user_group',
         ),
     )
 
     id = db.Column(db.Integer, primary_key=True)
+    vote_date = db.Column(db.Date, nullable=False, server_default=db.func.current_date())
     voterUser_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    votedUser_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     written_answer = db.Column(db.String(500))
 
     voter = db.relationship('UserModel', foreign_keys=[voterUser_id], back_populates='question_votes_cast')
-    votedUser = db.relationship('UserModel', foreign_keys=[votedUser_id], back_populates='question_votes_received')
     question = db.relationship('QuestionModel', back_populates='votes')
+    targets = db.relationship('QuestionVoteTarget', back_populates='vote', lazy='dynamic')
