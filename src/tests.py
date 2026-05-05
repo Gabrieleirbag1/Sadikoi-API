@@ -148,11 +148,25 @@ def main() -> int:
             {201},
         )
 
+        group2_payload = {"username": "testuser", "name": "group2", "description": "test group 2"}
+        _run_step(
+            results,
+            "POST /groups (group2)",
+            lambda: _request_json(client, "POST", "/groups", group2_payload),
+            {201},
+        )
+
         group = GroupModel.query.filter_by(name="group1").first()
         if not group:
             _record_result(results, "Fetch group after create", False, "group not found")
             return _print_summary(results)
         _record_result(results, "Fetch group after create", True, f"group_id={group.id}")
+
+        group2 = GroupModel.query.filter_by(name="group2").first()
+        if not group2:
+            _record_result(results, "Fetch group2 after create", False, "group not found")
+            return _print_summary(results)
+        _record_result(results, "Fetch group2 after create", True, f"group_id={group2.id}")
 
         _run_step(
             results,
@@ -203,6 +217,13 @@ def main() -> int:
 
         _run_step(
             results,
+            "GET /question/<group_id> (group2)",
+            lambda: _request_json(client, "GET", f"/question/{group2.id}"),
+            {200},
+        )
+
+        _run_step(
+            results,
             "POST /question/<group_id>/vote",
             lambda: _request_json(
                 client,
@@ -215,11 +236,11 @@ def main() -> int:
 
         _run_step(
             results,
-            "POST /question/<group_id>/vote with too many votes",
+            "POST /question/<group_id>/vote with written answer",
             lambda: _request_json(
                 client,
                 "POST",
-                f"/question/{group.id}/vote",
+                f"/question/{group2.id}/vote",
                 {"username": "testuser", "writtenAnswer": "my answer"},
             ),
             {400},
