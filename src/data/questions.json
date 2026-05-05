@@ -11,7 +11,7 @@
     },
     "enableSelfVote": true,
     "enableMultipleVoting": false,
-    "voteNumberLimit": 1,
+    "voteNumberLimit": 0,
     "canWrite": false,
     "item": {
       "id": "bonnet_honte",
