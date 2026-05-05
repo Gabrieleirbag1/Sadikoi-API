@@ -124,7 +124,7 @@ class QuestionModel(db.Model):
     __tablename__ = 'questions'
 
     id = db.Column(db.Integer, primary_key=True)
-    question_id = db.Column(db.Integer, unique=True, nullable=False)
+    question_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.String(500), nullable=False)
     date = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     theme = db.Column(db.String(50), nullable=False)
