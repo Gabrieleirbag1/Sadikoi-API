@@ -3,6 +3,8 @@ import os
 import json
 import datetime
 
+from flask import Request
+
 from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote
 from db import add_to_db, delete_from_db, update_from_db, db
 
@@ -17,19 +19,19 @@ with open(json_path, 'r') as f:
 def chose_random_question() -> dict:
     return random.choice(questions)
 
-def get_mean_iterations_question(group) -> int:
+def get_mean_iterations_question(group: GroupModel) -> int:
     if not group.questions.count():
         return 1
     return sum(question.iteration for question in group.questions) // group.questions.count()
 
-def is_question_already_asked(question, mean_iteration) -> bool | int:
+def is_question_already_asked(question: QuestionModel | None, mean_iteration: int) -> bool | int:
     if not question:
         return False
     elif question.iteration >= mean_iteration:
         return True
     return False
 
-def chose_question(group, offset = 0) -> dict :
+def chose_question(group: GroupModel, offset: int = 0) -> dict :
     mean_iteration = get_mean_iterations_question(group)
     for _ in range(len(questions)):
         question_data = chose_random_question()
@@ -46,22 +48,22 @@ def chose_question(group, offset = 0) -> dict :
         # Fallback, shouldn't happen
         return chose_random_question(), None
 
-def does_exist_question_today(group) -> bool:
+def does_exist_question_today(group: GroupModel) -> bool:
     question = group.questions.order_by(QuestionModel.date.desc()).first()
     if not question:
         return False
     return question.date.date() == datetime.datetime.now(datetime.timezone.utc).date()
 
-def does_exist_vote_today(group, user) -> bool:
+def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
     vote = QuestionVote.query.filter_by(group_id=group.id, voterUser_id=user.id).order_by(QuestionVote.date.desc()).first()
     if not vote:
         return False
     return vote.date.date() == datetime.datetime.now(datetime.timezone.utc).date()
 
-def is_user_in_group(user, group) -> bool:
+def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     return user in group.users
 
-def build_question_data(question) -> dict:
+def build_question_data(question: QuestionModel) -> dict:
     return {
         "question_id": question.question_id,
         "content": question.content,
@@ -73,7 +75,7 @@ def build_question_data(question) -> dict:
         "item": question.item
     }
 
-def build_question_model(question_data, iteration, group) -> QuestionModel:
+def build_question_model(question_data: dict, iteration: int, group: GroupModel) -> QuestionModel:
     return QuestionModel(
         question_id=question_data['question_id'],
         content=question_data['content'][language],
@@ -110,7 +112,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
             return result, 500
         return {"question": build_question_data(question if iteration is None else existing_question)}, 200
     
-def vote_question(group_id, request) -> tuple[dict, int]:
+def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     written_answer = None
     question_data = get_question(group_id)
     question = question_data[0].get("question")
