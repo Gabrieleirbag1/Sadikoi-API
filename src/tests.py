@@ -117,7 +117,7 @@ def main() -> int:
             return _print_summary(results)
         _record_result(results, "Fetch user3 after register", True, f"user_id={user3.id}")
 
-        update_payload = {"email": "test2@example.com", "username": "testuser"}
+        update_payload = {"email": "updated@example.com", "username": "testuser"}
         _run_step(
             results,
             "PUT /register/<user_id>",
