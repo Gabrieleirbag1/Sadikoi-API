@@ -7,6 +7,7 @@ from lite_logging.lite_logging import log
 from db import add_to_db, delete_from_db, update_from_db
 
 def create_user(request: Request) -> tuple[dict, int]:
+    log("Creating user with data: " + str(request.json), level="DEBUG")
     email = request.json.get('email')
     username = request.json.get('username')
     password = request.json.get('password')

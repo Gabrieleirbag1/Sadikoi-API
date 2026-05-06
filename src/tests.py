@@ -78,24 +78,24 @@ def main() -> int:
         user_payload = {"email": "test@example.com", "username": "testuser", "password": "pass1234"}
         _run_step(
             results,
-            "POST /register",
-            lambda: _request_json(client, "POST", "/register", user_payload),
+            "POST /api/register",
+            lambda: _request_json(client, "POST", "/api/register", user_payload),
             {201},
         )
 
         user2_payload = {"email": "test2@example.com", "username": "testuser2", "password": "pass1234"}
         _run_step(
             results,
-            "POST /register (user2)",
-            lambda: _request_json(client, "POST", "/register", user2_payload),
+            "POST /api/register (user2)",
+            lambda: _request_json(client, "POST", "/api/register", user2_payload),
             {201},
         )
 
         user3_payload = {"email": "test3@example.com", "username": "testuser3", "password": "pass1234"}
         _run_step(
             results,
-            "POST /register (user3)",
-            lambda: _request_json(client, "POST", "/register", user3_payload),
+            "POST /api/register (user3)",
+            lambda: _request_json(client, "POST", "/api/register", user3_payload),
             {201},
         )
 
@@ -120,39 +120,39 @@ def main() -> int:
         update_payload = {"email": "updated@example.com", "username": "testuser"}
         _run_step(
             results,
-            "PUT /register/<user_id>",
-            lambda: _request_json(client, "PUT", f"/register/{user.id}/", update_payload),
+            "PUT /api/register/<user_id>",
+            lambda: _request_json(client, "PUT", f"/api/register/{user.id}/", update_payload),
             {200},
         )
 
         _run_step(
             results,
-            "GET /account/<user_id>",
-            lambda: _request_json(client, "GET", f"/account/{user.id}/"),
+            "GET /api/account/<user_id>",
+            lambda: _request_json(client, "GET", f"/api/account/{user.id}/"),
             {200},
         )
 
         login_payload = {"username_or_email": "testuser", "password": "pass1234", "remember": "true"}
         _run_step(
             results,
-            "POST /login",
-            lambda: _request_form(client, "POST", "/login", login_payload),
+            "POST /api/login",
+            lambda: _request_form(client, "POST", "/api/login", login_payload),
             {200},
         )
 
         group_payload = {"username": "testuser", "name": "group1", "description": "test group"}
         _run_step(
             results,
-            "POST /groups",
-            lambda: _request_json(client, "POST", "/groups", group_payload),
+            "POST /api/groups",
+            lambda: _request_json(client, "POST", "/api/groups", group_payload),
             {201},
         )
 
         group2_payload = {"username": "testuser2", "name": "group2", "description": "test group 2"}
         _run_step(
             results,
-            "POST /groups (group2)",
-            lambda: _request_json(client, "POST", "/groups", group2_payload),
+            "POST /api/groups (group2)",
+            lambda: _request_json(client, "POST", "/api/groups", group2_payload),
             {201},
         )
 
@@ -170,32 +170,32 @@ def main() -> int:
 
         _run_step(
             results,
-            "PUT /groups/<group_id>",
-            lambda: _request_json(client, "PUT", f"/groups/{group.id}/", {"description": "updated"}),
+            "PUT /api/groups/<group_id>",
+            lambda: _request_json(client, "PUT", f"/api/groups/{group.id}/", {"description": "updated"}),
             {200},
         )
 
         _run_step(
             results,
-            "POST /groups/<group_id>/<user_id>",
-            lambda: _request_json(client, "POST", f"/groups/{group2.id}/{user.id}/", {}),
+            "POST /api/groups/<group_id>/<user_id>",
+            lambda: _request_json(client, "POST", f"/api/groups/{group2.id}/{user.id}/", {}),
             {200},
         )
 
         _run_step(
             results,
-            "DELETE /groups/<group_id>/<user_id>",
-            lambda: _request_json(client, "DELETE", f"/groups/{group2.id}/{user.id}/", {}),
+            "DELETE /api/groups/<group_id>/<user_id>",
+            lambda: _request_json(client, "DELETE", f"/api/groups/{group2.id}/{user.id}/", {}),
             {200},
         )
 
         _run_step(
             results,
-            "POST /groups/<group_id>/messages",
+            "POST /api/groups/<group_id>/messages",
             lambda: _request_json(
                 client,
                 "POST",
-                f"/groups/{group.id}/messages",
+                f"/api/groups/{group.id}/messages",
                 {"content": "hello", "username": user.username},
             ),
             {201},
@@ -203,32 +203,32 @@ def main() -> int:
 
         _run_step(
             results,
-            "GET /groups/<group_id>/messages",
-            lambda: _request_json(client, "GET", f"/groups/{group.id}/messages"),
+            "GET /api/groups/<group_id>/messages",
+            lambda: _request_json(client, "GET", f"/api/groups/{group.id}/messages"),
             {200},
         )
 
         _run_step(
             results,
-            "GET /question/<group_id>",
-            lambda: _request_json(client, "GET", f"/question/{group.id}"),
+            "GET /api/questions/<group_id>",
+            lambda: _request_json(client, "GET", f"/api/questions/{group.id}"),
             {200},
         )
 
         _run_step(
             results,
-            "GET /question/<group_id> (group2)",
-            lambda: _request_json(client, "GET", f"/question/{group2.id}"),
+            "GET /api/questions/<group_id> (group2)",
+            lambda: _request_json(client, "GET", f"/api/questions/{group2.id}"),
             {200},
         )
 
         _run_step(
             results,
-            "POST /question/<group_id>/vote",
+            "POST /api/questions/<group_id>/vote",
             lambda: _request_json(
                 client,
                 "POST",
-                f"/question/{group.id}/vote",
+                f"/api/questions/{group.id}/vote",
                 {"username": "testuser", "votedUsers": [user2.id, user3.id]},
             ),
             {200},
@@ -236,11 +236,11 @@ def main() -> int:
 
         _run_step(
             results,
-            "POST /question/<group_id>/vote with written answer",
+            "POST /api/questions/<group_id>/vote with written answer",
             lambda: _request_json(
                 client,
                 "POST",
-                f"/question/{group2.id}/vote",
+                f"/api/questions/{group2.id}/vote",
                 {"username": "testuser2", "writtenAnswer": "my answer"},
             ),
             {400},
@@ -248,29 +248,29 @@ def main() -> int:
 
         _run_step(
             results,
-            "DELETE /groups/<group_id>",
-            lambda: _request_json(client, "DELETE", f"/groups/{group.id}/"),
+            "DELETE /api/groups/<group_id>",
+            lambda: _request_json(client, "DELETE", f"/api/groups/{group.id}/"),
             {200},
         )
 
         _run_step(
             results,
-            "DELETE /register/<user_id>",
-            lambda: _request_json(client, "DELETE", f"/register/{user.id}/", {}),
+            "DELETE /api/register/<user_id>",
+            lambda: _request_json(client, "DELETE", f"/api/register/{user.id}/", {}),
             {200},
         )
 
         _run_step(
             results,
-            "DELETE /register/<user_id> (user2)",
-            lambda: _request_json(client, "DELETE", f"/register/{user2.id}/", {}),
+            "DELETE /api/register/<user_id> (user2)",
+            lambda: _request_json(client, "DELETE", f"/api/register/{user2.id}/", {}),
             {200},
         )
 
         _run_step(
             results,
-            "DELETE /register/<user_id> (user3)",
-            lambda: _request_json(client, "DELETE", f"/register/{user3.id}/", {}),
+            "DELETE /api/register/<user_id> (user3)",
+            lambda: _request_json(client, "DELETE", f"/api/register/{user3.id}/", {}),
             {200},
         )
 
