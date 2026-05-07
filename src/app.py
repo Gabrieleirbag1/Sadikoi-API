@@ -71,7 +71,7 @@ def test_get_user(user_id):
 
 @app.route('/api/login', methods=['POST'])
 def login_endpoint():
-    log("Login request received with data: " + str(request.form), level="DEBUG")
+    log("Login request received with data: " + str(request.json), level="DEBUG")
     return login(request)
 
 

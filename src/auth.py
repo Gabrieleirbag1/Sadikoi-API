@@ -61,9 +61,9 @@ def login(request: Request) -> tuple[dict, int]:
     
     :return: A tuple with the status of the login and the response.
     :rtype: tuple"""
-    username_or_email = request.form.get('username_or_email')
-    password = request.form.get('password')
-    remember = True if request.form.get('remember') else False
+    username_or_email = request.json.get('username_or_email')
+    password = request.json.get('password')
+    remember = True if request.json.get('remember') else False
     log(f"Remember: {remember, username_or_email, password}", level="DEBUG")
 
     if not (username_or_email and password):
