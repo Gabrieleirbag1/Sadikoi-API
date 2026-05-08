@@ -1,18 +1,19 @@
 from models import GroupModel, UserModel
 from flask import Request, request
 from db import add_to_db, delete_from_db, update_from_db
+from auth import get_user_object
 
 def create_group(request: Request) -> tuple[dict, int]:
-    username = request.json.get('username')
-    if not username:
-        return {"message": "User is required to create a group"}, 400
+    user_info = request.json.get('user_info')
+    if not user_info:
+        return {"message": "User info is required to create a group"}, 400
     name = request.json.get('name')
     description = request.json.get('description')
 
     if not name:
         return {"message": "Name is required"}, 400
-    
-    user = UserModel.query.filter_by(username=username).first()
+
+    user = get_user_object(user_info)
     if not user:
         return {"message": "User not found"}, 404
     
@@ -49,20 +50,20 @@ def delete_group(group_id: int) -> tuple[dict, int]:
     
     return {"message": "Group deleted successfully"}, 200
 
-def get_user_groups(user_id: int) -> tuple[dict, int]:
-    user = UserModel.query.get(user_id)
+def get_user_groups(user_info: str) -> tuple[dict, int]:
+    user = get_user_object(user_info)
     if not user:
         return {"message": "User not found"}, 404
 
     groups = [{"id": group.id, "name": group.name, "description": group.description} for group in user.groups]
     return {"groups": groups}, 200
 
-def add_user_to_group(group_id: int, user_id: int) -> tuple[dict, int]:
+def add_user_to_group(group_id: int, user_info: str) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
         return {"message": "Group not found"}, 404
 
-    user = UserModel.query.get(user_id)
+    user = get_user_object(user_info)
     if not user:
         return {"message": "User not found"}, 404
 
@@ -74,12 +75,12 @@ def add_user_to_group(group_id: int, user_id: int) -> tuple[dict, int]:
     
     return {"message": "User added to group successfully"}, 200
 
-def remove_user_from_group(group_id: int, user_id: int) -> tuple[dict, int]:
+def remove_user_from_group(group_id: int, user_info: str) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
         return {"message": "Group not found"}, 404
 
-    user = UserModel.query.get(user_id)
+    user = get_user_object(user_info)
     if not user:
         return {"message": "User not found"}, 404
 

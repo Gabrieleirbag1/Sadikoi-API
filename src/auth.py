@@ -23,8 +23,8 @@ def create_user(request: Request) -> tuple[dict, int]:
     
     return {"message": "User created successfully"}, 201
 
-def update_user(user_id: int, request: Request) -> tuple[dict, int]:
-    user = UserModel.query.get(user_id)
+def update_user(user_info: str | int, request: Request) -> tuple[dict, int]:
+    user = get_user_object(user_info)
     if not user:
         return {"message": "User not found"}, 404
 
@@ -42,8 +42,8 @@ def update_user(user_id: int, request: Request) -> tuple[dict, int]:
     
     return {"message": "User updated successfully"}, 200
 
-def delete_user(user_id: int):
-    user = UserModel.query.get(user_id)
+def delete_user(user_info: str | int):
+    user = get_user_object(user_info)
     if not user:
         return {"message": "User not found"}, 404
 
@@ -67,7 +67,7 @@ def login(request: Request) -> tuple[dict, int]:
     log(f"Remember: {remember, username_or_email, password}", level="DEBUG")
 
     if not (username_or_email and password):
-        return {'success': False, 'account_method': 'login', 'message': 'Please fill in all fields.'}, 400
+        return {'success': False, 'message': 'Please fill in all fields.'}, 400
     else:
         user: UserModel = UserModel.query.filter_by(email=username_or_email).first()
         if not user:
@@ -77,16 +77,22 @@ def login(request: Request) -> tuple[dict, int]:
             if remember:
                 session.permanent = True
             login_user(user, remember=remember)
-            return {'success': True, 'account_method': 'login', 'message': 'Login successful.'}, 200
+            return {'success': True, 'message': 'Login successful.', 'content': {'id': user.id, 'email': user.email, 'username': user.username, 'date_created': user.date_created}}, 200
         else:
-            return {'success': False, 'account_method': 'login', 'message': 'Invalid email or password.'}, 401
+            return {'success': False, 'message': 'Invalid email or password.'}, 401
+        
+def get_user_object(user_info: str | int) -> UserModel | None:
+    """Get the user object with the given user_info."""
+    if isinstance(user_info, int) or user_info.isdigit():
+        return UserModel.query.get(int(user_info))
+    else:
+        return UserModel.query.filter((UserModel.email == user_info) | (UserModel.username == user_info)).first()
         
 def get_user(user_info: str | int) -> tuple[dict, int]:
     """Get the user with the given user_info."""
-    if isinstance(user_info, int) or user_info.isdigit():
-        user = UserModel.query.get(int(user_info))
-    else:
-        user = UserModel.query.filter((UserModel.email == user_info) | (UserModel.username == user_info)).first()
+    user = get_user_object(user_info)
     if not user:
-        return {"message": "User not found"}, 404
-    return {"id": user.id, "email": user.email, "username": user.username, "date_created": user.date_created}, 200
+        return {'success': False, 'message': 'User not found'}, 404
+    if not user:
+        return {'success': False, 'message': 'User not found'}, 404
+    return {'success': True, 'message': 'User found', 'content': {'id': user.id, 'email': user.email, 'username': user.username, 'date_created': user.date_created}}, 200

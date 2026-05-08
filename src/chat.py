@@ -1,6 +1,7 @@
 from models import ChatMessageModel, GroupModel, UserModel
 from flask import Request
 from db import add_to_db
+from auth import get_user_object
 
 def get_messages(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
@@ -26,12 +27,12 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
         return {"message": "Group not found"}, 404
 
     content = request.json.get('content')
-    username = request.json.get('username')
+    user_info = request.json.get('user_info')
 
-    if not content or not username:
-        return {"message": "Content and username are required"}, 400
+    if not content or not user_info:
+        return {"message": "Content and user_info are required"}, 400
 
-    user = UserModel.query.filter_by(username=username).first()
+    user = get_user_object(user_info)
     if not user:
         return {"message": "User not found"}, 404
     

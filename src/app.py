@@ -52,13 +52,13 @@ def create_app():
 def create_user_endpoint():
     return create_user(request)
 
-@app.route('/api/register/<int:user_id>/', methods=['PUT'])
-def update_user_endpoint(user_id):
-    return update_user(user_id, request)
+@app.route('/api/register/<user_info>/', methods=['PUT'])
+def update_user_endpoint(user_info):
+    return update_user(user_info, request)
 
-@app.route('/api/register/<int:user_id>/', methods=['DELETE'])
-def delete_user_endpoint(user_id):
-    return delete_user(user_id)
+@app.route('/api/register/<user_info>/', methods=['DELETE'])
+def delete_user_endpoint(user_info):
+    return delete_user(user_info)
 
 @app.route('/api/account/<user_info>/', methods=['GET'])
 def get_user_endpoint(user_info: str | int):
@@ -88,19 +88,19 @@ def update_group_endpoint(group_id):
 def delete_group_endpoint(group_id):
     return delete_group(group_id)
 
-@app.route('/api/groups/<int:user_id>/', methods=['GET'])
-def get_user_groups_endpoint(user_id):
-    return get_user_groups(user_id)
+@app.route('/api/groups/<user_info>/', methods=['GET'])
+def get_user_groups_endpoint(user_info):
+    return get_user_groups(user_info)
 
 ### USERS IN GROUP ENDPOINTS ###
 
-@app.route('/api/groups/<int:group_id>/<int:user_id>/', methods=['POST'])
-def add_user_to_group_endpoint(group_id, user_id):
-    return add_user_to_group(group_id, user_id)
+@app.route('/api/groups/<int:group_id>/<user_info>/', methods=['POST'])
+def add_user_to_group_endpoint(group_id, user_info):
+    return add_user_to_group(group_id, user_info)
 
-@app.route('/api/groups/<int:group_id>/<int:user_id>/', methods=['DELETE'])
-def remove_user_from_group_endpoint(group_id, user_id):
-    return remove_user_from_group(group_id, user_id)
+@app.route('/api/groups/<int:group_id>/<user_info>/', methods=['DELETE'])
+def remove_user_from_group_endpoint(group_id, user_info):
+    return remove_user_from_group(group_id, user_info)
 
 ## CHAT ENDPOINTS ###
 

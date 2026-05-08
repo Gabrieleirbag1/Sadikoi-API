@@ -10,6 +10,8 @@ from db import add_to_db, delete_from_db, update_from_db, db
 
 from lite_logging.lite_logging import log
 
+from auth import get_user_object
+
 language = "en"
 
 json_path = os.path.join(os.path.dirname(__file__), 'data', 'questions.json')
@@ -120,11 +122,11 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     if not question:
         return {"message": "Question not found"}, 404
     
-    username = request.json.get("username")
-    if not username:
-        return {"message": "Username is required to vote"}, 400
+    user_info = request.json.get("user_info")
+    if not user_info:
+        return {"message": "User info is required to vote"}, 400
     
-    user = UserModel.query.filter_by(username=username).first()
+    user = get_user_object(user_info)
     if not user:
         return {"message": "User not found"}, 404
     
