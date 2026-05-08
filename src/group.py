@@ -49,6 +49,14 @@ def delete_group(group_id: int) -> tuple[dict, int]:
     
     return {"message": "Group deleted successfully"}, 200
 
+def get_user_groups(user_id: int) -> tuple[dict, int]:
+    user = UserModel.query.get(user_id)
+    if not user:
+        return {"message": "User not found"}, 404
+
+    groups = [{"id": group.id, "name": group.name, "description": group.description} for group in user.groups]
+    return {"groups": groups}, 200
+
 def add_user_to_group(group_id: int, user_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
