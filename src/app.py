@@ -9,7 +9,7 @@ from db import db
 import os
 from lite_logging.lite_logging import log
 
-from auth import create_user, login, update_user, delete_user
+from auth import create_user, get_user, login, update_user, delete_user
 
 app = Flask(__name__)
 CORS(app)
@@ -60,12 +60,9 @@ def update_user_endpoint(user_id):
 def delete_user_endpoint(user_id):
     return delete_user(user_id)
 
-@app.route('/api/account/<int:user_id>/', methods=['GET'])
-def test_get_user(user_id):
-    user = UserModel.query.get(user_id)
-    if not user:
-        return {"message": "User not found"}, 404
-    return {"email": user.email, "username": user.username, "date_created": user.date_created}, 200
+@app.route('/api/account/<user_info>/', methods=['GET'])
+def get_user_endpoint(user_info: str | int):
+    return get_user(user_info)
 
 ### LOGIN ENDPOINTS ###
 

@@ -80,3 +80,13 @@ def login(request: Request) -> tuple[dict, int]:
             return {'success': True, 'account_method': 'login', 'message': 'Login successful.'}, 200
         else:
             return {'success': False, 'account_method': 'login', 'message': 'Invalid email or password.'}, 401
+        
+def get_user(user_info: str | int) -> tuple[dict, int]:
+    """Get the user with the given user_info."""
+    if isinstance(user_info, int) or user_info.isdigit():
+        user = UserModel.query.get(int(user_info))
+    else:
+        user = UserModel.query.filter((UserModel.email == user_info) | (UserModel.username == user_info)).first()
+    if not user:
+        return {"message": "User not found"}, 404
+    return {"id": user.id, "email": user.email, "username": user.username, "date_created": user.date_created}, 200
