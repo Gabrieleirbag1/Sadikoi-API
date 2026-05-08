@@ -24,6 +24,13 @@ def create_group(request: Request) -> tuple[dict, int]:
         return result, 500
     return {"success": True, "message": "Group created successfully", "content": {"id": group.id, "name": group.name, "description": group.description, "users": [user.username for user in group.users], "date_created": group.date_created}}, 201
 
+def get_group(group_id: int) -> tuple[dict, int]:
+    group = GroupModel.query.get(group_id)
+    if not group:
+        return {"success": False, "message": "Group not found"}, 404
+
+    return {"success": True, "message": "Group retrieved successfully", "content": {"id": group.id, "name": group.name, "description": group.description, "users": [user.username for user in group.users], "date_created": group.date_created}}, 200
+
 def update_group(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
