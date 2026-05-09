@@ -8,18 +8,19 @@ def get_messages(group_id: int) -> tuple[dict, int]:
     if not group:
         return {"message": "Group not found"}, 404
 
-    messages = ChatMessageModel.query.filter_by(group_id=group_id).order_by(ChatMessageModel.timestamp.asc()).all()
+    messages: list[ChatMessageModel] = ChatMessageModel.query.filter_by(group_id=group_id).order_by(ChatMessageModel.timestamp.asc()).all()
     messages_data = [
         {
             "id": message.id,
             "content": message.content,
             "timestamp": message.timestamp.isoformat(),
-            "user_id": message.user_id
+            "sender": {'id': message.user.id, 'email': message.user.email, 'username': message.user.username, 'date_created': message.user.date_created}
+            
         }
         for message in messages
     ]
 
-    return {"messages": messages_data}, 200
+    return {"success": True, "message": "Messages retrieved successfully", "content": messages_data}, 200
 
 def send_message(group_id: int, request: Request) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
