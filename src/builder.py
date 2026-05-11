@@ -30,6 +30,7 @@ def build_chat_message_response(message: ChatMessageModel) -> dict:
 
 def build_question_data(question: QuestionModel) -> dict:
     return {
+        "id": question.id,
         "question_id": question.question_id,
         "content": question.content,
         "theme": question.theme,
