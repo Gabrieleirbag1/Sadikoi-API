@@ -120,32 +120,32 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     question = question_data[0].get("question")
     log(f"Voting on question: {question}")
     if not question:
-        return {"message": "Question not found"}, 404
+        return {"success": False, "message": "Question not found"}, 404
     
     user_info = request.json.get("user_info")
     if not user_info:
-        return {"message": "User info is required to vote"}, 400
+        return {"success": False, "message": "User info is required to vote"}, 400
     
     user = get_user_object(user_info)
     if not user:
-        return {"message": "User not found"}, 404
+        return {"success": False, "message": "User not found"}, 404
     
     group = GroupModel.query.get(group_id)
     if not group:
-        return {"message": "Group not found"}, 404
+        return {"success": False, "message": "Group not found"}, 404
     
     if not is_user_in_group(user, group):
-        return {"message": "User is not a member of the group"}, 403
+        return {"success": False, "message": "User is not a member of the group"}, 403
 
     if does_exist_vote_today(group, user):
-        return {"message": "User has already voted today"}, 400
+        return {"success": False, "message": "User has already voted today"}, 400
     
     votedUsers = request.json.get("votedUsers")
 
     if question.get("canWrite"):
         written_answer = request.json.get("writtenAnswer")
         if not written_answer:
-            return {"message": "No answer provided"}, 400
+            return {"success": False, "message": "No answer provided"}, 400
         vote = QuestionVote(
             voterUser_id=user.id,
             question_id=question['question_id'],
@@ -154,28 +154,28 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
         )
     else:
         if not votedUsers:
-            return {"message": "No users voted"}, 400
+            return {"success": False, "message": "No users voted"}, 400
         if not isinstance(votedUsers, list):
-            return {"message": "votedUsers must be a list"}, 400
+            return {"success": False, "message": "votedUsers must be a list"}, 400
 
         if all(isinstance(item, int) for item in votedUsers):
             votedUser_ids = votedUsers
         elif all(isinstance(item, str) for item in votedUsers):
             votedUsers = UserModel.query.filter(UserModel.username.in_(votedUsers)).all()
             if len(votedUsers) != len(votedUsers):
-                return {"message": "One or more voted users not found"}, 404
+                return {"success": False, "message": "One or more voted users not found"}, 404
             votedUser_ids = [votedUser.id for votedUser in votedUsers]
         else:
-            return {"message": "votedUsers must contain only ids or usernames"}, 400
+            return {"success": False, "message": "votedUsers must contain only ids or usernames"}, 400
 
         if not question.get("enableSelfVote") and user.id in votedUser_ids:
-            return {"message": "User cannot vote for themselves"}, 400
+            return {"success": False, "message": "User cannot vote for themselves"}, 400
 
         if question.get("enableMultipleVoting") and len(set(votedUser_ids)) != len(votedUser_ids):
-            return {"message": "User cannot vote multiple times"}, 400
+            return {"success": False, "message": "User cannot vote multiple times"}, 400
 
         if question.get("voteNumberLimit") != 0 and len(votedUser_ids) > question.get("voteNumberLimit"):
-            return {"message": f"User cannot vote more than {question.get('voteNumberLimit')} times"}, 400
+            return {"success": False, "message": f"User cannot vote more than {question.get('voteNumberLimit')} times"}, 400
 
         vote = QuestionVote(
             voterUser_id=user.id,
@@ -188,4 +188,4 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
-    return {"message": "Vote recorded successfully"}, 200
+    return {"success": True, "message": "Vote recorded successfully"}, 200

@@ -13,7 +13,7 @@ def create_user(request: Request) -> tuple[dict, int]:
     password = request.json.get('password')
 
     if not email or not username or not password:
-        return {"message": "Email, username, and password are required"}, 400
+        return {"success": False, "message": "Email, username, and password are required"}, 400
 
     user = UserModel(email=email, username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
 
@@ -21,12 +21,12 @@ def create_user(request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     
-    return {"message": "User created successfully"}, 201
+    return {"success": True, "message": "User created successfully"}, 201
 
 def update_user(user_info: str | int, request: Request) -> tuple[dict, int]:
     user = get_user_object(user_info)
     if not user:
-        return {"message": "User not found"}, 404
+        return {"success": False, "message": "User not found"}, 404
 
     data = request.json
     user.email = data.get('email', user.email)
@@ -40,18 +40,18 @@ def update_user(user_info: str | int, request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     
-    return {"message": "User updated successfully"}, 200
+    return {"success": True, "message": "User updated successfully"}, 200
 
 def delete_user(user_info: str | int):
     user = get_user_object(user_info)
     if not user:
-        return {"message": "User not found"}, 404
+        return {"success": False, "message": "User not found"}, 404
 
     result = delete_from_db(user)
     if result.get("error"):
         return result, 500
 
-    return {"message": "User deleted successfully"}, 200
+    return {"success": True, "message": "User deleted successfully"}, 200
 
 
 def login(request: Request) -> tuple[dict, int]:
@@ -91,8 +91,6 @@ def get_user_object(user_info: str | int) -> UserModel | None:
 def get_user(user_info: str | int) -> tuple[dict, int]:
     """Get the user with the given user_info."""
     user = get_user_object(user_info)
-    if not user:
-        return {'success': False, 'message': 'User not found'}, 404
     if not user:
         return {'success': False, 'message': 'User not found'}, 404
     return {'success': True, 'message': 'User found', 'content': {'id': user.id, 'email': user.email, 'username': user.username, 'date_created': user.date_created}}, 200
