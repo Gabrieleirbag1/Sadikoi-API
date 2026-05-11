@@ -1,4 +1,4 @@
-from models import ChatMessageModel, GroupModel, UserModel
+from models import ChatMessageModel, GroupModel, QuestionModel, UserModel
 
 def build_user_response(user: UserModel) -> dict:
     return {
@@ -26,4 +26,16 @@ def build_chat_message_response(message: ChatMessageModel) -> dict:
         "content": message.content,
         "timestamp": message.timestamp.isoformat(),
         "sender": build_user_response(message.user)
+    }
+
+def build_question_data(question: QuestionModel) -> dict:
+    return {
+        "question_id": question.question_id,
+        "content": question.content,
+        "theme": question.theme,
+        "enableSelfVote": question.enableSelfVote,
+        "enableMultipleVoting": question.enableMultipleVoting,
+        "voteNumberLimit": question.voteNumberLimit,
+        "canWrite": question.canWrite,
+        "item": question.item
     }

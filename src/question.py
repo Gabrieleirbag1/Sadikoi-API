@@ -6,11 +6,13 @@ import datetime
 from flask import Request
 
 from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote
-from db import add_to_db, delete_from_db, update_from_db, db
+from db import add_to_db, update_from_db, db
 
 from lite_logging.lite_logging import log
 
 from auth import get_user_object
+
+from builder import build_question_data
 
 language = "en"
 
@@ -65,18 +67,6 @@ def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     return user in group.users
 
-def build_question_data(question: QuestionModel) -> dict:
-    return {
-        "question_id": question.question_id,
-        "content": question.content,
-        "theme": question.theme,
-        "enableSelfVote": question.enableSelfVote,
-        "enableMultipleVoting": question.enableMultipleVoting,
-        "voteNumberLimit": question.voteNumberLimit,
-        "canWrite": question.canWrite,
-        "item": question.item
-    }
-
 def build_question_model(question_data: dict, iteration: int, group: GroupModel) -> QuestionModel:
     return QuestionModel(
         question_id=question_data['question_id'],
@@ -94,11 +84,11 @@ def build_question_model(question_data: dict, iteration: int, group: GroupModel)
 def get_question(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
-        return {"message": "Group not found"}, 404
+        return {"success": False, "message": "Group not found"}, 404
     db.session.add(group)  # Ensure group is in session
     if does_exist_question_today(group):
         question = group.questions.order_by(QuestionModel.date.desc()).first()
-        return {"question": build_question_data(question)}, 200
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_data(question)}, 200
     else:
         question_data, iteration = chose_question(group)
         print("Chosen question:", question_data)
@@ -112,12 +102,12 @@ def get_question(group_id: int) -> tuple[dict, int]:
             result = update_from_db()
         if result.get("error"):
             return result, 500
-        return {"question": build_question_data(question if iteration is None else existing_question)}, 200
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_data(question if iteration is None else existing_question)}, 200
     
 def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     written_answer = None
     question_data = get_question(group_id)
-    question = question_data[0].get("question")
+    question = question_data[0].get("content")
     log(f"Voting on question: {question}")
     if not question:
         return {"success": False, "message": "Question not found"}, 404
