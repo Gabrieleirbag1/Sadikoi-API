@@ -152,15 +152,6 @@ class QuestionVote(db.Model):
     """Vote for a question (one per user per group per day)."""
     __tablename__ = 'question_vote'
 
-    __table_args__ = (
-        db.UniqueConstraint(
-            'voterUser_id',
-            'group_id',
-            'date',
-            name='uq_question_vote_daily_user_group',
-        ),
-    )
-
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, nullable=False, server_default=db.func.current_date())
     voterUser_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
