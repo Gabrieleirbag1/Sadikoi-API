@@ -1,7 +1,8 @@
-from models import ChatMessageModel, GroupModel, UserModel
+from models import ChatMessageModel, GroupModel
 from flask import Request
 from db import add_to_db
 from auth import get_user_object
+from builder import build_chat_message_response
 
 def get_messages(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
@@ -10,14 +11,7 @@ def get_messages(group_id: int) -> tuple[dict, int]:
 
     messages: list[ChatMessageModel] = ChatMessageModel.query.filter_by(group_id=group_id).order_by(ChatMessageModel.timestamp.asc()).all()
     messages_data = [
-        {
-            "id": message.id,
-            "content": message.content,
-            "timestamp": message.timestamp.isoformat(),
-            "sender": {'id': message.user.id, 'email': message.user.email, 'username': message.user.username, 'date_created': message.user.date_created}
-            
-        }
-        for message in messages
+        build_chat_message_response(message) for message in messages
     ]
 
     return {"success": True, "message": "Messages retrieved successfully", "content": messages_data}, 200
@@ -46,4 +40,4 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     
-    return {"success": True, "message": "Message sent successfully", "content": {'id': message.id, 'content': message.content, 'timestamp': message.timestamp.isoformat(), 'sender': {'id': message.user.id, 'email': message.user.email, 'username': message.user.username, 'date_created': message.user.date_created}}}, 201
+    return {"success": True, "message": "Message sent successfully", "content": build_chat_message_response(message)}, 201

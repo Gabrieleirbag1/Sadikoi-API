@@ -5,6 +5,7 @@ from models import UserModel
 from lite_logging.lite_logging import log
 
 from db import add_to_db, delete_from_db, update_from_db
+from builder import build_user_response
 
 def create_user(request: Request) -> tuple[dict, int]:
     log("Creating user with data: " + str(request.json), level="DEBUG")
@@ -21,10 +22,10 @@ def create_user(request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     
-    return {"success": True, "message": "User created successfully"}, 201
+    return {"success": True, "message": "User created successfully", "content": build_user_response(user)}, 201
 
 def update_user(user_info: str | int, request: Request) -> tuple[dict, int]:
-    user = get_user_object(user_info)
+    user: UserModel | None = get_user_object(user_info)
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
@@ -40,10 +41,10 @@ def update_user(user_info: str | int, request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     
-    return {"success": True, "message": "User updated successfully"}, 200
+    return {"success": True, "message": "User updated successfully", "content": build_user_response(user)}, 200
 
-def delete_user(user_info: str | int):
-    user = get_user_object(user_info)
+def delete_user(user_info: str | int) -> tuple[dict, int]:
+    user: UserModel | None = get_user_object(user_info)
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
@@ -51,7 +52,7 @@ def delete_user(user_info: str | int):
     if result.get("error"):
         return result, 500
 
-    return {"success": True, "message": "User deleted successfully"}, 200
+    return {"success": True, "message": "User deleted successfully", "content": build_user_response(user)}, 200
 
 
 def login(request: Request) -> tuple[dict, int]:
@@ -77,7 +78,7 @@ def login(request: Request) -> tuple[dict, int]:
             if remember:
                 session.permanent = True
             login_user(user, remember=remember)
-            return {'success': True, 'message': 'Login successful.', 'content': {'id': user.id, 'email': user.email, 'username': user.username, 'date_created': user.date_created}}, 200
+            return {'success': True, 'message': 'Login successful.', 'content': build_user_response(user)}, 200
         else:
             return {'success': False, 'message': 'Invalid email or password.'}, 401
         
@@ -93,4 +94,4 @@ def get_user(user_info: str | int) -> tuple[dict, int]:
     user = get_user_object(user_info)
     if not user:
         return {'success': False, 'message': 'User not found'}, 404
-    return {'success': True, 'message': 'User found', 'content': {'id': user.id, 'email': user.email, 'username': user.username, 'date_created': user.date_created}}, 200
+    return {'success': True, 'message': 'User found', 'content': build_user_response(user)}, 200
