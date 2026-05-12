@@ -12,7 +12,7 @@ from lite_logging.lite_logging import log
 from auth import create_user, get_user, login, update_user, delete_user
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 def configure_app(db_name: str) -> None:
     """Configure the Flask app with the given database name.
@@ -42,6 +42,20 @@ def create_app():
         :rtype: UserModel"""
         # since the user_id is just the primary key of our user table, use it in the query for the user
         return UserModel.query.get(int(user_id))
+        
+    @app.before_request
+    def check_authentication():
+        # Allow OPTIONS requests for CORS preflight
+        if request.method == 'OPTIONS':
+            return
+            
+        exempt_routes = ['/api/login', '/api/register']
+        if request.path in exempt_routes and request.method == 'POST':
+            return
+            
+        from flask_login import current_user
+        if not current_user.is_authenticated:
+            return {"success": False, "message": "Unauthorized access. Please login first."}, 401
 
 
 ############## AUTH ENDPOINTS ##############
