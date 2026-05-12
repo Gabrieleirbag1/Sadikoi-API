@@ -51,18 +51,27 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict :
     else:
         # Fallback, shouldn't happen
         return chose_random_question(), None
+    
+def check_date(question_or_vote: QuestionModel | QuestionVote, group: GroupModel) -> bool:
+    if not question_or_vote:
+        return False
 
+    now = datetime.datetime.now(datetime.timezone.utc)
+    reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
+
+    if now < reset_time:
+        log(f"Current time {now} is before reset time {reset_time}, checking against yesterday's date", level="DEBUG")
+        return question_or_vote.date.date() == (now.date() - datetime.timedelta(days=1))
+    log(f"Current time {now} is after reset time {reset_time}, checking against today's date", level="DEBUG")
+    return question_or_vote.date.date() == now.date()
+    
 def does_exist_question_today(group: GroupModel) -> bool:
     question = group.questions.order_by(QuestionModel.date.desc()).first()
-    if not question:
-        return False
-    return question.date.date() == datetime.datetime.now(datetime.timezone.utc).date()
+    return check_date(question, group)
 
 def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
     vote = QuestionVote.query.filter_by(group_id=group.id, voterUser_id=user.id).order_by(QuestionVote.date.desc()).first()
-    if not vote:
-        return False
-    return vote.date.date() == datetime.datetime.now(datetime.timezone.utc).date()
+    return check_date(vote, group)
 
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     return user in group.users

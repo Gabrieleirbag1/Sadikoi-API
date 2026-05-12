@@ -86,6 +86,7 @@ class GroupModel(db.Model):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(200), server_default="")
     date_created = db.Column(db.DateTime, server_default=db.func.now())
+    daily_reset_timestamp = db.Column(db.Time, server_default=db.text("'15:00:00'"))
 
     users = db.relationship('UserModel', secondary='group_user', backref=db.backref('groups', lazy='dynamic'))
     questions = db.relationship('QuestionModel', backref='group', lazy='dynamic')
