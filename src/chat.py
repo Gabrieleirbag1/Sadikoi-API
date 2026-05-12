@@ -1,3 +1,5 @@
+from flask_login import current_user
+
 from models import ChatMessageModel, GroupModel
 from flask import Request
 from db import add_to_db
@@ -22,7 +24,7 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
         return {"success": False, "message": "Group not found"}, 404
 
     content = request.json.get('content')
-    user_info = request.json.get('user_info')
+    user_info = current_user.id or current_user.username
 
     if not content or not user_info:
         return {"success": False, "message": "Content and user_info are required"}, 400

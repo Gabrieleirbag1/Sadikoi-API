@@ -1,3 +1,5 @@
+from flask_login import current_user
+
 from models import GroupModel, UserModel
 from flask import Request, request
 from db import add_to_db, delete_from_db, update_from_db
@@ -5,7 +7,7 @@ from auth import get_user_object
 from builder import build_group_response, build_groups_response
 
 def create_group(request: Request) -> tuple[dict, int]:
-    user_info = request.json.get('user_info')
+    user_info = current_user.id or current_user.username
     if not user_info:
         return {"success": False, "message": "User info is required to create a group"}, 400
     name = request.json.get('name')

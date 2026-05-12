@@ -4,6 +4,7 @@ import json
 import datetime
 
 from flask import Request
+from flask_login import current_user
 
 from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote
 from db import add_to_db, update_from_db, db
@@ -123,7 +124,7 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     if not question:
         return {"success": False, "message": "Question not found"}, 404
     
-    user_info = request.json.get("user_info")
+    user_info = current_user.id or current_user.username
     if not user_info:
         return {"success": False, "message": "User info is required to vote"}, 400
     
@@ -195,9 +196,10 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
 
 def get_question_votes(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
+    
     if not group:
         return {"success": False, "message": "Group not found"}, 404
-    
+
     question = group.questions.order_by(QuestionModel.date.desc()).first()
     if not question:
         return {"success": False, "message": "Question not found"}, 404
