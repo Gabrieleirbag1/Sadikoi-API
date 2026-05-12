@@ -4,7 +4,7 @@ from flask_login import LoginManager
 from models import UserModel
 from group import create_group, get_group, update_group, delete_group, get_user_groups, add_user_to_group, remove_user_from_group
 from chat import get_messages, send_message
-from question import get_question, vote_question
+from question import get_question, get_question_votes, vote_question
 from db import db
 import os
 from lite_logging.lite_logging import log
@@ -127,6 +127,9 @@ def get_questions_endpoint(group_id):
 def vote_question_endpoint(group_id):
     return vote_question(group_id, request)
 
+@app.route('/api/questions/<int:group_id>/vote', methods=['GET'])
+def get_question_votes_endpoint(group_id):
+    return get_question_votes(group_id)
 
 def main(db_name: str = "data-local") -> None:
     """Main function to create the app and initialize the database."

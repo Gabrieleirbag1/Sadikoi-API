@@ -192,3 +192,24 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     return {"success": True, "message": "Vote recorded successfully"}, 200
+
+def get_question_votes(group_id: int) -> tuple[dict, int]:
+    group = GroupModel.query.get(group_id)
+    if not group:
+        return {"success": False, "message": "Group not found"}, 404
+    
+    question = group.questions.order_by(QuestionModel.date.desc()).first()
+    if not question:
+        return {"success": False, "message": "Question not found"}, 404
+    
+    votes = question.votes.all()
+    votes_data = []
+    for vote in votes:
+        vote_info = {
+            "voterUser": vote.voterUser_id,
+            "writtenAnswer": vote.written_answer,
+            "targets": [target.votedUser_id for target in vote.targets]
+        }
+        votes_data.append(vote_info)
+    
+    return {"success": True, "message": "Votes retrieved successfully", "content": votes_data}, 200
