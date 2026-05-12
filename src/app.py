@@ -49,8 +49,8 @@ def create_app():
         if request.method == 'OPTIONS':
             return
             
-        exempt_routes = ['/api/login', '/api/register']
-        if request.path in exempt_routes and request.method == 'POST':
+        ignore_routes = ['/api/login', '/api/register']
+        if request.path in ignore_routes and request.method == 'POST':
             return
             
         from flask_login import current_user
