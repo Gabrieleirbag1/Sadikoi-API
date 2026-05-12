@@ -115,9 +115,11 @@ def get_question(group_id: int) -> tuple[dict, int]:
     
 def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     written_answer = None
-    question_data = get_question(group_id)
-    question = question_data[0].get("content")
-    log(f"Voting on question: {question}")
+    group = GroupModel.query.get(group_id)
+    if not group:
+        return {"success": False, "message": "Group not found"}, 404
+    
+    question: QuestionModel = group.questions.order_by(QuestionModel.date.desc()).first()
     if not question:
         return {"success": False, "message": "Question not found"}, 404
     
@@ -141,13 +143,15 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     
     votedUsers = request.json.get("votedUsers")
 
-    if question.get("canWrite"):
+    if question.canWrite:
         written_answer = request.json.get("writtenAnswer")
         if not written_answer:
             return {"success": False, "message": "No answer provided"}, 400
+        
+        db_question = group.questions.order_by(QuestionModel.date.desc()).first()
         vote = QuestionVote(
             voterUser_id=user.id,
-            question_id=question['question_id'],
+            question_id=db_question.id,
             group_id=group_id,
             written_answer=written_answer,
         )
@@ -167,18 +171,18 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
         else:
             return {"success": False, "message": "votedUsers must contain only ids or usernames"}, 400
 
-        if not question.get("enableSelfVote") and user.id in votedUser_ids:
+        if not question.enableSelfVote and user.id in votedUser_ids:
             return {"success": False, "message": "User cannot vote for themselves"}, 400
 
-        if question.get("enableMultipleVoting") and len(set(votedUser_ids)) != len(votedUser_ids):
+        if question.enableMultipleVoting and len(set(votedUser_ids)) != len(votedUser_ids):
             return {"success": False, "message": "User cannot vote multiple times"}, 400
 
-        if question.get("voteNumberLimit") != 0 and len(votedUser_ids) > question.get("voteNumberLimit"):
-            return {"success": False, "message": f"User cannot vote more than {question.get('voteNumberLimit')} times"}, 400
+        if question.voteNumberLimit != 0 and len(votedUser_ids) > question.voteNumberLimit:
+            return {"success": False, "message": f"User cannot vote more than {question.voteNumberLimit} times"}, 400
 
         vote = QuestionVote(
             voterUser_id=user.id,
-            question_id=question['question_id'],
+            question_id=question.id,
             group_id=group_id,
             targets=[QuestionVoteTarget(votedUser_id=votedUser_id) for votedUser_id in votedUser_ids]
         )
