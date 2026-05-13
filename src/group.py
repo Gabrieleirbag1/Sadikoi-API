@@ -1,6 +1,9 @@
+import datetime
+import secrets
+
 from flask_login import current_user
 
-from models import GroupModel, UserModel
+from models import GroupInvitationModel, GroupModel, UserModel
 from flask import Request, request
 from db import add_to_db, delete_from_db, update_from_db
 from auth import get_user_object
@@ -101,3 +104,22 @@ def remove_user_from_group(group_id: int, user_info: str) -> tuple[dict, int]:
         return result, 500
     
     return {"success": True, "message": "User removed from group successfully", "content": build_group_response(group)}, 200
+
+def create_invitation(group: GroupModel) -> tuple[dict, int]:
+    expiration_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+    token = secrets.token_urlsafe(16)
+    
+    invitation = GroupInvitationModel(group_id=group.id, expiration_date=expiration_date, token=token)
+    result = add_to_db(invitation)
+    if result.get("error"):
+        return result, 500
+    return {"success": True, "message": "Invitation created successfully", "content": invitation.token}, 201
+
+def get_group_invitation(group_id: int) -> tuple[dict, int]:
+    group = GroupModel.query.get(group_id)
+    if not group:
+        return {"success": False, "message": "Group not found"}, 404
+
+    invitation: GroupInvitationModel = GroupInvitationModel.query.filter_by(group_id=group_id).first()
+    if not invitation:
+        return {"success": False, "message": "Invitation not found"}, 404

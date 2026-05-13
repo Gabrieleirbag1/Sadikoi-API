@@ -77,7 +77,16 @@ class UserModel(UserMixin, db.Model):
         :rtype: str
         """
         return f'User: {self.username}'
-    
+
+class GroupInvitationModel(db.Model):
+    """Group invitation model for the database."""
+    __tablename__ = 'group_invitations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
+    expiration_date = db.Column(db.DateTime, nullable=False)
+    token = db.Column(db.String(100), unique=True, nullable=False)
+
 class GroupModel(db.Model):
     """Group model for the database."""
     __tablename__ = 'groups'
