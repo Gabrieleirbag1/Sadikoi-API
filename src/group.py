@@ -3,7 +3,7 @@ import secrets
 
 from flask_login import current_user
 
-from models import GroupInvitationModel, GroupModel, UserModel
+from models import GroupInvitationModel, GroupModel, UserModel, GroupUser
 from flask import Request, request
 from db import add_to_db, delete_from_db, update_from_db
 from auth import get_user_object
@@ -23,11 +23,15 @@ def create_group(request: Request) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
     
-    group = GroupModel(name=name, description=description, users=[user])
+    group = GroupModel(name=name, description=description)
 
     result = add_to_db(group)
     if result.get("error"):
         return result, 500
+    
+    group_user = GroupUser(user_id=user.id, group_id=group.id, role='admin')
+    add_to_db(group_user)
+    
     return {"success": True, "message": "Group created successfully", "content": build_group_response(group)}, 201
 
 def get_group(group_id: int) -> tuple[dict, int]:
@@ -100,12 +104,20 @@ def remove_user_from_group(group_id: int, user_info: str) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
-    if user not in group.users:
+    group_user = GroupUser.query.filter_by(user_id=user.id, group_id=group_id).first()
+    if not group_user:
         return {"success": False, "message": "User is not in the group"}, 400
 
-    group.users.remove(user)
+    if group_user.role == 'admin':
+        # Find another user to make admin
+        other_user = GroupUser.query.filter_by(group_id=group_id).filter(GroupUser.user_id != user.id).first()
+        if other_user:
+            other_user.role = 'admin'
+            update_from_db()
+        else:
+            return {"success": False, "message": "Cannot remove the only admin from the group"}, 400
 
-    result = update_from_db()
+    result = delete_from_db(group_user)
     if result.get("error"):
         return result, 500
     
@@ -137,9 +149,17 @@ def answer_invitation(group_id: int, user_info: str, request: Request) -> tuple[
     
 
 def get_group_invitation(group_id: int) -> tuple[dict, int]:
-    group = GroupModel.query.get(group_id)
+    group: GroupModel = GroupModel.query.get(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
+    
+    user_info = current_user.id or current_user.username
+    if not user_info:
+        return {"success": False, "message": "User info is required to create a group"}, 400
+    
+    user: UserModel | None = get_user_object(user_info)
+    if user not in group.users:
+        return {"success": False, "message": "User is not a member of the group"}, 403
 
     invitation: GroupInvitationModel = GroupInvitationModel.query.filter_by(group_id=group_id).first()
     if not invitation:
