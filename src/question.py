@@ -97,8 +97,11 @@ def get_question(group_id: int) -> tuple[dict, int]:
         return {"success": False, "message": "Group not found"}, 404
     db.session.add(group)  # Ensure group is in session
     if does_exist_question_today(group):
+        has_voted = False
         question = group.questions.order_by(QuestionModel.date.desc()).first()
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_data(question)}, 200
+        if does_exist_vote_today(group, current_user):
+            has_voted = True
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_data(question, has_voted)}, 200
     else:
         question_data, iteration = chose_question(group)
         print("Chosen question:", question_data)
