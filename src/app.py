@@ -114,9 +114,9 @@ def get_user_groups_endpoint(user_info):
 def get_group_invitation_endpoint(group_id):
     return get_group_invitation(group_id)
 
-@app.route('/api/groups/<int:group_id>/invitations/<user_info>/', methods=['POST'])
-def answer_invitation_endpoint(group_id, user_info):
-    return answer_invitation(group_id, user_info, request)
+@app.route('/api/groups/<int:group_id>/invitations/<token>/', methods=['POST'])
+def answer_invitation_endpoint(group_id, token):
+    return answer_invitation(group_id, token)
 
 @app.route('/api/groups/<int:group_id>/<user_info>/', methods=['DELETE'])
 def remove_user_from_group_endpoint(group_id, user_info):

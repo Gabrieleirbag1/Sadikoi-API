@@ -133,8 +133,11 @@ def create_invitation(group: GroupModel) -> tuple[dict, int]:
         return result, 500
     return {"success": True, "message": "Invitation created successfully", "content": invitation.token}, 201
 
-def answer_invitation(group_id: int, user_info: str, request: Request) -> tuple[dict, int]:
-    token = request.json.get('token')
+def answer_invitation(group_id: int, token: str) -> tuple[dict, int]:
+    user_info = current_user.id or current_user.username
+    if not user_info:
+        return {"success": False, "message": "User info is required to answer an invitation"}, 400
+    
     if not token:
         return {"success": False, "message": "Token is required"}, 400
 
