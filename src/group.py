@@ -79,6 +79,9 @@ def add_user_to_group(group_id: int, user_info: str) -> tuple[dict, int]:
     user: UserModel | None = get_user_object(user_info)
     if not user:
         return {"success": False, "message": "User not found"}, 404
+    
+    if user in group.users:
+        return {"success": False, "message": "User is already in the group"}, 400
 
     group.users.append(user)
 
@@ -97,6 +100,9 @@ def remove_user_from_group(group_id: int, user_info: str) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
+    if user not in group.users:
+        return {"success": False, "message": "User is not in the group"}, 400
+
     group.users.remove(user)
 
     result = update_from_db()
@@ -114,6 +120,21 @@ def create_invitation(group: GroupModel) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     return {"success": True, "message": "Invitation created successfully", "content": invitation.token}, 201
+
+def answer_invitation(group_id: int, user_info: str, request: Request) -> tuple[dict, int]:
+    token = request.json.get('token')
+    if not token:
+        return {"success": False, "message": "Token is required"}, 400
+
+    invitation: GroupInvitationModel = GroupInvitationModel.query.filter_by(group_id=group_id, token=token).first()
+    if not invitation:
+        return {"success": False, "message": "Invitation not found"}, 404
+
+    if invitation.expiration_date < datetime.datetime.now(datetime.timezone.utc):
+        return {"success": False, "message": "Invitation has expired"}, 400
+
+    return add_user_to_group(group_id, user_info)
+    
 
 def get_group_invitation(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
