@@ -123,7 +123,7 @@ def remove_user_from_group(group_id: int, user_info: str) -> tuple[dict, int]:
     
     return {"success": True, "message": "User removed from group successfully", "content": build_group_response(group)}, 200
 
-def answer_invitation(group_id: int, token: str) -> tuple[dict, int]:
+def answer_invitation(token: str) -> tuple[dict, int]:
     user_info = current_user.id or current_user.username
     if not user_info:
         return {"success": False, "message": "User info is required to answer an invitation"}, 400
@@ -131,14 +131,14 @@ def answer_invitation(group_id: int, token: str) -> tuple[dict, int]:
     if not token:
         return {"success": False, "message": "Token is required"}, 400
 
-    invitation: GroupInvitationModel = GroupInvitationModel.query.filter_by(group_id=group_id, token=token).first()
+    invitation: GroupInvitationModel = GroupInvitationModel.query.filter_by(token=token).first()
     if not invitation:
         return {"success": False, "message": "Invitation not found"}, 404
 
-    if invitation.expiration_date < datetime.datetime.now(datetime.timezone.utc):
+    if invitation.expiration_date.replace(tzinfo=datetime.timezone.utc) < datetime.datetime.now(datetime.timezone.utc):
         return {"success": False, "message": "Invitation has expired"}, 400
 
-    return add_user_to_group(group_id, user_info)
+    return add_user_to_group(invitation.group_id, user_info)
 
 def create_invitation(group: GroupModel) -> tuple[dict, int]:
     expiration_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
@@ -164,7 +164,7 @@ def get_group_invitation(group_id: int) -> tuple[dict, int]:
         return {"success": False, "message": "User is not a member of the group"}, 403
 
     invitation: GroupInvitationModel = GroupInvitationModel.query.filter_by(group_id=group_id).first()
-    if not invitation:
+    if not invitation or invitation.expiration_date.replace(tzinfo=datetime.timezone.utc) < datetime.datetime.now(datetime.timezone.utc):
         return create_invitation(group)
     
     return {"success": True, "message": "Invitation retrieved successfully", "content": invitation.token}, 200
