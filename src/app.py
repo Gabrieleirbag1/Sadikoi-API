@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_login import LoginManager
 from models import UserModel
-from group import create_group, get_group, update_group, delete_group, get_user_groups, add_user_to_group, remove_user_from_group
+from group import create_group, get_group, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, get_question_votes, vote_question
 from db import db
@@ -110,11 +110,13 @@ def delete_group_endpoint(group_id):
 def get_user_groups_endpoint(user_info):
     return get_user_groups(user_info)
 
-### USERS IN GROUP ENDPOINTS ###
+@app.route('/api/groups/<int:group_id>/invitations', methods=['GET'])
+def get_group_invitation_endpoint(group_id):
+    return get_group_invitation(group_id)
 
-@app.route('/api/groups/<int:group_id>/<user_info>/', methods=['POST'])
-def add_user_to_group_endpoint(group_id, user_info):
-    return add_user_to_group(group_id, user_info)
+@app.route('/api/groups/invitations/<token>/', methods=['POST'])
+def answer_invitation_endpoint(token):
+    return answer_invitation(token)
 
 @app.route('/api/groups/<int:group_id>/<user_info>/', methods=['DELETE'])
 def remove_user_from_group_endpoint(group_id, user_info):
