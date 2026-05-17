@@ -9,7 +9,7 @@ from db import db
 import os
 from lite_logging.lite_logging import log
 
-from auth import create_user, get_user, login, update_user, delete_user
+from auth import create_user, get_user, login, logout, update_user, delete_user
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -22,14 +22,18 @@ def get_secret_key(length: int = 32) -> str:
     :return: A random secret key.
     :rtype: str
     """
-    if os.path.exists(os.path.join(os.path.dirname(__file__), '.secrets')):
+    secrets_path = os.path.join(os.path.dirname(__file__), '.secrets')
+    if os.path.exists(secrets_path):
         log("Found .secrets file, loading secret key from it.", level="DEBUG")
-        secret_key = os.getenv('SECRET_KEY', os.urandom(length).hex())
-    else:
-        secret_key = os.urandom(length).hex()
-        log("Generated new secret key.", level="DEBUG")
-        with open(os.path.join(os.path.dirname(__file__), '.secrets'), 'w') as f:
-            f.write(f'SECRET_KEY={secret_key}')
+        with open(secrets_path, 'r') as f:
+            for line in f:
+                if line.startswith('SECRET_KEY='):
+                    return line.strip().split('=', 1)[1]
+    
+    secret_key = os.urandom(length).hex()
+    log("Generated new secret key.", level="DEBUG")
+    with open(secrets_path, 'w') as f:
+        f.write(f'SECRET_KEY={secret_key}')
     return secret_key
 
 def configure_app(db_name: str) -> None:
@@ -59,7 +63,7 @@ def create_app():
         :return: The user with the given user_id.
         :rtype: UserModel"""
         # since the user_id is just the primary key of our user table, use it in the query for the user
-        return UserModel.query.get(int(user_id))
+        return db.session.get(UserModel, int(user_id))
         
     @app.before_request
     def check_authentication():
