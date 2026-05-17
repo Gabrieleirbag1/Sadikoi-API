@@ -1,5 +1,5 @@
 from flask import Request, request, session
-from flask_login import login_user
+from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import UserModel
 from lite_logging.lite_logging import log
@@ -82,6 +82,10 @@ def login(request: Request) -> tuple[dict, int]:
         else:
             return {'success': False, 'message': 'Invalid email or password.'}, 401
         
+def logout() -> tuple[dict, int]:
+    logout_user()
+    return {"success": True, "message": "Logout successful."}, 200
+        
 def get_user_object(user_info: str | int) -> UserModel | None:
     """Get the user object with the given user_info."""
     if isinstance(user_info, int) or user_info.isdigit():
@@ -89,9 +93,9 @@ def get_user_object(user_info: str | int) -> UserModel | None:
     else:
         return UserModel.query.filter((UserModel.email == user_info) | (UserModel.username == user_info)).first()
         
-def get_user(user_info: str | int) -> tuple[dict, int]:
+def get_user() -> tuple[dict, int]:
     """Get the user with the given user_info."""
-    user = get_user_object(user_info)
+    user = get_user_object(current_user.id or current_user.username)
     if not user:
         return {'success': False, 'message': 'User not found'}, 404
     return {'success': True, 'message': 'User found', 'content': build_user_response(user)}, 200

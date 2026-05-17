@@ -72,6 +72,7 @@ def create_app():
             return
             
         ignore_routes = ['/api/login', '/api/register']
+        log(f"Request path: {request.path}, method: {request.method}", level="DEBUG")
         if request.path in ignore_routes and request.method == 'POST':
             return
             
