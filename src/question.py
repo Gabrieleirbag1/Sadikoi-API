@@ -13,7 +13,7 @@ from lite_logging.lite_logging import log
 
 from auth import get_user_object
 
-from builder import build_question_data
+from builder import build_question_response, build_user_response
 
 language = "en"
 
@@ -91,17 +91,29 @@ def build_question_model(question_data: dict, iteration: int, group: GroupModel)
         group=group
     )
 
+def extract_votes_info(question: QuestionModel):
+    votes: list[QuestionVote] = question.votes.all()
+    votes_data = []
+    for vote in votes:
+        vote_info = {
+            "voterUser": vote.voter.username,
+            "writtenAnswer": vote.written_answer,
+            "targets": [target.votedUser.username for target in vote.targets]
+        }
+        votes_data.append(vote_info)
+    return votes_data
+
 def get_question(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
     db.session.add(group)  # Ensure group is in session
     if does_exist_question_today(group):
-        has_voted = False
         question = group.questions.order_by(QuestionModel.date.desc()).first()
+        votes = None
         if does_exist_vote_today(group, current_user):
-            has_voted = True
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_data(question, has_voted)}, 200
+            votes = extract_votes_info(question)
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, votes)}, 200
     else:
         question_data, iteration = chose_question(group)
         print("Chosen question:", question_data)
@@ -115,7 +127,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
             result = update_from_db()
         if result.get("error"):
             return result, 500
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_data(question if iteration is None else existing_question)}, 200
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question if iteration is None else existing_question)}, 200
     
 def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     written_answer = None

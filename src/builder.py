@@ -28,7 +28,7 @@ def build_chat_message_response(message: ChatMessageModel) -> dict:
         "sender": build_user_response(message.user)
     }
 
-def build_question_data(question: QuestionModel, has_voted: bool = False) -> dict:
+def build_question_response(question: QuestionModel, votes: dict = None) -> dict:
     return {
         "id": question.id,
         "question_id": question.question_id,
@@ -39,5 +39,5 @@ def build_question_data(question: QuestionModel, has_voted: bool = False) -> dic
         "voteNumberLimit": question.voteNumberLimit,
         "canWrite": question.canWrite,
         "item": question.item,
-        "hasVoted": has_voted
+        "votes": votes
     }
