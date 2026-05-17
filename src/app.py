@@ -40,7 +40,7 @@ def configure_app(db_name: str) -> None:
     :return: None
     """
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_name}.db'
-    app.secret_key = os.urandom(24) 
+    app.secret_key = get_secret_key()
 
 def create_app():
     """Create the Flask app and initialize the database and login manager."""
