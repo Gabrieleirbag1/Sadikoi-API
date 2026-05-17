@@ -92,9 +92,9 @@ def update_user_endpoint(user_info):
 def delete_user_endpoint(user_info):
     return delete_user(user_info)
 
-@app.route('/api/account/<user_info>/', methods=['GET'])
-def get_user_endpoint(user_info: str | int):
-    return get_user(user_info)
+@app.route('/api/account/', methods=['GET'])
+def get_user_endpoint():
+    return get_user()
 
 ### LOGIN ENDPOINTS ###
 
@@ -102,6 +102,10 @@ def get_user_endpoint(user_info: str | int):
 def login_endpoint():
     log("Login request received with data: " + str(request.json), level="DEBUG")
     return login(request)
+
+@app.route('/api/logout', methods=['POST'])
+def logout_endpoint():
+    return logout()
 
 
 ############## USER-GROUP ENDPOINTS ##############
