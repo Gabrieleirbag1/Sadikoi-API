@@ -67,8 +67,8 @@ def delete_group(group_id: int) -> tuple[dict, int]:
     
     return {"success": True, "message": "Group deleted successfully", "content": build_group_response(group)}, 200
 
-def get_user_groups(user_info: str) -> tuple[dict, int]:
-    user: UserModel | None = get_user_object(user_info)
+def get_user_groups() -> tuple[dict, int]:
+    user: UserModel | None = get_user_object(current_user.id or current_user.username)
     if not user:
         return {"success": False, "message": "User not found"}, 404
 

@@ -124,9 +124,9 @@ def update_group_endpoint(group_id):
 def delete_group_endpoint(group_id):
     return delete_group(group_id)
 
-@app.route('/api/groups/user/<user_info>/', methods=['GET'])
-def get_user_groups_endpoint(user_info):
-    return get_user_groups(user_info)
+@app.route('/api/groups/user/', methods=['GET'])
+def get_user_groups_endpoint():
+    return get_user_groups()
 
 @app.route('/api/groups/<int:group_id>/invitations', methods=['GET'])
 def get_group_invitation_endpoint(group_id):
