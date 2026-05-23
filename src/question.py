@@ -59,12 +59,21 @@ def check_date(question_or_vote: QuestionModel | QuestionVote, group: GroupModel
 
     now = datetime.datetime.now(datetime.timezone.utc)
     reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
+    
+    item_date = question_or_vote.date
+    if item_date.tzinfo is None:
+        item_date = item_date.replace(tzinfo=datetime.timezone.utc)
 
     if now < reset_time:
-        log(f"Current time {now} is before reset time {reset_time}, checking against yesterday's date", level="DEBUG")
-        return question_or_vote.date.date() == (now.date() - datetime.timedelta(days=1))
-    log(f"Current time {now} is after reset time {reset_time}, checking against today's date", level="DEBUG")
-    return question_or_vote.date.date() == now.date()
+        start_time = reset_time - datetime.timedelta(days=1)
+        end_time = reset_time
+        log(f"Current time {now} is before reset time {reset_time}, checking window {start_time} - {end_time}", level="DEBUG")
+    else:
+        start_time = reset_time
+        end_time = reset_time + datetime.timedelta(days=1)
+        log(f"Current time {now} is after reset time {reset_time}, checking window {start_time} - {end_time}", level="DEBUG")
+
+    return start_time <= item_date < end_time
     
 def does_exist_question_today(group: GroupModel) -> bool:
     question = group.questions.order_by(QuestionModel.date.desc()).first()
