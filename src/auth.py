@@ -1,8 +1,13 @@
+import os
+
 from flask import Request, request, session
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import UserModel
 from lite_logging.lite_logging import log
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+import secrets
 
 from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
@@ -54,6 +59,57 @@ def delete_user(user_info: str | int) -> tuple[dict, int]:
 
     return {"success": True, "message": "User deleted successfully", "content": build_user_response(user)}, 200
 
+def google_login_handler(request: Request) -> tuple[dict, int]:
+    secrets_path = os.path.join(os.path.dirname(__file__), '.google.secrets')
+    GOOGLE_CLIENT_ID = None
+    if os.path.exists(secrets_path):
+        log("Found .google.secrets file, loading secret key from it.", level="DEBUG")
+        with open(secrets_path, 'r') as f:
+            for line in f:
+                if line.startswith('GOOGLE_CLIENT_ID='):
+                    GOOGLE_CLIENT_ID = line.strip().split('=', 1)[1]
+                    break
+    else:
+        log("GOOGLE_CLIENT_ID not found in .google.secrets file.", level="ERROR")
+        return {"success": False, "message": "Server configuration error."}, 500
+                
+    token = request.json.get('token')
+    if not token:
+        return {"success": False, "message": "Token is required"}, 400
+
+    try:
+        # Verify the token against Google's servers
+        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+        
+        email = idinfo['email']
+        # Fallback to the prefix of their email if 'name' isn't available
+        username = idinfo.get('name', email.split('@')[0])
+        
+        # Check if the user already exists in your database
+        user = UserModel.query.filter_by(email=email).first()
+        
+        if not user:
+            # If the user doesn't exist, create an account automatically.
+            # Generate a random secure password for OAuth-only users.
+            random_password = secrets.token_urlsafe(32)
+            user = UserModel(
+                email=email, 
+                username=username, 
+                password=generate_password_hash(random_password, method='pbkdf2:sha256')
+            )
+            result = add_to_db(user)
+            if result.get("error"):
+                return result, 500
+
+        # Log the user in
+        session.permanent = True
+        login_user(user, remember=True)
+        return {'success': True, 'message': 'Google Login successful.', 'content': build_user_response(user)}, 200
+
+    except ValueError:
+        # Invalid token
+        log("Invalid Google token received.", level="ERROR")
+        return {"success": False, "message": "Invalid token."}, 401
 
 def login(request: Request) -> tuple[dict, int]:
     """Login the user.

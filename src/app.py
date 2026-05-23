@@ -9,7 +9,7 @@ from db import db
 import os
 from lite_logging.lite_logging import log
 
-from auth import create_user, get_user, login, logout, update_user, delete_user
+from auth import create_user, get_user, google_login_handler, login, logout, update_user, delete_user
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -22,9 +22,9 @@ def get_secret_key(length: int = 32) -> str:
     :return: A random secret key.
     :rtype: str
     """
-    secrets_path = os.path.join(os.path.dirname(__file__), '.secrets')
+    secrets_path = os.path.join(os.path.dirname(__file__), '.auth.secrets')
     if os.path.exists(secrets_path):
-        log("Found .secrets file, loading secret key from it.", level="DEBUG")
+        log("Found .auth.secrets file, loading secret key from it.", level="DEBUG")
         with open(secrets_path, 'r') as f:
             for line in f:
                 if line.startswith('SECRET_KEY='):
@@ -74,7 +74,7 @@ def create_app():
         if request.method == 'OPTIONS':
             return
             
-        ignore_routes = ['/api/login/', '/api/register/']
+        ignore_routes = ['/api/login/', '/api/register/', '/api/auth/google/']
         log(f"Request path: {request.path}, method: {request.method}", level="DEBUG")
         if request.path in ignore_routes and request.method == 'POST':
             return
@@ -110,6 +110,11 @@ def get_user_endpoint():
 def login_endpoint():
     log("Login request received with data: " + str(request.json), level="DEBUG")
     return login(request)
+
+@app.route('/api/auth/google/', methods=['POST'])
+def google_login_endpoint():
+    log("Google login request received", level="DEBUG")
+    return google_login_handler(request)
 
 @app.route('/api/logout/', methods=['POST'])
 def logout_endpoint():
