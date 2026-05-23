@@ -216,4 +216,4 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
-    return {"success": True, "message": "Vote recorded successfully"}, 200
+    return {"success": True, "message": "Vote recorded successfully", "content": extract_votes_info(question)}, 200
