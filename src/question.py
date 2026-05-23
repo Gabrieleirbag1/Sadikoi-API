@@ -105,9 +105,9 @@ def extract_votes_info(question: QuestionModel):
     votes_data = []
     for vote in votes:
         vote_info = {
-            "voterUser": vote.voter.username,
+            "voterUser": build_user_response(vote.voterUser),
             "writtenAnswer": vote.written_answer,
-            "targets": [target.votedUser.username for target in vote.targets]
+            "targets": [build_user_response(target.votedUser) for target in vote.targets]
         }
         votes_data.append(vote_info)
     return votes_data

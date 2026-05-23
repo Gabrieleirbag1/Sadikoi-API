@@ -1,7 +1,6 @@
 from flask_login import UserMixin
 from db import db
 from sqlalchemy.orm import validates
-from sqlalchemy import CheckConstraint
 from exceptions import ValueTooLongException, UppercaseException
 
 class GroupUser(db.Model):
@@ -24,7 +23,7 @@ class UserModel(UserMixin, db.Model):
     date_created = db.Column(db.DateTime, server_default=db.func.now())
     question_votes_cast = db.relationship(
         'QuestionVote',
-        back_populates='voter',
+        back_populates='voterUser',
         foreign_keys='QuestionVote.voterUser_id',
         lazy='dynamic',
     )
@@ -169,6 +168,6 @@ class QuestionVote(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     written_answer = db.Column(db.String(500))
 
-    voter = db.relationship('UserModel', foreign_keys=[voterUser_id], back_populates='question_votes_cast')
+    voterUser = db.relationship('UserModel', foreign_keys=[voterUser_id], back_populates='question_votes_cast')
     question = db.relationship('QuestionModel', back_populates='votes')
     targets = db.relationship('QuestionVoteTarget', back_populates='vote', lazy='dynamic')
