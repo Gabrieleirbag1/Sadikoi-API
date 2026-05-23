@@ -46,6 +46,9 @@ def configure_app(db_name: str) -> None:
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_name}.db'
     app.secret_key = get_secret_key()
 
+    app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+    app.config['SESSION_COOKIE_SECURE'] = True
+
 def create_app():
     """Create the Flask app and initialize the database and login manager."""
     db.init_app(app)
@@ -71,7 +74,7 @@ def create_app():
         if request.method == 'OPTIONS':
             return
             
-        ignore_routes = ['/api/login', '/api/register']
+        ignore_routes = ['/api/login/', '/api/register/']
         log(f"Request path: {request.path}, method: {request.method}", level="DEBUG")
         if request.path in ignore_routes and request.method == 'POST':
             return
@@ -85,7 +88,7 @@ def create_app():
 
 #### REGISTER ENDPOINTS ####
 
-@app.route('/api/register', methods=['POST'])
+@app.route('/api/register/', methods=['POST'])
 def create_user_endpoint():
     return create_user(request)
 
@@ -103,12 +106,12 @@ def get_user_endpoint():
 
 ### LOGIN ENDPOINTS ###
 
-@app.route('/api/login', methods=['POST'])
+@app.route('/api/login/', methods=['POST'])
 def login_endpoint():
     log("Login request received with data: " + str(request.json), level="DEBUG")
     return login(request)
 
-@app.route('/api/logout', methods=['POST'])
+@app.route('/api/logout/', methods=['POST'])
 def logout_endpoint():
     return logout()
 
@@ -117,7 +120,7 @@ def logout_endpoint():
 
 ### GROUP ENDPOINTS ###
 
-@app.route('/api/groups', methods=['POST'])
+@app.route('/api/groups/', methods=['POST'])
 def create_group_endpoint():
     return create_group(request)
 
@@ -137,7 +140,7 @@ def delete_group_endpoint(group_id):
 def get_user_groups_endpoint():
     return get_user_groups()
 
-@app.route('/api/groups/<int:group_id>/invitations', methods=['GET'])
+@app.route('/api/groups/<int:group_id>/invitations/', methods=['GET'])
 def get_group_invitation_endpoint(group_id):
     return get_group_invitation(group_id)
 
@@ -151,22 +154,22 @@ def remove_user_from_group_endpoint(group_id, user_info):
 
 ## CHAT ENDPOINTS ###
 
-@app.route('/api/groups/<int:group_id>/messages', methods=['GET'])
+@app.route('/api/groups/<int:group_id>/messages/', methods=['GET'])
 def get_messages_endpoint(group_id):
     return get_messages(group_id)
 
-@app.route('/api/groups/<int:group_id>/messages', methods=['POST'])
+@app.route('/api/groups/<int:group_id>/messages/', methods=['POST'])
 def send_message_endpoint(group_id):
     return send_message(group_id, request)
 
 
 ############## QUESTIONS ENDPOINTS ##############
 
-@app.route('/api/questions/<int:group_id>', methods=['GET'])
+@app.route('/api/questions/<int:group_id>/', methods=['GET'])
 def get_questions_endpoint(group_id):
     return get_question(group_id)
 
-@app.route('/api/questions/<int:group_id>/vote', methods=['POST'])
+@app.route('/api/questions/<int:group_id>/vote/', methods=['POST'])
 def vote_question_endpoint(group_id):
     return vote_question(group_id, request)
 
