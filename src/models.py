@@ -88,7 +88,7 @@ class GroupModel(db.Model):
     __tablename__ = 'groups'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
+    name = db.Column(db.String(80))
     description = db.Column(db.String(200), server_default="")
     date_created = db.Column(db.DateTime, server_default=db.func.now())
     daily_reset_timestamp = db.Column(db.Time, server_default=db.text("'15:00:00'"))
