@@ -12,12 +12,27 @@ import secrets
 from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
 
-def create_user(request: Request) -> tuple[dict, int]:
+def register_user(request: Request) -> tuple[dict, int]:
     log("Creating user with data: " + str(request.json), level="DEBUG")
     email = request.json.get('email')
     username = request.json.get('username')
     password = request.json.get('password')
+    login = request.json.get('login', False)
 
+    result = create_user(email, username, password)
+    if not result[0].get("success"):
+        return result
+
+    if login:
+        result = login_user_with_session(result[0].get("content"), remember=True)
+        if not result[0].get("success"):
+            return {"success": False, "message": "User created but could not log in user"}, 500
+        return {"success": True, "message": "User created and logged in successfully", "content": result[0].get("content")}, 201
+    else:
+        result[0]["content"] = build_user_response(result[0].get("content"))
+        return result
+
+def create_user(email: str, username: str, password: str) -> tuple[dict, int]:
     if not email or not username or not password:
         return {"success": False, "message": "Email, username, and password are required"}, 400
 
@@ -27,7 +42,7 @@ def create_user(request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     
-    return {"success": True, "message": "User created successfully", "content": build_user_response(user)}, 201
+    return {"success": True, "message": "User created successfully", "content": user}, 201
 
 def update_user(user_info: str | int, request: Request) -> tuple[dict, int]:
     user: UserModel | None = get_user_object(user_info)
@@ -78,33 +93,23 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         return {"success": False, "message": "Token is required"}, 400
 
     try:
-        # Verify the token against Google's servers
         idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
         
         email = idinfo['email']
-        # Fallback to the prefix of their email if 'name' isn't available
         username = idinfo.get('name', email.split('@')[0])
         
-        # Check if the user already exists in your database
         user = UserModel.query.filter_by(email=email).first()
         
         if not user:
-            # If the user doesn't exist, create an account automatically.
-            # Generate a random secure password for OAuth-only users.
             random_password = secrets.token_urlsafe(32)
-            user = UserModel(
-                email=email, 
-                username=username, 
-                password=generate_password_hash(random_password, method='pbkdf2:sha256')
-            )
-            result = add_to_db(user)
-            if result.get("error"):
-                return result, 500
-
-        # Log the user in
-        session.permanent = True
-        login_user(user, remember=True)
-        return {'success': True, 'message': 'Google Login successful.', 'content': build_user_response(user)}, 200
+            result = create_user(email, username, random_password)
+            if not result[0].get("success"):
+                return result
+        
+        result = login_user_with_session(result[0].get("content"), remember=True)
+        if not result[0].get("success"):
+            return result
+        return {"success": True, "message": "Login with Google successful", "content": result[0].get("content")}, 200
 
     except ValueError:
         # Invalid token
@@ -130,14 +135,20 @@ def login(request: Request) -> tuple[dict, int]:
         if not user:
             user: UserModel = UserModel.query.filter_by(username=username_or_email).first()
         if user and check_password_hash(user.password, password):
-            # Make session permanent for remembered users
-            if remember:
-                session.permanent = True
-            login_user(user, remember=remember)
-            return {'success': True, 'message': 'Login successful.', 'content': build_user_response(user)}, 200
+            return login_user_with_session(user, remember)
         else:
             return {'success': False, 'message': 'Invalid email or password.'}, 401
         
+def login_user_with_session(user: UserModel, remember: bool = False) -> tuple[dict, int]:
+    """Login the user and set the session to permanent if remember is True."""
+    if remember:
+        session.permanent = True
+    result = login_user(user, remember=remember)
+    if not result:
+        log("Failed to log in user: " + str(user), level="ERROR")
+        return {'success': False, 'message': 'Login failed due to server error.'}, 500
+    return {'success': True, 'message': 'Login successful.', 'content': build_user_response(user)}, 200
+
 def logout() -> tuple[dict, int]:
     logout_user()
     return {"success": True, "message": "Logout successful."}, 200
