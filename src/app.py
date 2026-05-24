@@ -9,7 +9,7 @@ from db import db
 import os
 from lite_logging.lite_logging import log
 
-from auth import create_user, get_user, google_login_handler, login, logout, update_user, delete_user
+from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -74,7 +74,7 @@ def create_app():
         if request.method == 'OPTIONS':
             return
             
-        ignore_routes = ['/api/login/', '/api/register/', '/api/auth/google/']
+        ignore_routes = ['/api/auth/login/', '/api/auth/register/', '/api/auth/google/']
         log(f"Request path: {request.path}, method: {request.method}", level="DEBUG")
         if request.path in ignore_routes and request.method == 'POST':
             return
@@ -88,25 +88,25 @@ def create_app():
 
 #### REGISTER ENDPOINTS ####
 
-@app.route('/api/register/', methods=['POST'])
+@app.route('/api/auth/register/', methods=['POST'])
 def create_user_endpoint():
-    return create_user(request)
+    return register_user(request)
 
-@app.route('/api/register/<user_info>/', methods=['PUT'])
+@app.route('/api/auth/register/<user_info>/', methods=['PUT'])
 def update_user_endpoint(user_info):
     return update_user(user_info, request)
 
-@app.route('/api/register/<user_info>/', methods=['DELETE'])
+@app.route('/api/auth/register/<user_info>/', methods=['DELETE'])
 def delete_user_endpoint(user_info):
     return delete_user(user_info)
 
-@app.route('/api/account/', methods=['GET'])
+@app.route('/api/auth/account/', methods=['GET'])
 def get_user_endpoint():
     return get_user()
 
 ### LOGIN ENDPOINTS ###
 
-@app.route('/api/login/', methods=['POST'])
+@app.route('/api/auth/login/', methods=['POST'])
 def login_endpoint():
     log("Login request received with data: " + str(request.json), level="DEBUG")
     return login(request)
@@ -116,7 +116,7 @@ def google_login_endpoint():
     log("Google login request received", level="DEBUG")
     return google_login_handler(request)
 
-@app.route('/api/logout/', methods=['POST'])
+@app.route('/api/auth/logout/', methods=['POST'])
 def logout_endpoint():
     return logout()
 
