@@ -1,7 +1,7 @@
 from flask_login import UserMixin
 from db import db
 from sqlalchemy.orm import validates
-from exceptions import ValueTooLongException, UppercaseException
+from exceptions import ValueTooLongException
 
 class GroupUser(db.Model):
     """Association table for users and groups."""
@@ -64,9 +64,6 @@ class UserModel(UserMixin, db.Model):
         """
         if len(username) > 40:
             raise ValueTooLongException("Username must be 40 characters or less")
-        for char in username:
-            if char.isupper():
-                raise UppercaseException("Username must be lowercase")
         return username
 
     def __repr__(self) -> str:
@@ -91,7 +88,7 @@ class GroupModel(db.Model):
     __tablename__ = 'groups'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
+    name = db.Column(db.String(80))
     description = db.Column(db.String(200), server_default="")
     date_created = db.Column(db.DateTime, server_default=db.func.now())
     daily_reset_timestamp = db.Column(db.Time, server_default=db.text("'15:00:00'"))
