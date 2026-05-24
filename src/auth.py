@@ -11,6 +11,7 @@ import secrets
 
 from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
+from config import GOOGLE_CLIENT_ID
 
 def register_user(request: Request) -> tuple[dict, int]:
     log("Creating user with data: " + str(request.json), level="DEBUG")
@@ -75,16 +76,7 @@ def delete_user(user_info: str | int) -> tuple[dict, int]:
     return {"success": True, "message": "User deleted successfully", "content": build_user_response(user)}, 200
 
 def google_login_handler(request: Request) -> tuple[dict, int]:
-    secrets_path = os.path.join(os.path.dirname(__file__), '.google.secrets')
-    GOOGLE_CLIENT_ID = None
-    if os.path.exists(secrets_path):
-        log("Found .google.secrets file, loading secret key from it.", level="DEBUG")
-        with open(secrets_path, 'r') as f:
-            for line in f:
-                if line.startswith('GOOGLE_CLIENT_ID='):
-                    GOOGLE_CLIENT_ID = line.strip().split('=', 1)[1]
-                    break
-    else:
+    if not GOOGLE_CLIENT_ID:
         log("GOOGLE_CLIENT_ID not found in .google.secrets file.", level="ERROR")
         return {"success": False, "message": "Server configuration error."}, 500
                 

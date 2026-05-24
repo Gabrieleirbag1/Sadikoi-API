@@ -10,31 +10,10 @@ import os
 from lite_logging.lite_logging import log
 
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user
+from config import SECRET_KEY
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
-
-def get_secret_key(length: int = 32) -> str:
-    """Generate a random secret key of the specified length.
-    
-    :param int length: The length of the secret key. Default is 32.
-
-    :return: A random secret key.
-    :rtype: str
-    """
-    secrets_path = os.path.join(os.path.dirname(__file__), '.auth.secrets')
-    if os.path.exists(secrets_path):
-        log("Found .auth.secrets file, loading secret key from it.", level="DEBUG")
-        with open(secrets_path, 'r') as f:
-            for line in f:
-                if line.startswith('SECRET_KEY='):
-                    return line.strip().split('=', 1)[1]
-    
-    secret_key = os.urandom(length).hex()
-    log("Generated new secret key.", level="DEBUG")
-    with open(secrets_path, 'w') as f:
-        f.write(f'SECRET_KEY={secret_key}')
-    return secret_key
 
 def configure_app(db_name: str) -> None:
     """Configure the Flask app with the given database name.
@@ -44,7 +23,7 @@ def configure_app(db_name: str) -> None:
     :return: None
     """
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_name}.db'
-    app.secret_key = get_secret_key()
+    app.secret_key = SECRET_KEY
 
     app.config['SESSION_COOKIE_SAMESITE'] = 'None'
     app.config['SESSION_COOKIE_SECURE'] = True
