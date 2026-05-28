@@ -5,6 +5,7 @@ def build_user_response(user: UserModel) -> dict:
         "id": user.id,
         "email": user.email,
         "username": user.username,
+        "profile_picture": user.profile_picture,
         "date_created": user.date_created
     }
 

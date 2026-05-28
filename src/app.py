@@ -59,6 +59,8 @@ def create_app():
         log(f"Request path: {request.path}, method: {request.method}", level="DEBUG")
         if request.path in ignore_routes and request.method == 'POST':
             return
+        if request.path.startswith('/api/auth/profile-picture/'):
+            return
             
         from flask_login import current_user
         if not current_user.is_authenticated:
@@ -84,6 +86,10 @@ def delete_user_endpoint(user_info):
 @app.route('/api/auth/account/', methods=['GET'])
 def get_user_endpoint():
     return get_user()
+
+@app.route('/api/auth/profile-picture/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 ### LOGIN ENDPOINTS ###
 
