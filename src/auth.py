@@ -1,8 +1,10 @@
 import os
+import uuid
 
-from flask import Request, request, session
+from flask import Request, request, session, current_app
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from models import UserModel
 from lite_logging.lite_logging import log
 from google.oauth2 import id_token
@@ -13,14 +15,37 @@ from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
 from config import GOOGLE_CLIENT_ID
 
-def register_user(request: Request) -> tuple[dict, int]:
-    log("Creating user with data: " + str(request.json), level="DEBUG")
-    email = request.json.get('email')
-    username = request.json.get('username')
-    password = request.json.get('password')
-    login = request.json.get('login', False)
+def save_profile_picture(file) -> str | None:
+    if file and file.filename:
+        filename = secure_filename(file.filename)
+        ext = os.path.splitext(filename)[1]
+        unique_filename = f"{uuid.uuid4().hex}{ext}"
+        
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder, exist_ok=True)
+            
+        file_path = os.path.join(upload_folder, unique_filename)
+        file.save(file_path)
+        
+        return unique_filename
+    return None
 
-    result = create_user(email, username, password)
+def register_user(request: Request) -> tuple[dict, int]:
+    data = request.json if request.is_json else request.form
+    log("Creating user with data: " + str(data), level="DEBUG")
+    email = data.get('email')
+    username = data.get('username')
+    password = data.get('password')
+    
+    profile_picture = None
+    if 'profile_picture' in request.files:
+        profile_picture = save_profile_picture(request.files['profile_picture'])
+        
+    login_val = data.get('login', False)
+    login = str(login_val).lower() in ['true', '1', 'yes']
+
+    result = create_user(email, username, password, profile_picture)
     if not result[0].get("success"):
         return result
 
@@ -33,11 +58,11 @@ def register_user(request: Request) -> tuple[dict, int]:
         result[0]["content"] = build_user_response(result[0].get("content"))
         return result
 
-def create_user(email: str, username: str, password: str) -> tuple[dict, int]:
+def create_user(email: str, username: str, password: str, profile_picture: str | None = None) -> tuple[dict, int]:
     if not email or not username or not password:
         return {"success": False, "message": "Email, username, and password are required"}, 400
 
-    user = UserModel(email=email, username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
+    user = UserModel(email=email, username=username, password=generate_password_hash(password, method='pbkdf2:sha256'), profile_picture=profile_picture)
 
     result = add_to_db(user)
     if result.get("error"):
@@ -50,13 +75,18 @@ def update_user(user_info: str | int, request: Request) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
-    data = request.json
+    data = request.json if request.is_json else request.form
     user.email = data.get('email', user.email)
     user.username = data.get('username', user.username)
     
     # Only update password if provided
     if 'password' in data:
         user.password = generate_password_hash(data['password'], method='pbkdf2:sha256')
+
+    if 'profile_picture' in request.files:
+        new_pic = save_profile_picture(request.files['profile_picture'])
+        if new_pic:
+            user.profile_picture = new_pic
 
     result = update_from_db()
     if result.get("error"):
@@ -89,19 +119,26 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         
         email = idinfo['email']
         username = idinfo.get('name', email.split('@')[0])
+        picture = idinfo.get('picture')
         
         user = UserModel.query.filter_by(email=email).first()
         
         if not user:
             random_password = secrets.token_urlsafe(32)
-            result = create_user(email, username, random_password)
+            result = create_user(email, username, random_password, profile_picture=picture)
             if not result[0].get("success"):
                 return result
+            user_to_login = result[0].get("content")
+        else:
+            if picture and not user.profile_picture:
+                user.profile_picture = picture
+                update_from_db()
+            user_to_login = user
         
-        result = login_user_with_session(result[0].get("content"), remember=True)
-        if not result[0].get("success"):
-            return result
-        return {"success": True, "message": "Login with Google successful", "content": result[0].get("content")}, 200
+        login_result = login_user_with_session(user_to_login, remember=True)
+        if not login_result[0].get("success"):
+            return login_result
+        return {"success": True, "message": "Login with Google successful", "content": login_result[0].get("content")}, 200
 
     except ValueError:
         # Invalid token

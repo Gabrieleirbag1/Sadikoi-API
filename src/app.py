@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from flask_login import LoginManager
 from models import UserModel
@@ -13,6 +13,8 @@ from auth import register_user, get_user, google_login_handler, login, logout, u
 from config import SECRET_KEY
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 CORS(app, supports_credentials=True)
 
 def configure_app(db_name: str) -> None:
