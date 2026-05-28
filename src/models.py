@@ -20,6 +20,7 @@ class UserModel(UserMixin, db.Model):
     email = db.Column(db.String(80), unique=True)
     username = db.Column(db.String(40), unique=True)
     password = db.Column(db.String(80))
+    profile_picture = db.Column(db.String(200), nullable=True)
     date_created = db.Column(db.DateTime, server_default=db.func.now())
     question_votes_cast = db.relationship(
         'QuestionVote',
