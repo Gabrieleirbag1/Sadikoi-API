@@ -1,11 +1,12 @@
 import os
 import uuid
 
-from flask import Request, request, session, current_app
+from flask import Request, session, current_app
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from models import UserModel
+from utils import allowed_file
 from lite_logging.lite_logging import log
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -16,7 +17,7 @@ from builder import build_user_response
 from config import GOOGLE_CLIENT_ID
 
 def save_profile_picture(file) -> str | None:
-    if file and file.filename:
+    if file and file.filename and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         ext = os.path.splitext(filename)[1]
         unique_filename = f"{uuid.uuid4().hex}{ext}"
