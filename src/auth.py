@@ -5,13 +5,13 @@ from flask import Request, session, current_app
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-from models import UserModel
-from utils import allowed_file
 from lite_logging.lite_logging import log
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import secrets
 
+from models import UserModel
+from utils import allowed_file
 from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
 from config import GOOGLE_CLIENT_ID
