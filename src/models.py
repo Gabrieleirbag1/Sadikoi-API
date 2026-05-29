@@ -1,6 +1,7 @@
 from flask_login import UserMixin
 from db import db
 from sqlalchemy.orm import validates
+import uuid
 from exceptions import ValueTooLongException
 
 class GroupUser(db.Model):
@@ -16,7 +17,7 @@ class UserModel(UserMixin, db.Model):
     """User model for the database."""
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().int % (10 ** 14))
     email = db.Column(db.String(80), unique=True)
     username = db.Column(db.String(40), unique=True)
     password = db.Column(db.String(80))
