@@ -38,6 +38,10 @@ def register_user(request: Request) -> tuple[dict, int]:
     email = data.get('email')
     username = data.get('username')
     password = data.get('password')
+    confirm_password = data.get('confirm_password')
+
+    if password != confirm_password:
+        return {"success": False, "message": "Passwords do not match"}, 400
     
     profile_picture = None
     if 'profile_picture' in request.files:
@@ -71,14 +75,17 @@ def create_user(email: str, username: str, password: str, profile_picture: str |
     
     return {"success": True, "message": "User created successfully", "content": user}, 201
 
-def update_user(user_info: str | int, request: Request) -> tuple[dict, int]:
-    user: UserModel | None = get_user_object(user_info)
+def update_user(request: Request) -> tuple[dict, int]:
+    user: UserModel | None = get_user_object(current_user.id)
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
     data = request.json if request.is_json else request.form
     user.email = data.get('email', user.email)
     user.username = data.get('username', user.username)
+    confirm_password = data.get('confirm_password')
+    if 'password' in data and data['password'] != confirm_password:
+        return {"success": False, "message": "Passwords do not match"}, 400
     
     # Only update password if provided
     if 'password' in data:
@@ -95,8 +102,8 @@ def update_user(user_info: str | int, request: Request) -> tuple[dict, int]:
     
     return {"success": True, "message": "User updated successfully", "content": build_user_response(user)}, 200
 
-def delete_user(user_info: str | int) -> tuple[dict, int]:
-    user: UserModel | None = get_user_object(user_info)
+def delete_user() -> tuple[dict, int]:
+    user: UserModel | None = get_user_object(current_user.id)
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
