@@ -15,7 +15,7 @@ from auth import get_user_object
 
 from builder import build_question_response, build_user_response
 
-language = "en"
+from config import ALLOWED_LANGUAGES
 
 json_path = os.path.join(os.path.dirname(__file__), 'data', 'questions.json')
 with open(json_path, 'r') as f:
@@ -86,7 +86,7 @@ def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     return user in group.users
 
-def build_question_model(question_data: dict, iteration: int, group: GroupModel) -> QuestionModel:
+def build_question_model(question_data: dict, iteration: int, group: GroupModel, language: str) -> QuestionModel:
     return QuestionModel(
         question_id=question_data['question_id'],
         content=question_data['content'][language],
@@ -117,6 +117,10 @@ def get_question(group_id: int) -> tuple[dict, int]:
     if not group:
         return {"success": False, "message": "Group not found"}, 404
     db.session.add(group)  # Ensure group is in session
+    user_info = current_user.id or current_user.username
+    user = get_user_object(user_info)
+    if not user:
+        return {"success": False, "message": "User not found"}, 404
     if does_exist_question_today(group):
         question = group.questions.order_by(QuestionModel.date.desc()).first()
         votes = None
@@ -127,7 +131,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
         question_data, iteration = chose_question(group)
         print("Chosen question:", question_data)
         if iteration is None:
-            question = build_question_model(question_data, 1, group)
+            question = build_question_model(question_data, 1, group, user.language if user.language in ALLOWED_LANGUAGES else 'en')
             result = add_to_db(question)
         else:
             existing_question = group.questions.filter_by(question_id=question_data['question_id']).first()
