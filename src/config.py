@@ -34,3 +34,10 @@ GOOGLE_CLIENT_ID = load_secret_var('GOOGLE_CLIENT_ID', google_secrets_path)
 
 if not GOOGLE_CLIENT_ID:
     log("GOOGLE_CLIENT_ID not found in .google.secrets file.", level="ERROR")
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_LANGUAGES = {'en', 'fr'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

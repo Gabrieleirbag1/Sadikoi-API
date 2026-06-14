@@ -11,7 +11,7 @@ from google.auth.transport import requests as google_requests
 import secrets
 
 from models import UserModel
-from utils import allowed_file
+from config import allowed_file
 from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
 from config import GOOGLE_CLIENT_ID
