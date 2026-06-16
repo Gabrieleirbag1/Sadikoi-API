@@ -15,7 +15,8 @@ def build_group_response(group: GroupModel) -> dict:
         "name": group.name,
         "description": group.description,
         "users": [build_user_response(user) for user in group.users],
-        "date_created": group.date_created
+        "date_created": group.date_created,
+        "daily_reset_timestamp": group.daily_reset_timestamp.strftime("%H:%M")
     }
 
 def build_groups_response(groups: list[GroupModel]) -> list[dict]:
