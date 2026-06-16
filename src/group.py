@@ -96,31 +96,43 @@ def add_user_to_group(group_id: int, user_info: str) -> tuple[dict, int]:
     
     return {"success": True, "message": "User added to group successfully", "content": build_group_response(group)}, 200
 
-def remove_user_from_group(group_id: int, user_info: str) -> tuple[dict, int]:
+def remove_user_from_group(group_id: int, user_to_remove_info: str) -> tuple[dict, int]:
+    user_info = current_user.id or current_user.username
+    if not user_info:
+        return {"success": False, "message": "User info is required to remove a user from a group"}, 400
+    
     group = GroupModel.query.get(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
 
-    user: UserModel | None = get_user_object(user_info)
-    if not user:
+    user_to_remove: UserModel | None = get_user_object(user_to_remove_info)
+    if not user_to_remove:
         return {"success": False, "message": "User not found"}, 404
 
-    group_user = GroupUser.query.filter_by(user_id=user.id, group_id=group_id).first()
+    group_user = GroupUser.query.filter_by(user_id=current_user.id, group_id=group_id).first()
     if not group_user:
         return {"success": False, "message": "User is not in the group"}, 400
+    
+    group_user_to_remove = GroupUser.query.filter_by(user_id=user_to_remove.id, group_id=group_id).first()
+    if not group_user_to_remove:
+        return {"success": False, "message": "User is not in the group"}, 400
 
-    if group_user.role == 'admin':
+    if group_user.role != 'admin' and current_user.id != user_to_remove.id:
+        return {"success": False, "message": "Only admins can remove other users from the group"}, 403
+    
+    if group_user_to_remove.role == 'admin':
         # Find another user to make admin
-        other_user = GroupUser.query.filter_by(group_id=group_id).filter(GroupUser.user_id != user.id).first()
+        other_user = GroupUser.query.filter_by(group_id=group_id).filter(GroupUser.user_id != user_to_remove.id).first()
         if other_user:
             other_user.role = 'admin'
-            update_from_db()
         else:
             return {"success": False, "message": "Cannot remove the only admin from the group"}, 400
 
-    result = delete_from_db(group_user)
+    result = delete_from_db(group_user_to_remove)
     if result.get("error"):
         return result, 500
+    
+    update_from_db()
     
     return {"success": True, "message": "User removed from group successfully", "content": build_group_response(group)}, 200
 
