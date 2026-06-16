@@ -16,20 +16,54 @@ from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
 from config import GOOGLE_CLIENT_ID
 
-def save_profile_picture(file) -> str | None:
-    if file and file.filename and allowed_file(file.filename):
+import requests
+from werkzeug.utils import secure_filename
+from flask import current_app
+
+def save_profile_picture(file, external=False) -> str | None:
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder, exist_ok=True)
+
+    if external and isinstance(file, str):
+        try:
+            response = requests.get(file)
+            if response.status_code == 200:
+                # Google picture URLs often lack a file extension, so we guess from headers
+                content_type = response.headers.get('content-type', '')
+                if content_type == 'image/png':
+                    ext = '.png'
+                elif content_type == 'image/webp':
+                    ext = '.webp'
+                elif content_type == 'image/gif':
+                    ext = '.gif'
+                else:
+                    ext = '.jpg' # safe fallback for Google avatars (which are usually JPEGs)
+                
+                unique_filename = f"{uuid.uuid4().hex}{ext}"
+                file_path = os.path.join(upload_folder, unique_filename)
+                
+                with open(file_path, 'wb') as f:
+                    f.write(response.content)
+                    
+                return unique_filename
+        except Exception as e:
+            log(f"Failed to download external image: {e}", level="ERROR")
+            return None
+            
+        return None
+
+    elif file and getattr(file, 'filename', None) and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         ext = os.path.splitext(filename)[1]
         unique_filename = f"{uuid.uuid4().hex}{ext}"
         
-        upload_folder = current_app.config['UPLOAD_FOLDER']
-        if not os.path.exists(upload_folder):
-            os.makedirs(upload_folder, exist_ok=True)
-            
         file_path = os.path.join(upload_folder, unique_filename)
         file.save(file_path)
         
         return unique_filename
+        
     return None
 
 def register_user(request: Request) -> tuple[dict, int]:
@@ -127,19 +161,22 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         
         email = idinfo['email']
         username = idinfo.get('name', email.split('@')[0])
-        picture = idinfo.get('picture')
+        google_picture = idinfo.get('picture')
         
         user = UserModel.query.filter_by(email=email).first()
         
         if not user:
             random_password = secrets.token_urlsafe(32)
-            result = create_user(email, username, random_password, profile_picture=picture)
+            profile_picture = None
+            if google_picture:
+                profile_picture = save_profile_picture(google_picture, external=True)
+            result = create_user(email, username, random_password, profile_picture)
             if not result[0].get("success"):
                 return result
             user_to_login = result[0].get("content")
         else:
-            if picture and not user.profile_picture:
-                user.profile_picture = picture
+            if google_picture and not user.profile_picture:
+                user.profile_picture = google_picture
                 update_from_db()
             user_to_login = user
         
