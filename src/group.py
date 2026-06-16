@@ -49,6 +49,7 @@ def update_group(group_id: int) -> tuple[dict, int]:
     data = request.json
     group.name = data.get('name', group.name)
     group.description = data.get('description', group.description)
+    group.daily_reset_timestamp = datetime.datetime.strptime(data.get('daily_reset_timestamp', group.daily_reset_timestamp), "%H:%M").time()
 
     result = update_from_db()
     if result.get("error"):
