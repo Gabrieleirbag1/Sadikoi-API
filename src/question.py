@@ -124,7 +124,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
     if does_exist_question_today(group):
         question = group.questions.order_by(QuestionModel.date.desc()).first()
         votes = None
-        if does_exist_vote_today(group, current_user):
+        if does_exist_vote_today(group, user):
             votes = extract_votes_info(question)
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, votes)}, 200
     else:
@@ -160,7 +160,6 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
     
-    group = GroupModel.query.get(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
     
