@@ -35,9 +35,16 @@ def create_group(request: Request) -> tuple[dict, int]:
     return {"success": True, "message": "Group created successfully", "content": build_group_response(group)}, 201
 
 def get_group(group_id: int) -> tuple[dict, int]:
+    user_info = current_user.id or current_user.username
+    if not user_info:
+        return {"success": False, "message": "User info is required to view a group"}, 400
+
     group = GroupModel.query.get(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
+    
+    if get_user_object(user_info) not in group.users:
+        return {"success": False, "message": "User is not a member of the group"}, 403
 
     return {"success": True, "message": "Group retrieved successfully", "content": build_group_response(group)}, 200
 
