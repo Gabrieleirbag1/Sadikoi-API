@@ -54,6 +54,9 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict :
         return chose_random_question(), None
     
 def check_date(question_or_vote: QuestionModel | QuestionVote, group: GroupModel) -> bool:
+    """Check if the question or vote is from today based on the group's daily reset time.
+    
+    Returns True if the question or vote is from today, False otherwise."""
     if not question_or_vote:
         return False
 
@@ -100,12 +103,15 @@ def build_question_model(question_data: dict, iteration: int, group: GroupModel,
         group=group
     )
 
-def extract_votes_info(question: QuestionModel):
+def extract_votes_info(question: QuestionModel, group: GroupModel):
     votes: list[QuestionVote] = question.votes.all()
     votes_data = []
     for vote in votes:
+        if not check_date(vote, group):
+            continue
         vote_info = {
             "voterUser": build_user_response(vote.voterUser),
+            "voteDate": vote.date.isoformat(),
             "writtenAnswer": vote.written_answer,
             "targets": [build_user_response(target.votedUser) for target in vote.targets]
         }
@@ -125,7 +131,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
         question = group.questions.order_by(QuestionModel.date.desc()).first()
         votes = None
         if does_exist_vote_today(group, user):
-            votes = extract_votes_info(question)
+            votes = extract_votes_info(question, group)
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, votes)}, 200
     else:
         question_data, iteration = chose_question(group)
@@ -219,4 +225,4 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
-    return {"success": True, "message": "Vote recorded successfully", "content": extract_votes_info(question)}, 200
+    return {"success": True, "message": "Vote recorded successfully", "content": extract_votes_info(question, group)}, 200
