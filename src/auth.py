@@ -238,8 +238,9 @@ def login_user_with_session(user: UserModel, remember: bool = False) -> tuple[di
 
 def logout() -> tuple[dict, int]:
     device_id = request.json.get('device_id')
-    if current_user.is_authenticated:
-        if device_id:
+    forgot_device = request.json.get('forgot_device', False)
+    if forgot_device and device_id:
+        if current_user.is_authenticated:
             user_security = UserSecurity.query.filter_by(user_id=current_user.id, device_id=device_id).first()
             if user_security:
                 user_security.authorized = False
@@ -248,9 +249,7 @@ def logout() -> tuple[dict, int]:
             else:
                 log("No security record found for device_id: " + str(device_id) + " and user: " + str(current_user.id), level="WARNING")
         else:
-            log("No device_id provided for logout request from user: " + str(current_user.id), level="WARNING")
-    else:
-        return {"success": False, "message": "No user is currently logged in."}, 400
+            return {"success": False, "message": "No user is currently logged in."}, 400
     logout_user()
     return {"success": True, "message": "Logout successful."}, 200
         
