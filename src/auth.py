@@ -16,7 +16,7 @@ from models import UserModel, UserSecurity, UserSecurity
 from config import allowed_file
 from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
-from email_sender import send_email
+from email_sender import send_auth_code_email
 from config import GOOGLE_CLIENT_ID
 
 MAX_LOGIN_ATTEMPTS = 5
@@ -78,6 +78,7 @@ def register_user(request: Request) -> tuple[dict, int]:
     confirm_password = data.get('confirm_password')
     device_id = data.get('device_id')
     device_name = data.get('device_name', 'Unknown device')
+    language = data.get('language', 'en')
 
     if password != confirm_password:
         return {"success": False, "message": "Passwords do not match"}, 400
@@ -89,7 +90,7 @@ def register_user(request: Request) -> tuple[dict, int]:
     login_val = data.get('login', False)
     login = str(login_val).lower() in ['true', '1', 'yes']
 
-    result = create_user(email, username, password, profile_picture)
+    result = create_user(email, username, password, profile_picture, language)
     if not result[0].get("success"):
         return result
 
@@ -105,11 +106,11 @@ def register_user(request: Request) -> tuple[dict, int]:
         result[0]["content"] = build_user_response(result[0].get("content"))
         return result
 
-def create_user(email: str, username: str, password: str, profile_picture: str | None = None) -> tuple[dict, int]:
+def create_user(email: str, username: str, password: str, profile_picture: str | None = None, language: str = 'en') -> tuple[dict, int]:
     if not email or not username or not password:
         return {"success": False, "message": "Email, username, and password are required"}, 400
 
-    user = UserModel(email=email, username=username, password=generate_password_hash(password, method='pbkdf2:sha256'), profile_picture=profile_picture)
+    user = UserModel(email=email, username=username, password=generate_password_hash(password, method='pbkdf2:sha256'), profile_picture=profile_picture, language=language)
 
     result = add_to_db(user)
     if result.get("error"):
@@ -126,6 +127,7 @@ def update_user(request: Request) -> tuple[dict, int]:
     user.email = data.get('email', user.email)
     user.username = data.get('username', user.username)
     confirm_password = data.get('confirm_password')
+    user.language = data.get('language', user.language)
     if 'password' in data and data['password'] != confirm_password:
         return {"success": False, "message": "Passwords do not match"}, 400
     
@@ -170,6 +172,7 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         email = idinfo['email']
         username = idinfo.get('name', email.split('@')[0])
         google_picture = idinfo.get('picture')
+        language = idinfo.get('locale', 'en')
         
         user = UserModel.query.filter_by(email=email).first()
         
@@ -178,7 +181,7 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
             profile_picture = None
             if google_picture:
                 profile_picture = save_profile_picture(google_picture, external=True)
-            result = create_user(email, username, random_password, profile_picture)
+            result = create_user(email, username, random_password, profile_picture, language)
             if not result[0].get("success"):
                 return result
             user_to_login = result[0].get("content")
@@ -303,18 +306,7 @@ def send_auth_code(user: UserModel, device: UserSecurity) -> tuple[dict, int]:
         return {"success": False, "message": "Could not generate authorization code"}, 500
 
     try:
-        send_email(
-            destinataire=user.email,
-            sujet="Code de vérification - Nouvel appareil détecté",
-            contenu=(
-                f"Bonjour {user.username},\n\n"
-                f"Une tentative de connexion a été détectée depuis un nouvel appareil "
-                f"({device.device_name}, IP: {device.ip_address}).\n\n"
-                f"Votre code de vérification est : {code}\n\n"
-                f"Ce code expire dans {AUTH_CODE_TTL_MINUTES} minutes.\n\n"
-                f"Si vous n'êtes pas à l'origine de cette tentative, changez votre mot de passe immédiatement."
-            ),
-        )
+        send_auth_code_email(user, device, code, language=user.language)
     except Exception as e:
         log(f"Failed to send auth code email: {e}", level="ERROR")
         return {"success": False, "message": "Could not send authorization email"}, 500
