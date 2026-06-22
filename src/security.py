@@ -92,6 +92,9 @@ def verify_device(request: Request) -> tuple[dict, int]:
     device = UserSecurity.query.filter_by(user_id=user.id, device_id=device_id).first()
     if not device:
         return {"success": False, "message": "Device not found"}, 404
+    
+    if device.authorized:
+        return {"success": True, "message": "Device already authorized"}, 200
 
     if device.login_attempts >= MAX_LOGIN_ATTEMPTS:
         return {"success": False, "message": "Too many failed attempts. Request a new code."}, 429
