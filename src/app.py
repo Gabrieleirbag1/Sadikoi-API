@@ -1,15 +1,16 @@
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from flask_login import LoginManager
+import os
+from lite_logging.lite_logging import log
+
 from models import UserModel
 from group import create_group, get_group, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, vote_question
 from db import db
-import os
-from lite_logging.lite_logging import log
-
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user
+from security import verify_device, list_devices, revoke_device
 from config import SECRET_KEY
 
 app = Flask(__name__)
@@ -55,7 +56,7 @@ def create_app():
         if request.method == 'OPTIONS':
             return
             
-        ignore_routes = ['/api/auth/login/', '/api/auth/register/', '/api/auth/google/']
+        ignore_routes = ['/api/auth/login/', '/api/auth/register/', '/api/auth/google/', '/api/auth/security/verify-device/']
         log(f"Request path: {request.path}, method: {request.method}", level="DEBUG")
         if request.path in ignore_routes and request.method == 'POST':
             return
@@ -107,6 +108,24 @@ def google_login_endpoint():
 def logout_endpoint():
     return logout()
 
+############## SECURITY ENDPOINTS ##############
+
+@app.route('/api/auth/security/verify-device/', methods=['POST'])
+def verify_device_endpoint():
+    return verify_device(request)
+
+@app.route('/api/auth/security/devices/', methods=['GET'])
+def list_devices_endpoint():
+    from flask_login import current_user
+    from models import UserModel
+    user = UserModel.query.get(current_user.id)
+    if not user:
+        return {"success": False, "message": "User not found"}, 404
+    return list_devices(user)
+
+@app.route('/api/auth/security/devices/', methods=['DELETE'])
+def revoke_device_endpoint():
+    return revoke_device(request)
 
 ############## USER-GROUP ENDPOINTS ##############
 

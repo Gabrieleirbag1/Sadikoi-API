@@ -11,6 +11,7 @@ from google.auth.transport import requests as google_requests
 import secrets
 
 from models import UserModel
+from security import check_device_authorization
 from config import allowed_file
 from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
@@ -191,27 +192,32 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         return {"success": False, "message": "Invalid token."}, 401
 
 def login(request: Request) -> tuple[dict, int]:
-    """Login the user.
-    
-    :param Request request: The request object.
-    
-    :return: A tuple with the status of the login and the response.
-    :rtype: tuple"""
+    """Login the user."""
     username_or_email = request.json.get('username_or_email')
     password = request.json.get('password')
     remember = True if request.json.get('remember') else False
-    log(f"Remember: {remember, username_or_email, password}", level="DEBUG")
+    device_id = request.json.get('device_id', "unknown-device")
+    device_name = request.json.get('device_name', 'Unknown device')
 
     if not (username_or_email and password):
         return {'success': False, 'message': 'Please fill in all fields.'}, 400
-    else:
-        user: UserModel = UserModel.query.filter_by(email=username_or_email).first()
-        if not user:
-            user: UserModel = UserModel.query.filter_by(username=username_or_email).first()
-        if user and check_password_hash(user.password, password):
-            return login_user_with_session(user, remember)
-        else:
-            return {'success': False, 'message': 'Invalid email or password.'}, 401
+
+    user: UserModel = UserModel.query.filter_by(email=username_or_email).first()
+    if not user:
+        user: UserModel = UserModel.query.filter_by(username=username_or_email).first()
+
+    if not (user and check_password_hash(user.password, password)):
+        return {'success': False, 'message': 'Invalid email or password.'}, 401
+
+    if not device_id:
+        return {'success': False, 'message': 'Unknown device.'}, 400
+
+    # Check device authorization (new device or stale -> requires code)
+    auth_check = check_device_authorization(user, device_id, device_name, request)
+    if auth_check is not None:
+        return auth_check  # blocks login, returns "requires_verification"
+
+    return login_user_with_session(user, remember)
         
 def login_user_with_session(user: UserModel, remember: bool = False) -> tuple[dict, int]:
     """Login the user and set the session to permanent if remember is True."""
