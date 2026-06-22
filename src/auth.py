@@ -78,7 +78,7 @@ def register_user(request: Request) -> tuple[dict, int]:
     confirm_password = data.get('confirm_password')
     device_id = data.get('device_id')
     device_name = data.get('device_name', 'Unknown device')
-    language = data.get('language', 'en')
+    language = data.get('language', 'en').split("-")[0]  # Handle cases like "en-US" or "fr-FR"
 
     if password != confirm_password:
         return {"success": False, "message": "Passwords do not match"}, 400
@@ -127,7 +127,7 @@ def update_user(request: Request) -> tuple[dict, int]:
     user.email = data.get('email', user.email)
     user.username = data.get('username', user.username)
     confirm_password = data.get('confirm_password')
-    user.language = data.get('language', user.language)
+    user.language = data.get('language', user.language).split("-")[0]  # Handle cases like "en-US" or "fr-FR"
     if 'password' in data and data['password'] != confirm_password:
         return {"success": False, "message": "Passwords do not match"}, 400
     
@@ -172,7 +172,7 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         email = idinfo['email']
         username = idinfo.get('name', email.split('@')[0])
         google_picture = idinfo.get('picture')
-        language = idinfo.get('locale', 'en')
+        language = idinfo.get('locale', 'en').split("-")[0]  # Handle cases like "en-US" or "fr-FR"
         
         user = UserModel.query.filter_by(email=email).first()
         

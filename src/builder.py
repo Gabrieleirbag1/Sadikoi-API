@@ -6,7 +6,8 @@ def build_user_response(user: UserModel) -> dict:
         "email": user.email,
         "username": user.username,
         "profile_picture": user.profile_picture,
-        "date_created": user.date_created
+        "date_created": user.date_created,
+        "language": user.language
     }
 
 def build_group_response(group: GroupModel) -> dict:
