@@ -115,12 +115,7 @@ def verify_device_endpoint():
 
 @app.route('/api/auth/security/devices/', methods=['GET'])
 def list_devices_endpoint():
-    from flask_login import current_user
-    from models import UserModel
-    user = UserModel.query.get(current_user.id)
-    if not user:
-        return {"success": False, "message": "User not found"}, 404
-    return list_devices(user)
+    return list_devices()
 
 @app.route('/api/auth/security/devices/', methods=['DELETE'])
 def revoke_device_endpoint():

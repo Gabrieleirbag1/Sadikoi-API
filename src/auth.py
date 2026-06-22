@@ -380,8 +380,11 @@ def check_device_authorization(user: UserModel, device_id: str, device_name: str
     update_from_db()
     return None
 
-def list_devices(user: UserModel) -> tuple[dict, int]:
+def list_devices() -> tuple[dict, int]:
     """List all known devices for the current user."""
+    user: UserModel | None = get_user_object(current_user.id)
+    if not user:
+        return {"success": False, "message": "User not found"}, 404
     devices = UserSecurity.query.filter_by(user_id=user.id).order_by(UserSecurity.last_login.desc()).all()
     content = [
         {
@@ -398,7 +401,7 @@ def list_devices(user: UserModel) -> tuple[dict, int]:
 
 def revoke_device(request: Request) -> tuple[dict, int]:
     """Revoke authorization for a device (or delete it), e.g. user clicks 'this wasn't me'."""
-    user: UserModel | None = UserModel.query.get(current_user.id)
+    user: UserModel | None = get_user_object(current_user.id)
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
