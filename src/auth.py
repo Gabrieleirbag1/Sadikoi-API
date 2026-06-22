@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from flask import Request, session, current_app
+from flask import Request, request, session, current_app
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -10,7 +10,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import secrets
 
-from models import UserModel
+from models import UserModel, UserSecurity, UserSecurity
 from security import check_device_authorization
 from config import allowed_file
 from db import add_to_db, delete_from_db, update_from_db
@@ -230,6 +230,20 @@ def login_user_with_session(user: UserModel, remember: bool = False) -> tuple[di
     return {'success': True, 'message': 'Login successful.', 'content': build_user_response(user)}, 200
 
 def logout() -> tuple[dict, int]:
+    device_id = request.json.get('device_id')
+    if current_user.is_authenticated:
+        if device_id:
+            user_security = UserSecurity.query.filter_by(user_id=current_user.id, device_id=device_id).first()
+            if user_security:
+                user_security.authorized = False
+                update_from_db()
+                log(f"Logged out device_id: {device_id} for user: {current_user.id}", level="INFO")
+            else:
+                log("No security record found for device_id: " + str(device_id) + " and user: " + str(current_user.id), level="WARNING")
+        else:
+            log("No device_id provided for logout request from user: " + str(current_user.id), level="WARNING")
+    else:
+        return {"success": False, "message": "No user is currently logged in."}, 400
     logout_user()
     return {"success": True, "message": "Logout successful."}, 200
         
