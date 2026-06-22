@@ -76,6 +76,8 @@ def register_user(request: Request) -> tuple[dict, int]:
     username = data.get('username')
     password = data.get('password')
     confirm_password = data.get('confirm_password')
+    device_id = data.get('device_id')
+    device_name = data.get('device_name', 'Unknown device')
 
     if password != confirm_password:
         return {"success": False, "message": "Passwords do not match"}, 400
@@ -92,10 +94,13 @@ def register_user(request: Request) -> tuple[dict, int]:
         return result
 
     if login:
-        result = login_user_with_session(result[0].get("content"), remember=True)
-        if not result[0].get("success"):
-            return {"success": False, "message": "User created but could not log in user"}, 500
-        return {"success": True, "message": "User created and logged in successfully", "content": result[0].get("content")}, 201
+        if device_id:
+            user: UserModel = result[0].get("content")
+            auth_check = check_device_authorization(user, device_id, device_name, request)
+            if auth_check is not None:
+                return auth_check  # blocks login, returns "requires_verification"
+            return login_user_with_session(user, remember=True)
+        return {"success": True, "message": "User created successfully. Could not login in user because of no device id", "content": build_user_response(result[0].get("content"))}, 201
     else:
         result[0]["content"] = build_user_response(result[0].get("content"))
         return result
@@ -352,6 +357,8 @@ def verify_device(request: Request) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
+    
+    log(f"Device {device.device_name} (ID: {device.device_id}) authorized for user {user.username}", level="INFO")
     
     return {"success": True, "message": "Device authorized successfully"}, 200
 
