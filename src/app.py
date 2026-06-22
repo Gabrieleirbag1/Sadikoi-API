@@ -115,10 +115,12 @@ def verify_device_endpoint():
 
 @app.route('/api/auth/security/devices/', methods=['GET'])
 def list_devices_endpoint():
+    return
     return list_devices()
 
 @app.route('/api/auth/security/devices/', methods=['DELETE'])
 def revoke_device_endpoint():
+    return
     return revoke_device(request)
 
 ############## USER-GROUP ENDPOINTS ##############
