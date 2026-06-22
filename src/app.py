@@ -9,8 +9,7 @@ from group import create_group, get_group, update_group, delete_group, get_user_
 from chat import get_messages, send_message
 from question import get_question, vote_question
 from db import db
-from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user
-from security import verify_device, list_devices, revoke_device
+from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, verify_device, list_devices, revoke_device
 from config import SECRET_KEY
 
 app = Flask(__name__)
