@@ -12,7 +12,7 @@ from lite_logging.lite_logging import log
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
-from models import UserModel, UserSecurity, UserSecurity
+from models import UserModel, UserSecurity
 from config import allowed_file
 from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
@@ -190,7 +190,16 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
                 user.profile_picture = google_picture
                 update_from_db()
             user_to_login = user
-        
+
+        device_id = request.json.get('device_id', "unknown-device")
+        device_name = request.json.get('device_name', 'Unknown device')
+        device, created = get_or_create_device(user_to_login, device_id, device_name, request, authorized=True)
+        if not device and not created:
+            return {"success": False, "message": "Could not retrieve or create device record"}, 500
+        result = update_device(device)
+        if result.get("error"):
+            return result, 500
+
         login_result = login_user_with_session(user_to_login, remember=True)
         if not login_result[0].get("success"):
             return login_result
@@ -241,18 +250,21 @@ def login_user_with_session(user: UserModel, remember: bool = False) -> tuple[di
 
 def logout() -> tuple[dict, int]:
     device_id = request.json.get('device_id')
-    forgot_device = request.json.get('forgot_device', False)
-    if forgot_device and device_id:
-        if current_user.is_authenticated:
-            user_security = UserSecurity.query.filter_by(user_id=current_user.id, device_id=device_id).first()
-            if user_security:
-                user_security.authorized = False
-                update_from_db()
-                log(f"Logged out device_id: {device_id} for user: {current_user.id}", level="INFO")
+    forget_device = request.json.get('forget_device', False)
+    if forget_device:
+        if device_id:
+            if current_user.is_authenticated:
+                user_security = UserSecurity.query.filter_by(user_id=current_user.id, device_id=device_id).first()
+                if user_security:
+                    user_security.authorized = False
+                    update_from_db()
+                    log(f"Logged out device_id: {device_id} for user: {current_user.id}", level="INFO")
+                else:
+                    log("No security record found for device_id: " + str(device_id) + " and user: " + str(current_user.id), level="WARNING")
             else:
-                log("No security record found for device_id: " + str(device_id) + " and user: " + str(current_user.id), level="WARNING")
+                return {"success": False, "message": "No user is currently logged in."}, 400
         else:
-            return {"success": False, "message": "No user is currently logged in."}, 400
+            log(f"Logging out user: {current_user.id} without forgetting device because no device ID was provided.", level="WARNING")
     logout_user()
     return {"success": True, "message": "Logout successful."}, 200
         
@@ -277,7 +289,7 @@ def get_client_ip(request: Request) -> str:
         return forwarded.split(',')[0].strip()
     return request.remote_addr or 'unknown'
 
-def get_or_create_device(user: UserModel, device_id: str, device_name: str, request: Request) -> tuple[UserSecurity, bool]:
+def get_or_create_device(user: UserModel, device_id: str, device_name: str, request: Request, authorized: bool = False) -> tuple[UserSecurity, bool]:
     """Get the device record for this user, creating it if it doesn't exist.
 
     :return: tuple of (UserSecurity, created) where created is True if this is a brand new device.
@@ -286,17 +298,29 @@ def get_or_create_device(user: UserModel, device_id: str, device_name: str, requ
     if device:
         return device, False
 
+    device, created = add_device(user, device_id, device_name, request, authorized=authorized)
+    return device, created
+
+def add_device(user: UserModel, device_id: str, device_name: str, request: Request, authorized: bool = False) -> tuple[UserSecurity, bool]:
     device = UserSecurity(
         user_id=user.id,
         device_id=device_id,
         device_name=device_name or 'Unknown device',
         ip_address=get_client_ip(request),
-        authorized=False,
+        authorized=authorized,
     )
     result = add_to_db(device)
     if result.get("error"):
-        log(f"Failed to create device record: {result}", level="ERROR")
+        log(f"Failed to add device: {result}", level="ERROR")
+        return None, False
     return device, True
+
+def update_device(device: UserSecurity) -> tuple[dict, int]:
+    device.authorized = True
+    device.last_login = datetime.datetime.now(datetime.timezone.utc)
+    device.clear_auth_code()
+    result = update_from_db()
+    return result
 
 def send_auth_code(user: UserModel, device: UserSecurity) -> tuple[dict, int]:
     """Generate a new auth code for the device and email it to the user."""
@@ -342,10 +366,7 @@ def verify_device(request: Request) -> tuple[dict, int]:
         remaining = MAX_LOGIN_ATTEMPTS - device.login_attempts
         return {"success": False, "message": f"Invalid or expired code. {max(remaining, 0)} attempts remaining."}, 401
 
-    device.authorized = True
-    device.last_login = datetime.datetime.now(datetime.timezone.utc)
-    device.clear_auth_code()
-    result = update_from_db()
+    result = update_device(device)
     if result.get("error"):
         return result, 500
     
@@ -358,6 +379,9 @@ def check_device_authorization(user: UserModel, device_id: str, device_name: str
     otherwise returns the (response, status_code) the caller should return immediately.
     """
     device, created = get_or_create_device(user, device_id, device_name, request)
+
+    if not device and not created:
+        return {"success": False, "message": "Could not retrieve or create device record"}, 500
 
     if device.needs_reauthorization(max_days=REAUTH_AFTER_DAYS):
         result, status = send_auth_code(user, device)
