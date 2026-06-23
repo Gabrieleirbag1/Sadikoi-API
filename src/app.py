@@ -9,7 +9,7 @@ from group import create_group, get_group, update_group, delete_group, get_user_
 from chat import get_messages, send_message
 from question import get_question, vote_question
 from db import db
-from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, verify_device, list_devices, revoke_device
+from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device
 from config import SECRET_KEY
 
 app = Flask(__name__)
@@ -120,13 +120,18 @@ def verify_device_endpoint():
 
 @app.route('/api/auth/security/devices/', methods=['GET'])
 def list_devices_endpoint():
-    return
     return list_devices()
+
+@app.route('/api/auth/security/logout-devices/', methods=['GET'])
+def logout_devices_endpoint():
+    print("Logging out all devices for the current user.")
+    return logout_sessions()
 
 @app.route('/api/auth/security/devices/', methods=['DELETE'])
 def revoke_device_endpoint():
-    return
     return revoke_device(request)
+
+
 
 ############## USER-GROUP ENDPOINTS ##############
 

@@ -293,8 +293,12 @@ def set_session_version(user: UserModel) -> tuple[dict, int]:
     log(f"Session version incremented for user {user.username} to {user.session_version}", level="INFO")
     return {"success": True, "message": "All sessions invalidated"}, 200
 
-def logout_sessions(user: UserModel) -> tuple[dict, int]:
+def logout_sessions(user: UserModel = None) -> tuple[dict, int]:
     """Log out all sessions for the given user."""
+    if user is None:
+        user = get_user_object(current_user.id)
+        if not user:
+            return {"success": False, "message": "User not found"}, 404
     return set_session_version(user)
         
 def get_user_object(user_info: str | int) -> UserModel | None:
