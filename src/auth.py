@@ -122,6 +122,8 @@ def update_user(request: Request) -> tuple[dict, int]:
     user: UserModel | None = get_user_object(current_user.id)
     if not user:
         return {"success": False, "message": "User not found"}, 404
+    
+    update_password = False
 
     data = request.json if request.is_json else request.form
     user.email = data.get('email', user.email)
@@ -134,6 +136,7 @@ def update_user(request: Request) -> tuple[dict, int]:
     # Only update password if provided
     if 'password' in data:
         user.password = generate_password_hash(data['password'], method='pbkdf2:sha256')
+        update_password = True
 
     if 'profile_picture' in request.files:
         new_pic = save_profile_picture(request.files['profile_picture'])
@@ -144,6 +147,15 @@ def update_user(request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     
+    if update_password:
+        result, status = logout_sessions(user)
+        if not result.get("success"):
+            log(f"Could not invalidate sessions: {result}", level="ERROR")
+        
+        result, status = prohibit_devices(user)  # Déauthorise tous les devices
+        if not status == 200:
+            log(f"Failed to prohibit devices: {result}", level="ERROR")
+
     return {"success": True, "message": "User updated successfully", "content": build_user_response(user)}, 200
 
 def delete_user() -> tuple[dict, int]:
@@ -242,10 +254,14 @@ def login_user_with_session(user: UserModel, remember: bool = False) -> tuple[di
     """Login the user and set the session to permanent if remember is True."""
     if remember:
         session.permanent = True
+    
     result = login_user(user, remember=remember)
     if not result:
         log("Failed to log in user: " + str(user), level="ERROR")
         return {'success': False, 'message': 'Login failed due to server error.'}, 500
+    
+    session['session_version'] = user.session_version
+    
     return {'success': True, 'message': 'Login successful.', 'content': build_user_response(user)}, 200
 
 def logout() -> tuple[dict, int]:
@@ -267,6 +283,19 @@ def logout() -> tuple[dict, int]:
             log(f"Logging out user: {current_user.id} without forgetting device because no device ID was provided.", level="WARNING")
     logout_user()
     return {"success": True, "message": "Logout successful."}, 200
+
+def set_session_version(user: UserModel) -> tuple[dict, int]:
+    """Increment the session version for a user, invalidating all existing sessions."""
+    user.session_version += 1
+    result = update_from_db()
+    if result.get("error"):
+        return result, 500
+    log(f"Session version incremented for user {user.username} to {user.session_version}", level="INFO")
+    return {"success": True, "message": "All sessions invalidated"}, 200
+
+def logout_sessions(user: UserModel) -> tuple[dict, int]:
+    """Log out all sessions for the given user."""
+    return set_session_version(user)
         
 def get_user_object(user_info: str | int) -> UserModel | None:
     """Get the user object with the given user_info."""
@@ -445,3 +474,17 @@ def revoke_device(request: Request) -> tuple[dict, int]:
         return result, 500
 
     return {"success": True, "message": "Device revoked successfully"}, 200
+
+def prohibit_devices(user: UserModel) -> tuple[dict, int]:
+    """Mark all devices for this user as unauthorized without deleting them."""
+    devices = UserSecurity.query.filter_by(user_id=user.id).all()
+    if not devices:
+        return {"success": False, "message": "No devices found for this user"}, 404
+
+    for device in devices:
+        device.authorized = False
+    result = update_from_db()
+    if result.get("error"):
+        return result, 500
+
+    return {"success": True, "message": "All devices marked as unauthorized"}, 200

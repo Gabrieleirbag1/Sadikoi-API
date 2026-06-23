@@ -1,6 +1,6 @@
-from flask import Flask, request, send_from_directory
+from flask import Flask, request, send_from_directory, session
 from flask_cors import CORS
-from flask_login import LoginManager
+from flask_login import LoginManager, logout_user
 import os
 from lite_logging.lite_logging import log
 
@@ -66,6 +66,11 @@ def create_app():
         if not current_user.is_authenticated:
             return {"success": False, "message": "Unauthorized access. Please login first."}, 401
 
+        stored_version = session.get('session_version')
+        user = UserModel.query.get(current_user.id)
+        if user and stored_version != user.session_version:
+            logout_user()
+            return {"success": False, "message": "Session invalidated. Please login again."}, 401
 
 ############## AUTH ENDPOINTS ##############
 

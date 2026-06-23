@@ -90,6 +90,8 @@ class UserModel(UserMixin, db.Model):
     profile_picture = db.Column(db.String(200), nullable=True)
     date_created = db.Column(db.DateTime, server_default=db.func.now())
     language = db.Column(db.String(10), default='en')
+    session_version = db.Column(db.Integer, default=0)
+                                
     question_votes_cast = db.relationship(
         'QuestionVote',
         back_populates='voterUser',
