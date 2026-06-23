@@ -191,7 +191,7 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
                 update_from_db()
             user_to_login = user
 
-        device_id = request.json.get('device_id', "unknown-device")
+        device_id = request.json.get('device_id')
         device_name = request.json.get('device_name', 'Unknown device')
         device, created = get_or_create_device(user_to_login, device_id, device_name, request, authorized=True)
         if not device and not created:
@@ -215,7 +215,7 @@ def login(request: Request) -> tuple[dict, int]:
     username_or_email = request.json.get('username_or_email')
     password = request.json.get('password')
     remember = True if request.json.get('remember') else False
-    device_id = request.json.get('device_id', "unknown-device")
+    device_id = request.json.get('device_id')
     device_name = request.json.get('device_name', 'Unknown device')
 
     if not (username_or_email and password):
@@ -280,6 +280,18 @@ def get_user() -> tuple[dict, int]:
     user = get_user_object(current_user.id or current_user.username)
     if not user:
         return {'success': False, 'message': 'User not found'}, 404
+    device_id = request.json.get('device_id')
+    if device_id:
+        device = UserSecurity.query.filter_by(user_id=user.id, device_id=device_id).first()
+        if device:
+            if not device.authorized:
+                return {'success': False, 'message': 'Device not authorized.'}, 403
+            device.last_login = datetime.datetime.now(datetime.timezone.utc)
+            update_from_db()
+        else:
+            return {'success': False, 'message': 'Device not found'}, 404
+    else:
+        return {'success': False, 'message': 'Device ID not provided'}, 400
     return {'success': True, 'message': 'User found', 'content': build_user_response(user)}, 200
 
 def get_client_ip(request: Request) -> str:

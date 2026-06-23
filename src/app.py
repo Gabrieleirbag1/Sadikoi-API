@@ -75,7 +75,7 @@ def create_app():
 def create_user_endpoint():
     return register_user(request)
 
-@app.route('/api/auth/account/', methods=['GET'])
+@app.route('/api/auth/account/', methods=['POST'])
 def get_user_endpoint():
     return get_user()
 
