@@ -22,7 +22,7 @@ class UserSecurity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    device_id = db.Column(db.String(64), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
+    device_id = db.Column(db.String(64), nullable=False)
     device_name = db.Column(db.String(100), nullable=False)
     ip_address = db.Column(db.String(45), nullable=False)
 
