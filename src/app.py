@@ -1,15 +1,15 @@
-from flask import Flask, request, send_from_directory
+from flask import Flask, request, send_from_directory, session
 from flask_cors import CORS
-from flask_login import LoginManager
+from flask_login import LoginManager, logout_user
+import os
+from lite_logging.lite_logging import log
+
 from models import UserModel
 from group import create_group, get_group, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, vote_question
 from db import db
-import os
-from lite_logging.lite_logging import log
-
-from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user
+from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, verify_device, list_devices, revoke_device
 from config import SECRET_KEY
 
 app = Flask(__name__)
@@ -55,7 +55,7 @@ def create_app():
         if request.method == 'OPTIONS':
             return
             
-        ignore_routes = ['/api/auth/login/', '/api/auth/register/', '/api/auth/google/']
+        ignore_routes = ['/api/auth/login/', '/api/auth/register/', '/api/auth/google/', '/api/auth/security/verify-device/']
         log(f"Request path: {request.path}, method: {request.method}", level="DEBUG")
         if request.path in ignore_routes and request.method == 'POST':
             return
@@ -66,6 +66,11 @@ def create_app():
         if not current_user.is_authenticated:
             return {"success": False, "message": "Unauthorized access. Please login first."}, 401
 
+        stored_version = session.get('session_version')
+        user = UserModel.query.get(current_user.id)
+        if user and stored_version != user.session_version:
+            logout_user()
+            return {"success": False, "message": "Session invalidated. Please login again."}, 401
 
 ############## AUTH ENDPOINTS ##############
 
@@ -75,7 +80,7 @@ def create_app():
 def create_user_endpoint():
     return register_user(request)
 
-@app.route('/api/auth/account/', methods=['GET'])
+@app.route('/api/auth/account/', methods=['POST'])
 def get_user_endpoint():
     return get_user()
 
@@ -107,6 +112,21 @@ def google_login_endpoint():
 def logout_endpoint():
     return logout()
 
+############## SECURITY ENDPOINTS ##############
+
+@app.route('/api/auth/security/verify-device/', methods=['POST'])
+def verify_device_endpoint():
+    return verify_device(request)
+
+@app.route('/api/auth/security/devices/', methods=['GET'])
+def list_devices_endpoint():
+    return
+    return list_devices()
+
+@app.route('/api/auth/security/devices/', methods=['DELETE'])
+def revoke_device_endpoint():
+    return
+    return revoke_device(request)
 
 ############## USER-GROUP ENDPOINTS ##############
 
