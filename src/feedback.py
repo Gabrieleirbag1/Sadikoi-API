@@ -2,16 +2,11 @@ import datetime
 
 from flask_login import current_user
 from auth import get_user_object
-from models import UserModel, BugReportModel
+from models import UserModel, BugReportModel, SuggestionModel
 from db import add_to_db
 
-class SuggestionModel:
-    pass
-
-def is_user_spamming(user: UserModel, feedback: type[BugReportModel] | type[SuggestionModel]) -> bool:
+def is_user_spamming(user: UserModel, feedback: BugReportModel | SuggestionModel, time_threshold: int = 60) -> bool:
     """Check if the user is submitting bug reports or suggestions too frequently."""
-    time_threshold = 60  # seconds
-
     last_report = (
         feedback.query
         .filter_by(user_id=user.id)
@@ -52,4 +47,23 @@ def create_bug_report(request):
     return {"success": True, "message": "Bug report created successfully"}, 201
 
 def create_suggestion(request):
-    pass
+    """Create a new suggestion."""
+    user: UserModel | None = get_user_object(current_user.id)
+    if not user:
+        return {"success": False, "message": "User not found"}, 404
+    
+    if is_user_spamming(user, SuggestionModel, 20):
+        return {"success": False, "message": "You are submitting suggestions too frequently. Please wait before submitting another."}, 429
+    
+    theme = request.json.get("theme")
+    question = request.json.get("question")
+
+    if not theme or not question:
+        return {"success": False, "message": "Theme and question are required"}, 400
+    
+    suggestion = SuggestionModel(user_id=user.id, theme=theme, question=question)
+    result = add_to_db(suggestion)
+    if result.get("error"):
+        return result, 500
+    
+    return {"success": True, "message": "Suggestion created successfully"}, 201

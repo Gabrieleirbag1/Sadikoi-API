@@ -260,3 +260,23 @@ class BugReportModel(db.Model):
         :rtype: str
         """
         return f'BugReport: {self.description} at {self.timestamp}'
+    
+class SuggestionModel(db.Model):
+    """Suggestion model for the database."""
+    __tablename__ = 'suggestions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    theme = db.Column(db.String(50), nullable=False)
+    question = db.Column(db.String(200), nullable=False)
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+
+    user = db.relationship('UserModel', backref=db.backref('suggestions', lazy='dynamic'))
+
+    def __repr__(self) -> str:
+        """Return the suggestion description and timestamp.
+        
+        :return: The suggestion description and timestamp.
+        :rtype: str
+        """
+        return f'Suggestion: {self.description} at {self.timestamp}'
