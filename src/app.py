@@ -68,7 +68,7 @@ def create_app():
             return {"success": False, "message": "Unauthorized access. Please login first."}, 401
 
         stored_version = session.get('session_version')
-        user = UserModel.query.get(current_user.id)
+        user = db.session.get(UserModel, int(current_user.id))
         if user and stored_version != user.session_version:
             logout_user()
             return {"success": False, "message": "Session invalidated. Please login again."}, 401
