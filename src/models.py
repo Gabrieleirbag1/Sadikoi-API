@@ -13,7 +13,7 @@ class GroupUser(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)
     role = db.Column(db.String(50), default='member')  # Exemple : 'admin', 'member'
-    joined_at = db.Column(db.DateTime, server_default=db.func.now())
+    joined_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
 class UserSecurity(db.Model):
     """Tracks known devices per user and their authorization/security state."""
@@ -26,11 +26,11 @@ class UserSecurity(db.Model):
     device_name = db.Column(db.String(100), nullable=False)
     ip_address = db.Column(db.String(45), nullable=False)
 
-    first_seen = db.Column(db.DateTime, server_default=db.func.now())
-    last_login = db.Column(db.DateTime, server_default=db.func.now())
+    first_seen = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    last_login = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
     auth_code = db.Column(db.String(6), nullable=True)
-    auth_code_expiration = db.Column(db.DateTime, nullable=True)
+    auth_code_expiration = db.Column(db.DateTime(timezone=True), nullable=True)
     login_attempts = db.Column(db.Integer, default=0)
     authorized = db.Column(db.Boolean, default=False)
 
@@ -88,7 +88,7 @@ class UserModel(UserMixin, db.Model):
     username = db.Column(db.String(40), unique=True)
     password = db.Column(db.String(80))
     profile_picture = db.Column(db.String(200), nullable=True)
-    date_created = db.Column(db.DateTime, server_default=db.func.now())
+    date_created = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     language = db.Column(db.String(10), default='en')
     session_version = db.Column(db.Integer, default=0)
                                 
@@ -151,7 +151,7 @@ class GroupInvitationModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
-    expiration_date = db.Column(db.DateTime, nullable=False)
+    expiration_date = db.Column(db.DateTime(timezone=True), nullable=False)
     token = db.Column(db.String(100), unique=True, nullable=False)
 
 class GroupModel(db.Model):
@@ -161,7 +161,7 @@ class GroupModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
     description = db.Column(db.String(200), server_default="")
-    date_created = db.Column(db.DateTime, server_default=db.func.now())
+    date_created = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     daily_reset_timestamp = db.Column(db.Time, server_default=db.text("'15:00:00'"))
 
     users = db.relationship('UserModel', secondary='group_user', backref=db.backref('groups', lazy='dynamic'))
@@ -181,7 +181,7 @@ class ChatMessageModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(500), nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
 
@@ -203,7 +203,7 @@ class QuestionModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.String(500), nullable=False)
-    date = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+    date = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
     theme = db.Column(db.String(50), nullable=False)
     enableSelfVote = db.Column(db.Boolean, default=True)
     enableMultipleVoting = db.Column(db.Boolean, default=False)
@@ -230,7 +230,7 @@ class QuestionVote(db.Model):
     __tablename__ = 'question_vote'
 
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+    date = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
     voterUser_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
@@ -239,3 +239,44 @@ class QuestionVote(db.Model):
     voterUser = db.relationship('UserModel', foreign_keys=[voterUser_id], back_populates='question_votes_cast')
     question = db.relationship('QuestionModel', back_populates='votes')
     targets = db.relationship('QuestionVoteTarget', back_populates='vote', lazy='dynamic')
+
+class BugReportModel(db.Model):
+    """Bug report model for the database."""
+    __tablename__ = 'bug_reports'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
+    device_name = db.Column(db.String(100), nullable=False, default="Unknown Device")
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+
+    user = db.relationship('UserModel', backref=db.backref('bug_reports', lazy='dynamic'))
+
+    def __repr__(self) -> str:
+        """Return the bug report description and timestamp.
+        
+        :return: The bug report description and timestamp.
+        :rtype: str
+        """
+        return f'BugReport: {self.description} at {self.timestamp}'
+    
+class SuggestionModel(db.Model):
+    """Suggestion model for the database."""
+    __tablename__ = 'suggestions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    theme = db.Column(db.String(50), nullable=False)
+    question = db.Column(db.String(200), nullable=False)
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+
+    user = db.relationship('UserModel', backref=db.backref('suggestions', lazy='dynamic'))
+
+    def __repr__(self) -> str:
+        """Return the suggestion description and timestamp.
+        
+        :return: The suggestion description and timestamp.
+        :rtype: str
+        """
+        return f'Suggestion: {self.description} at {self.timestamp}'

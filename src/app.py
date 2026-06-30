@@ -8,6 +8,7 @@ from models import UserModel
 from group import create_group, get_group, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, vote_question
+from feedback import create_bug_report, create_suggestion
 from db import db
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device
 from config import SECRET_KEY
@@ -67,7 +68,7 @@ def create_app():
             return {"success": False, "message": "Unauthorized access. Please login first."}, 401
 
         stored_version = session.get('session_version')
-        user = UserModel.query.get(current_user.id)
+        user = db.session.get(UserModel, int(current_user.id))
         if user and stored_version != user.session_version:
             logout_user()
             return {"success": False, "message": "Session invalidated. Please login again."}, 401
@@ -189,6 +190,16 @@ def get_questions_endpoint(group_id):
 @app.route('/api/questions/<int:group_id>/vote/', methods=['POST'])
 def vote_question_endpoint(group_id):
     return vote_question(group_id, request)
+
+############## FEEDBACK ENDPOINTS ##############
+
+@app.route('/api/feedback/bug-reports/', methods=['POST'])
+def create_bug_report_endpoint():
+    return create_bug_report(request)
+
+@app.route('/api/feedback/suggestions/', methods=['POST'])
+def create_suggestion_endpoint():
+    return create_suggestion(request)
 
 def main(db_name: str = "data-local") -> None:
     """Main function to create the app and initialize the database."
