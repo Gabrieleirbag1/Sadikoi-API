@@ -190,6 +190,16 @@ def get_questions_endpoint(group_id):
 def vote_question_endpoint(group_id):
     return vote_question(group_id, request)
 
+############## FEEDBACK ENDPOINTS ##############
+
+@app.route('/api/feedback/bug-reports/', methods=['POST'])
+def create_bug_report_endpoint():
+    return create_bug_report(request)
+
+@app.route('/api/feedback/suggestions/', methods=['POST'])
+def create_suggestion_endpoint():
+    return create_suggestion(request)
+
 def main(db_name: str = "data-local") -> None:
     """Main function to create the app and initialize the database."
     
