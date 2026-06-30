@@ -8,6 +8,7 @@ from models import UserModel
 from group import create_group, get_group, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, vote_question
+from feedback import create_bug_report, create_suggestion
 from db import db
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device
 from config import SECRET_KEY

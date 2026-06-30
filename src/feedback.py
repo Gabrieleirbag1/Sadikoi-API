@@ -1,8 +1,7 @@
 from flask_login import current_user
-
 from auth import get_user_object
 from models import UserModel, BugReportModel
-from src.db import add_to_db
+from db import add_to_db
 
 def create_bug_report(request):
     """Create a new bug report."""
@@ -12,11 +11,12 @@ def create_bug_report(request):
     
     title = request.json.get("title")
     description = request.json.get("description")
+    device_name = request.json.get("device_name", "Unknown Device")
 
     if not title or not description:
         return {"success": False, "message": "Title and description are required"}, 400
     
-    bug_report = BugReportModel(user_id=user.id, title=title, description=description)
+    bug_report = BugReportModel(user_id=user.id, title=title, description=description, device_name=device_name)
     result = add_to_db(bug_report)
     if result.get("error"):
         return result, 500
