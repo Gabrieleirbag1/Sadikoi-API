@@ -239,3 +239,22 @@ class QuestionVote(db.Model):
     voterUser = db.relationship('UserModel', foreign_keys=[voterUser_id], back_populates='question_votes_cast')
     question = db.relationship('QuestionModel', back_populates='votes')
     targets = db.relationship('QuestionVoteTarget', back_populates='vote', lazy='dynamic')
+
+class BugReportModel(db.Model):
+    """Bug report model for the database."""
+    __tablename__ = 'bug_reports'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+
+    user = db.relationship('UserModel', backref=db.backref('bug_reports', lazy='dynamic'))
+
+    def __repr__(self) -> str:
+        """Return the bug report description and timestamp.
+        
+        :return: The bug report description and timestamp.
+        :rtype: str
+        """
+        return f'BugReport: {self.description} at {self.timestamp}'
