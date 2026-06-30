@@ -246,8 +246,8 @@ class BugReportModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    title = db.Column(db.String(200), nullable=False, required=True)
-    description = db.Column(db.String(1000), nullable=False, required=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
     device_name = db.Column(db.String(100), nullable=False, default="Unknown Device")
     timestamp = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
 
