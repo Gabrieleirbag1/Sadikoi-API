@@ -89,9 +89,9 @@ def get_user_endpoint():
 def update_user_endpoint():
     return update_user(request)
 
-@app.route('/api/auth/account/', methods=['DELETE'])
-def delete_user_endpoint():
-    return delete_user()
+@app.route('/api/auth/account/<user_info>', methods=['DELETE'])
+def delete_user_endpoint(user_info):
+    return delete_user(user_info)
 
 @app.route('/api/auth/profile-picture/<filename>')
 def uploaded_file(filename):

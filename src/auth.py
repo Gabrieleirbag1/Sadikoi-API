@@ -158,12 +158,21 @@ def update_user(request: Request) -> tuple[dict, int]:
 
     return {"success": True, "message": "User updated successfully", "content": build_user_response(user)}, 200
 
-def delete_user() -> tuple[dict, int]:
+def delete_user(user_info: str) -> tuple[dict, int]:
     user: UserModel | None = get_user_object(current_user.id)
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
-    result = delete_from_db(user)
+    user_to_delete: UserModel | None = get_user_object(user_info)
+    if not user_to_delete:
+        return {"success": False, "message": "User to delete not found"}, 404
+
+    if user != user_to_delete:
+        return {"success": False, "message": "You can only delete your own account"}, 403
+
+    user_to_delete.deleted = True  # Mark the user as deleted instead of removing from DB
+
+    result = update_from_db()
     if result.get("error"):
         return result, 500
 
@@ -186,7 +195,7 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         google_picture = idinfo.get('picture')
         language = idinfo.get('locale', 'en').split("-")[0]  # Handle cases like "en-US" or "fr-FR"
         
-        user = UserModel.query.filter_by(email=email).first()
+        user = get_user_object(email)
         
         if not user:
             random_password = secrets.token_urlsafe(32)
@@ -233,12 +242,9 @@ def login(request: Request) -> tuple[dict, int]:
     if not (username_or_email and password):
         return {'success': False, 'message': 'Please fill in all fields.'}, 400
 
-    user: UserModel = UserModel.query.filter_by(email=username_or_email).first()
-    if not user:
-        user: UserModel = UserModel.query.filter_by(username=username_or_email).first()
-
+    user: UserModel = get_user_object(username_or_email)
     if not (user and check_password_hash(user.password, password)):
-        return {'success': False, 'message': 'Invalid email or password.'}, 401
+        return {'success': False, 'message': 'Invalid username / email or password.'}, 401
 
     if not device_id:
         return {'success': False, 'message': 'Unknown device.'}, 400
@@ -304,10 +310,13 @@ def logout_sessions(user: UserModel = None) -> tuple[dict, int]:
 def get_user_object(user_info: str | int) -> UserModel | None:
     """Get the user object with the given user_info."""
     if isinstance(user_info, int) or user_info.isdigit():
-        return UserModel.query.get(int(user_info))
+        user = UserModel.query.get(int(user_info))
     else:
-        return UserModel.query.filter((UserModel.email == user_info) | (UserModel.username == user_info)).first()
-        
+        user = UserModel.query.filter((UserModel.email == user_info) | (UserModel.username == user_info)).first()
+    if user and user.deleted:
+        return None
+    return user
+
 def get_user() -> tuple[dict, int]:
     """Get the user with the given user_info."""
     user = get_user_object(current_user.id or current_user.username)

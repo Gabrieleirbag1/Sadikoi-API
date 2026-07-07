@@ -91,6 +91,7 @@ class UserModel(UserMixin, db.Model):
     date_created = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     language = db.Column(db.String(10), default='en')
     session_version = db.Column(db.Integer, default=0)
+    deleted = db.Column(db.Boolean, default=False)
                                 
     question_votes_cast = db.relationship(
         'QuestionVote',
