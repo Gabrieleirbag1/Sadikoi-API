@@ -7,7 +7,7 @@ from lite_logging.lite_logging import log
 from models import UserModel
 from group import create_group, get_group, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
-from question import get_question, vote_question
+from question import get_question, vote_question, get_questions_by_month
 from feedback import create_bug_report, create_suggestion
 from db import db
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device
@@ -184,8 +184,12 @@ def send_message_endpoint(group_id):
 ############## QUESTIONS ENDPOINTS ##############
 
 @app.route('/api/questions/<int:group_id>/', methods=['GET'])
-def get_questions_endpoint(group_id):
+def get_question_endpoint(group_id):
     return get_question(group_id)
+
+@app.route('/api/questions/<int:group_id>/<int:month>/', methods=['GET'])
+def get_questions_by_month_endpoint(group_id, month):
+    return get_questions_by_month(group_id, month)
 
 @app.route('/api/questions/<int:group_id>/vote/', methods=['POST'])
 def vote_question_endpoint(group_id):
