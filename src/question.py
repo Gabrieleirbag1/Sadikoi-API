@@ -148,13 +148,13 @@ def get_question(group_id: int) -> tuple[dict, int]:
             return result, 500
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question if iteration is None else existing_question)}, 200
     
-def get_questions_by_month(group_id: int, month: int) -> tuple[dict, int]:
+def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
-    questions = group.questions.filter(db.extract('month', QuestionModel.date) == month).all()
+    questions = group.questions.filter(db.extract('month', QuestionModel.date) == month, db.extract('year', QuestionModel.date) == year).all()
     questions_data = [build_question_response(question) for question in questions]
-    return {"success": True, "message": f"Questions for month {month} retrieved successfully", "content": questions_data}, 200
+    return {"success": True, "message": f"Questions for month {month} and year {year} retrieved successfully", "content": questions_data}, 200
 
 def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     written_answer = None
