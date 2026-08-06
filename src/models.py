@@ -198,7 +198,16 @@ class ChatMessageModel(db.Model):
         return f'Message: {self.content} at {self.timestamp}'
     
 class QuestionModel(db.Model):
-    """Question model for the database."""
+    """Question model for the database.
+
+    Note: `iteration` is no longer a stored column. Every time a question is
+    served (even a repeat of an earlier question_id), a new row is inserted
+    here, so history is fully preserved. "Iteration" (i.e. how many times a
+    given question_id has been asked in a group) is now a *computed* value —
+    see `get_question_iteration_count` / `get_mean_iterations_question` in
+    question.py — obtained by counting rows that share the same
+    (group_id, question_id) pair.
+    """
     __tablename__ = 'questions'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -211,7 +220,6 @@ class QuestionModel(db.Model):
     voteNumberLimit = db.Column(db.Integer, default=1)
     canWrite = db.Column(db.Boolean, default=False)
     item = db.Column(db.String(100))
-    iteration = db.Column(db.Integer, default=1)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     votes = db.relationship('QuestionVote', back_populates='question', lazy='dynamic')
 
