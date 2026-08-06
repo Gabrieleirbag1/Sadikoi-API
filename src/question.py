@@ -155,7 +155,10 @@ def get_question(group_id: int) -> tuple[dict, int]:
             votes = extract_votes_info(question, group)
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, votes)}, 200
     else:
-        question_data = chose_question(group)
+        try:
+            question_data = chose_question(group)
+        except StopIteration:
+            return {"success": False, "message": "No questions available or not found in the original list"}, 404
         print("Chosen question:", question_data)
         question = build_question_model(question_data, group, user.language if user.language in ALLOWED_LANGUAGES else 'en')
         result = add_to_db(question)
