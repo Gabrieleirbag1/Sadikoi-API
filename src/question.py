@@ -127,6 +127,8 @@ def build_question_model(question_data: dict, group: GroupModel, language: str) 
 def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: datetime.date = None):
     votes: list[QuestionVote] = question.votes.all()
     votes_data = []
+    if not group and not date:
+        raise ValueError("Either group or date must be provided to filter votes.")
     for vote in votes:
         if group:
             if not is_today_based_on_reset(vote, group):
