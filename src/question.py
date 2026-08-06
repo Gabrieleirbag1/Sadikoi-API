@@ -75,7 +75,7 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict:
         # Fallback, shouldn't happen
         return chose_random_question()
     
-def check_date(question_or_vote: QuestionModel | QuestionVote, group: GroupModel) -> bool:
+def is_today_based_on_reset(question_or_vote: QuestionModel | QuestionVote, group: GroupModel) -> bool:
     """Check if the question or vote is from today based on the group's daily reset time.
     
     Returns True if the question or vote is from today, False otherwise."""
@@ -102,11 +102,11 @@ def check_date(question_or_vote: QuestionModel | QuestionVote, group: GroupModel
     
 def does_exist_question_today(group: GroupModel) -> bool:
     question = group.questions.order_by(QuestionModel.date.desc()).first()
-    return check_date(question, group)
+    return is_today_based_on_reset(question, group)
 
 def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
     vote = QuestionVote.query.filter_by(group_id=group.id, voterUser_id=user.id).order_by(QuestionVote.date.desc()).first()
-    return check_date(vote, group)
+    return is_today_based_on_reset(vote, group)
 
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     return user in group.users
@@ -124,12 +124,16 @@ def build_question_model(question_data: dict, group: GroupModel, language: str) 
         group=group
     )
 
-def extract_votes_info(question: QuestionModel, group: GroupModel):
+def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: datetime.date = None):
     votes: list[QuestionVote] = question.votes.all()
     votes_data = []
     for vote in votes:
-        if not check_date(vote, group):
-            continue
+        if group:
+            if not is_today_based_on_reset(vote, group):
+                continue
+        else:
+            if vote.date.date() != date:
+                continue
         vote_info = {
             "voterUser": build_user_response(vote.voterUser),
             "voteDate": vote.date.isoformat(),
@@ -138,7 +142,7 @@ def extract_votes_info(question: QuestionModel, group: GroupModel):
         }
         votes_data.append(vote_info)
     return votes_data
-
+    
 def get_question(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
@@ -171,7 +175,7 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
     if not group:
         return {"success": False, "message": "Group not found"}, 404
     questions = group.questions.filter(db.extract('month', QuestionModel.date) == month, db.extract('year', QuestionModel.date) == year).all()
-    questions_data = [build_question_response(question) for question in questions]
+    questions_data = [build_question_response(question, extract_votes_info(question, group, question.date.date())) for question in questions]
     return {"success": True, "message": f"Questions for month {month} and year {year} retrieved successfully", "content": questions_data}, 200
 
 def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
