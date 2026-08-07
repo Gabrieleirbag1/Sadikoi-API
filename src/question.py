@@ -177,7 +177,13 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
     if not group:
         return {"success": False, "message": "Group not found"}, 404
     questions = group.questions.filter(db.extract('month', QuestionModel.date) == month, db.extract('year', QuestionModel.date) == year).all()
-    questions_data = [build_question_response(question, extract_votes_info(question, date=question.date.date())) for question in questions]
+    questions_data = []
+    for question in questions:
+        votes = extract_votes_info(question, date=question.date.date())
+        if not votes:
+            continue
+        questions_data.append(build_question_response(question, votes))
+
     return {"success": True, "message": f"Questions for month {month} and year {year} retrieved successfully", "content": questions_data}, 200
 
 def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
