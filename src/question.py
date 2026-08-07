@@ -111,18 +111,35 @@ def does_exist_question_today(group: GroupModel) -> bool:
     if is_today_based_on_reset(question, group):
         return True
 
-    # Safety net: if daily_reset_timestamp was changed after this question was
-    # generated, the window above may no longer include it even though it's
-    # recent. Block a new question until MIN_QUESTION_INTERVAL has elapsed.
     now = datetime.datetime.now(datetime.timezone.utc)
     question_date = question.date
     if question_date.tzinfo is None:
         question_date = question_date.replace(tzinfo=datetime.timezone.utc)
 
-    if now - question_date < MIN_QUESTION_INTERVAL:
+    # ---------------------------------------------------------------------
+    # Adjust for reset timestamp changes:
+    # If the current reset time is later in the day than the time the question
+    # was originally created at, extend MIN_QUESTION_INTERVAL by that difference
+    # so a new question isn't generated before reaching today's new reset time.
+    # ---------------------------------------------------------------------
+    required_interval = MIN_QUESTION_INTERVAL
+
+    # Compute what the reset time was on the date the question was set
+    old_reset_time = datetime.datetime.combine(
+        question_date.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc
+    )
+    
+    # If the last question was recorded before the current reset time configuration,
+    # add the positive shift delta to the required wait interval.
+    time_shift = question_date - old_reset_time
+    if time_shift < datetime.timedelta(0):
+        # Reset time moved later in the day relative to when the question was set
+        required_interval += abs(time_shift)
+
+    if now - question_date < required_interval:
         log(
-            f"Reset window excludes last question ({question_date}), but only "
-            f"{now - question_date} has passed; blocking new question",
+            f"Reset window excludes last question ({question_date}), but required interval "
+            f"({required_interval}) has not passed; blocking new question",
             level="DEBUG",
         )
         return True
