@@ -180,7 +180,7 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
     questions_data = []
     for question in questions:
         votes = extract_votes_info(question, date=question.date.date())
-        if not votes:
+        if not votes and question.date.date() != datetime.datetime.now(datetime.timezone.utc).date():
             continue
         questions_data.append(build_question_response(question, votes))
 
