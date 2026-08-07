@@ -112,6 +112,9 @@ def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     return user in group.users
 
 def build_question_model(question_data: dict, group: GroupModel, language: str) -> QuestionModel:
+    now = datetime.datetime.now(datetime.timezone.utc)
+    reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
+    date = reset_time if now >= reset_time else reset_time - datetime.timedelta(days=1)
     return QuestionModel(
         question_id=question_data['question_id'],
         content=question_data['content'][language],
@@ -121,6 +124,7 @@ def build_question_model(question_data: dict, group: GroupModel, language: str) 
         voteNumberLimit=question_data['voteNumberLimit'],
         canWrite=question_data['canWrite'],
         item=question_data['item']["id"],
+        date=date,
         group=group
     )
 

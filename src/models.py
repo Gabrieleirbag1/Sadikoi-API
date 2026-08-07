@@ -213,7 +213,7 @@ class QuestionModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.String(500), nullable=False)
-    date = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+    date = db.Column(db.DateTime(timezone=True), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
     enableSelfVote = db.Column(db.Boolean, default=True)
     enableMultipleVoting = db.Column(db.Boolean, default=False)
