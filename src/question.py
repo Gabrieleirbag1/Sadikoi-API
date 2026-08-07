@@ -230,6 +230,7 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
             question_id=db_question.id,
             group_id=group_id,
             written_answer=written_answer,
+            date=question.date
         )
     else:
         if not votedUsers:
@@ -260,6 +261,7 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
             voterUser_id=user.id,
             question_id=question.id,
             group_id=group_id,
+            date=question.date,
             targets=[QuestionVoteTarget(votedUser_id=votedUser_id) for votedUser_id in votedUser_ids]
         )
 

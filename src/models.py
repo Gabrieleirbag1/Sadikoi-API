@@ -239,7 +239,7 @@ class QuestionVote(db.Model):
     __tablename__ = 'question_vote'
 
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+    date = db.Column(db.DateTime(timezone=True), nullable=False)
     voterUser_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
