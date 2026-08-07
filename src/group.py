@@ -68,7 +68,10 @@ def update_group(group_id: int) -> tuple[dict, int]:
     data = request.json
     group.name = data.get('name', group.name)
     group.description = data.get('description', group.description)
-    group.daily_reset_timestamp = datetime.datetime.strptime(data.get('daily_reset_timestamp', group.daily_reset_timestamp), "%H:%M").time()
+    try:
+        group.daily_reset_timestamp = datetime.datetime.strptime(data.get('daily_reset_timestamp', group.daily_reset_timestamp), "%H:%M").time()
+    except ValueError:
+        return {"success": False, "message": "Invalid time format. Please use HH:MM format."}, 400
 
     result = update_from_db()
     if result.get("error"):
