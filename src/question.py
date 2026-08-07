@@ -21,6 +21,8 @@ json_path = os.path.join(os.path.dirname(__file__), 'data', 'questions.json')
 with open(json_path, 'r') as f:
     questions = json.load(f)
 
+MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
+
 def chose_random_question() -> dict:
     return random.choice(questions)
 
@@ -102,11 +104,48 @@ def is_today_based_on_reset(question_or_vote: QuestionModel | QuestionVote, grou
     
 def does_exist_question_today(group: GroupModel) -> bool:
     question = group.questions.order_by(QuestionModel.date.desc()).first()
-    return is_today_based_on_reset(question, group)
+    if not question:
+        return False
+
+    # Normal case: question falls in the current reset-based "today" window
+    if is_today_based_on_reset(question, group):
+        return True
+
+    # Safety net: if daily_reset_timestamp was changed after this question was
+    # generated, the window above may no longer include it even though it's
+    # recent. Block a new question until MIN_QUESTION_INTERVAL has elapsed.
+    now = datetime.datetime.now(datetime.timezone.utc)
+    question_date = question.date
+    if question_date.tzinfo is None:
+        question_date = question_date.replace(tzinfo=datetime.timezone.utc)
+
+    if now - question_date < MIN_QUESTION_INTERVAL:
+        log(
+            f"Reset window excludes last question ({question_date}), but only "
+            f"{now - question_date} has passed; blocking new question",
+            level="DEBUG",
+        )
+        return True
+
+    return False
 
 def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
-    vote = QuestionVote.query.filter_by(group_id=group.id, voterUser_id=user.id).order_by(QuestionVote.date.desc()).first()
-    return is_today_based_on_reset(vote, group)
+    """Whether `user` has already voted on the group's *current* question.
+
+    Tied directly to the current question's id rather than a recomputed date
+    window, so it isn't affected by daily_reset_timestamp changes after the
+    question/vote were created.
+    """
+    question = group.questions.order_by(QuestionModel.date.desc()).first()
+    if not question or not does_exist_question_today(group):
+        return False
+
+    vote = QuestionVote.query.filter_by(
+        group_id=group.id,
+        voterUser_id=user.id,
+        question_id=question.id,
+    ).first()
+    return vote is not None
 
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     return user in group.users
@@ -134,12 +173,8 @@ def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: 
     if not group and not date:
         raise ValueError("Either group or date must be provided to filter votes.")
     for vote in votes:
-        if group:
-            if not is_today_based_on_reset(vote, group):
-                continue
-        else:
-            if vote.date.date() != date:
-                continue
+        if date and vote.date.date() != date:
+            continue
         vote_info = {
             "voterUser": build_user_response(vote.voterUser),
             "voteDate": vote.date.isoformat(),
