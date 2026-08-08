@@ -6,7 +6,7 @@ import datetime
 from flask import Request
 from flask_login import current_user
 
-from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote
+from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote, Item
 from db import add_to_db, update_from_db, db
 
 from lite_logging.lite_logging import log
@@ -179,7 +179,7 @@ def build_question_model(question_data: dict, group: GroupModel, language: str) 
         enableMultipleVoting=question_data['enableMultipleVoting'],
         voteNumberLimit=question_data['voteNumberLimit'],
         canWrite=question_data['canWrite'],
-        item=question_data['item']["id"],
+        item_name=question_data['item_name']["id"],
         date=date,
         group=group
     )
@@ -226,6 +226,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
         result = add_to_db(question)
         if result.get("error"):
             return result, 500
+        assign_items()
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question)}, 200
     
 def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, int]:
@@ -290,9 +291,9 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
         if not isinstance(votedUsers, list):
             return {"success": False, "message": "votedUsers must be a list"}, 400
 
-        if all(isinstance(item, int) for item in votedUsers):
+        if all(isinstance(item_name, int) for item_name in votedUsers):
             votedUser_ids = votedUsers
-        elif all(isinstance(item, str) for item in votedUsers):
+        elif all(isinstance(item_name, str) for item_name in votedUsers):
             votedUsers = UserModel.query.filter(UserModel.username.in_(votedUsers)).all()
             if len(votedUsers) != len(votedUsers):
                 return {"success": False, "message": "One or more voted users not found"}, 404
@@ -322,3 +323,77 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     return {"success": True, "message": "Vote recorded successfully", "content": extract_votes_info(question, group)}, 200
+
+def assign_items():
+    #get the last last question not counting the real last question, (it must have at least 2 questions in the group to work)
+    last_question = QuestionModel.query.order_by(QuestionModel.date.desc()).offset(1).first()
+    if not last_question:
+        return
+    most_voted_user = get_most_voted_user(last_question, last_question.group)
+    if not most_voted_user:
+        return
+    
+    if not delete_item_from_user(last_question.group, last_question.item_name)[0].get("success"):
+        log(f"Error deleting item_name from user {most_voted_user.id} in group {last_question.group.id}", level="ERROR")
+        return
+
+    new_item = Item(
+        user_id=most_voted_user["id"],
+        group_id=last_question.group.id,
+        question_id=last_question.id,
+        item_name=last_question.item_name,
+    )
+    result = add_to_db(new_item)
+    if result.get("error"):
+        log(f"Error assigning item_name: {result.get('error')}", level="ERROR")
+
+def delete_item_from_user(group: GroupModel, item_name: str) -> tuple[dict, int]:
+    # Delete the item_name from the user in the group if it exists
+    item_to_delete = Item.query.filter_by(group_id=group.id, item_name=item_name).first()
+    if not item_to_delete:
+        return {"success": True, "message": "Item not found for the user in the group"}, 404
+    db.session.delete(item_to_delete)
+    result = update_from_db()
+    if result.get("error"):
+        return {"success": False, "message": result.get("error")}, 500
+    return {"success": True, "message": "Item deleted successfully"}, 200
+
+def get_most_voted_user(question: QuestionModel, group: GroupModel) -> dict:
+    #using get_votes_per_user method, get the most voted user, there must be not equality, if there is equality, return None
+    votes_per_user = get_votes_per_user(question, group)
+    if not votes_per_user["users"]:
+        return None
+    max_votes = max(votes_per_user["number_of_votes"])
+    if votes_per_user["number_of_votes"].count(max_votes) > 1:
+        return None
+    max_index = votes_per_user["number_of_votes"].index(max_votes)
+    return votes_per_user["users"][max_index]
+
+def get_votes_per_user(question: QuestionModel, group: GroupModel) -> dict:
+    """Count how many votes each user in the group received for this question, sorted descending."""
+    number_votes_per_user = {"users": [], "number_of_votes": []}
+
+    votes: list[QuestionVote] = question.votes.all()
+
+    counts: dict[int, int] = {}
+    for vote in votes:
+        for target in vote.targets:
+            counts[target.votedUser_id] = counts.get(target.votedUser_id, 0) + 1
+
+    users_by_id = {user.id: user for user in group.users}
+    for user in group.users:
+        counts.setdefault(user.id, 0)
+
+    sorted_user_ids = sorted(
+        counts.keys(),
+        key=lambda uid: (-counts[uid], users_by_id[uid].username if uid in users_by_id else "")
+    )
+
+    for uid in sorted_user_ids:
+        user = users_by_id.get(uid)
+        if not user:
+            continue
+        number_votes_per_user["users"].append(build_user_response(user))
+        number_votes_per_user["number_of_votes"].append(counts[uid])
+
+    return number_votes_per_user
