@@ -21,39 +21,63 @@ json_path = os.path.join(os.path.dirname(__file__), 'data', 'questions.json')
 with open(json_path, 'r') as f:
     questions = json.load(f)
 
+MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
+
 def chose_random_question() -> dict:
     return random.choice(questions)
 
-def get_mean_iterations_question(group: GroupModel) -> int:
-    if not group.questions.count():
+def get_question_counts_by_id(group: GroupModel) -> dict[int, int]:
+    """Return a mapping of question_id -> number of times it has been asked in this group.
+
+    This replaces the old stored `iteration` column: iteration is now simply
+    "how many rows exist for this (group_id, question_id) pair", computed on
+    the fly with a GROUP BY count.
+    """
+    rows = (
+        db.session.query(QuestionModel.question_id, db.func.count(QuestionModel.id))
+        .filter(QuestionModel.group_id == group.id)
+        .group_by(QuestionModel.question_id)
+        .all()
+    )
+    return {question_id: count for question_id, count in rows}
+
+def get_question_iteration_count(group: GroupModel, question_id: int) -> int:
+    """How many times this specific question_id has been asked in this group so far (0 if never)."""
+    return (
+        db.session.query(db.func.count(QuestionModel.id))
+        .filter(QuestionModel.group_id == group.id, QuestionModel.question_id == question_id)
+        .scalar()
+    ) or 0
+
+def get_mean_iterations_question(group: GroupModel, counts_by_id: dict[int, int] | None = None) -> int:
+    """Mean number of times each already-asked question has been asked in this group."""
+    counts_by_id = counts_by_id if counts_by_id is not None else get_question_counts_by_id(group)
+    if not counts_by_id:
         return 1
-    return sum(question.iteration for question in group.questions) // group.questions.count()
+    return sum(counts_by_id.values()) // len(counts_by_id)
 
-def is_question_already_asked(question: QuestionModel | None, mean_iteration: int) -> bool | int:
-    if not question:
-        return False
-    elif question.iteration >= mean_iteration:
-        return True
-    return False
+def is_question_already_asked(current_count: int, mean_iteration: int) -> bool:
+    """A question counts as 'already asked (enough)' once its count reaches the mean (+ offset)."""
+    return current_count >= mean_iteration
 
-def chose_question(group: GroupModel, offset: int = 0) -> dict :
-    mean_iteration = get_mean_iterations_question(group)
+def chose_question(group: GroupModel, offset: int = 0) -> dict:
+    counts_by_id = get_question_counts_by_id(group)
+    mean_iteration = get_mean_iterations_question(group, counts_by_id)
     for _ in range(len(questions)):
         question_data = chose_random_question()
-        question = group.questions.filter_by(question_id=question_data['question_id']).first()
-        if not is_question_already_asked(question, mean_iteration + offset):
-            return question_data, question.iteration if question else None
-    # If no question found, pick the one with least iterations
-    existing_questions = group.questions.all()
-    if existing_questions:
-        min_iter_question = min(existing_questions, key=lambda q: q.iteration)
-        question_data = next(q for q in questions if q['question_id'] == min_iter_question.question_id)
-        return question_data, min_iter_question.iteration
+        current_count = counts_by_id.get(question_data['question_id'], 0)
+        if not is_question_already_asked(current_count, mean_iteration + offset):
+            return question_data
+    # If no question found, pick the one with the least occurrences so far
+    if counts_by_id:
+        min_question_id = min(counts_by_id, key=lambda qid: counts_by_id[qid])
+        question_data = next(q for q in questions if q['question_id'] == min_question_id)
+        return question_data
     else:
         # Fallback, shouldn't happen
-        return chose_random_question(), None
+        return chose_random_question()
     
-def check_date(question_or_vote: QuestionModel | QuestionVote, group: GroupModel) -> bool:
+def is_today_based_on_reset(question_or_vote: QuestionModel | QuestionVote, group: GroupModel) -> bool:
     """Check if the question or vote is from today based on the group's daily reset time.
     
     Returns True if the question or vote is from today, False otherwise."""
@@ -80,16 +104,73 @@ def check_date(question_or_vote: QuestionModel | QuestionVote, group: GroupModel
     
 def does_exist_question_today(group: GroupModel) -> bool:
     question = group.questions.order_by(QuestionModel.date.desc()).first()
-    return check_date(question, group)
+    if not question:
+        return False
+
+    # Normal case: question falls in the current reset-based "today" window
+    if is_today_based_on_reset(question, group):
+        return True
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    question_date = question.date
+    if question_date.tzinfo is None:
+        question_date = question_date.replace(tzinfo=datetime.timezone.utc)
+
+    # ---------------------------------------------------------------------
+    # Adjust for reset timestamp changes:
+    # If the current reset time is later in the day than the time the question
+    # was originally created at, extend MIN_QUESTION_INTERVAL by that difference
+    # so a new question isn't generated before reaching today's new reset time.
+    # ---------------------------------------------------------------------
+    required_interval = MIN_QUESTION_INTERVAL
+
+    # Compute what the reset time was on the date the question was set
+    old_reset_time = datetime.datetime.combine(
+        question_date.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc
+    )
+    
+    # If the last question was recorded before the current reset time configuration,
+    # add the positive shift delta to the required wait interval.
+    time_shift = question_date - old_reset_time
+    if time_shift < datetime.timedelta(0):
+        # Reset time moved later in the day relative to when the question was set
+        required_interval += abs(time_shift)
+
+    if now - question_date < required_interval:
+        log(
+            f"Reset window excludes last question ({question_date}), but required interval "
+            f"({required_interval}) has not passed; blocking new question",
+            level="DEBUG",
+        )
+        return True
+
+    return False
 
 def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
-    vote = QuestionVote.query.filter_by(group_id=group.id, voterUser_id=user.id).order_by(QuestionVote.date.desc()).first()
-    return check_date(vote, group)
+    """Whether `user` has already voted on the group's *current* question.
+
+    Tied directly to the current question's id rather than a recomputed date
+    window, so it isn't affected by daily_reset_timestamp changes after the
+    question/vote were created.
+    """
+    question = group.questions.order_by(QuestionModel.date.desc()).first()
+    if not question or not does_exist_question_today(group):
+        return False
+
+    vote = QuestionVote.query.filter_by(
+        group_id=group.id,
+        voterUser_id=user.id,
+        question_id=question.id,
+    ).first()
+    return vote is not None
 
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     return user in group.users
 
-def build_question_model(question_data: dict, iteration: int, group: GroupModel, language: str) -> QuestionModel:
+def build_question_model(question_data: dict, group: GroupModel, language: str) -> QuestionModel:
+    now = datetime.datetime.now(datetime.timezone.utc)
+    reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
+    date = reset_time if now >= reset_time else reset_time - datetime.timedelta(days=1)
     return QuestionModel(
         question_id=question_data['question_id'],
         content=question_data['content'][language],
@@ -99,15 +180,17 @@ def build_question_model(question_data: dict, iteration: int, group: GroupModel,
         voteNumberLimit=question_data['voteNumberLimit'],
         canWrite=question_data['canWrite'],
         item=question_data['item']["id"],
-        iteration=iteration,
+        date=date,
         group=group
     )
 
-def extract_votes_info(question: QuestionModel, group: GroupModel):
+def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: datetime.date = None):
     votes: list[QuestionVote] = question.votes.all()
     votes_data = []
+    if not group and not date:
+        raise ValueError("Either group or date must be provided to filter votes.")
     for vote in votes:
-        if not check_date(vote, group):
+        if date and vote.date.date() != date:
             continue
         vote_info = {
             "voterUser": build_user_response(vote.voterUser),
@@ -117,7 +200,7 @@ def extract_votes_info(question: QuestionModel, group: GroupModel):
         }
         votes_data.append(vote_info)
     return votes_data
-
+    
 def get_question(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
@@ -134,20 +217,31 @@ def get_question(group_id: int) -> tuple[dict, int]:
             votes = extract_votes_info(question, group)
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, votes)}, 200
     else:
-        question_data, iteration = chose_question(group)
+        try:
+            question_data = chose_question(group)
+        except StopIteration:
+            return {"success": False, "message": "No questions available or not found in the original list"}, 404
         print("Chosen question:", question_data)
-        if iteration is None:
-            question = build_question_model(question_data, 1, group, user.language if user.language in ALLOWED_LANGUAGES else 'en')
-            result = add_to_db(question)
-        else:
-            existing_question = group.questions.filter_by(question_id=question_data['question_id']).first()
-            existing_question.iteration = iteration + 1
-            existing_question.date = datetime.datetime.now(datetime.timezone.utc)
-            result = update_from_db()
+        question = build_question_model(question_data, group, user.language if user.language in ALLOWED_LANGUAGES else 'en')
+        result = add_to_db(question)
         if result.get("error"):
             return result, 500
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question if iteration is None else existing_question)}, 200
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question)}, 200
     
+def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, int]:
+    group = GroupModel.query.get(group_id)
+    if not group:
+        return {"success": False, "message": "Group not found"}, 404
+    questions = group.questions.filter(db.extract('month', QuestionModel.date) == month, db.extract('year', QuestionModel.date) == year).all()
+    questions_data = []
+    for question in questions:
+        votes = extract_votes_info(question, date=question.date.date())
+        if not votes and not is_today_based_on_reset(question, group):
+            continue
+        questions_data.append(build_question_response(question, votes))
+
+    return {"success": True, "message": f"Questions for month {month} and year {year} retrieved successfully", "content": questions_data}, 200
+
 def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     written_answer = None
     group = GroupModel.query.get(group_id)
@@ -188,6 +282,7 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
             question_id=db_question.id,
             group_id=group_id,
             written_answer=written_answer,
+            date=question.date
         )
     else:
         if not votedUsers:
@@ -218,6 +313,7 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
             voterUser_id=user.id,
             question_id=question.id,
             group_id=group_id,
+            date=question.date,
             targets=[QuestionVoteTarget(votedUser_id=votedUser_id) for votedUser_id in votedUser_ids]
         )
 

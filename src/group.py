@@ -15,6 +15,7 @@ def create_group(request: Request) -> tuple[dict, int]:
         return {"success": False, "message": "User info is required to create a group"}, 400
     name = request.json.get('name')
     description = request.json.get('description')
+    daily_reset_timestamp_str = request.json.get('daily_reset_timestamp')
 
     if not name:
         return {"success": False, "message": "Name is required"}, 400
@@ -22,8 +23,15 @@ def create_group(request: Request) -> tuple[dict, int]:
     user: UserModel | None = get_user_object(user_info)
     if not user:
         return {"success": False, "message": "User not found"}, 404
-    
-    group = GroupModel(name=name, description=description)
+
+    if daily_reset_timestamp_str:
+        try:
+            daily_reset_timestamp = datetime.datetime.strptime(daily_reset_timestamp_str, "%H:%M").time()
+            group = GroupModel(name=name, description=description, daily_reset_timestamp=daily_reset_timestamp)
+        except ValueError:
+            return {"success": False, "message": "Invalid time format. Please use HH:MM format."}, 400
+    else:
+        group = GroupModel(name=name, description=description)
 
     result = add_to_db(group)
     if result.get("error"):
@@ -68,7 +76,12 @@ def update_group(group_id: int) -> tuple[dict, int]:
     data = request.json
     group.name = data.get('name', group.name)
     group.description = data.get('description', group.description)
-    group.daily_reset_timestamp = datetime.datetime.strptime(data.get('daily_reset_timestamp', group.daily_reset_timestamp), "%H:%M").time()
+    daily_reset_timestamp_str = data.get('daily_reset_timestamp')
+    if daily_reset_timestamp_str:
+        try:
+            group.daily_reset_timestamp = datetime.datetime.strptime(daily_reset_timestamp_str, "%H:%M").time()
+        except ValueError:
+            return {"success": False, "message": "Invalid time format. Please use HH:MM format."}, 400
 
     result = update_from_db()
     if result.get("error"):

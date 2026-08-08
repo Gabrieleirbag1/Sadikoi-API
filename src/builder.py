@@ -41,6 +41,7 @@ def build_question_response(question: QuestionModel, votes: dict = None) -> dict
         "enableMultipleVoting": question.enableMultipleVoting,
         "voteNumberLimit": question.voteNumberLimit,
         "canWrite": question.canWrite,
+        "date": question.date.isoformat(),
         "item": question.item,
         "votes": votes
     }
