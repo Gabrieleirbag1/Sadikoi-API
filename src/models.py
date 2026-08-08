@@ -12,8 +12,20 @@ class GroupUser(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)
-    role = db.Column(db.String(50), default='member')  # Exemple : 'admin', 'member'
+    role = db.Column(db.String(50), default='member')
     joined_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    
+class Item(db.Model):
+    """Tracks items per user, scoped to a group membership"""
+    __tablename__ = 'items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
+    item_name = db.Column(db.String(100), nullable=False)
+    acquired_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+
+    user = db.relationship('UserModel', backref=db.backref('items', lazy='dynamic'))
 
 class UserSecurity(db.Model):
     """Tracks known devices per user and their authorization/security state."""
@@ -219,7 +231,7 @@ class QuestionModel(db.Model):
     enableMultipleVoting = db.Column(db.Boolean, default=False)
     voteNumberLimit = db.Column(db.Integer, default=1)
     canWrite = db.Column(db.Boolean, default=False)
-    item = db.Column(db.String(100))
+    item_name = db.Column(db.String(100))
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     votes = db.relationship('QuestionVote', back_populates='question', lazy='dynamic')
 
