@@ -226,7 +226,7 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
         votes = extract_votes_info(question, date=question.date.date())
         if not votes and not is_today_based_on_reset(question, group):
             continue
-        questions_data.append(build_question_response(question, questions, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes))
+        questions_data.append(build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes))
 
     return {"success": True, "message": f"Questions for month {month} and year {year} retrieved successfully", "content": questions_data}, 200
 
