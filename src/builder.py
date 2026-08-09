@@ -13,11 +13,14 @@ def build_user_response(user: UserModel) -> dict:
     }
 
 def build_group_response(group: GroupModel) -> dict:
+    users = [build_user_response(user) for user in group.users]
+    for user in users:
+        user["items"] = [build_item_response(item) for item in get_user_items_in_group(user["id"], group.id)]
     return {
         "id": group.id,
         "name": group.name,
         "description": group.description,
-        "users": [build_user_response(user) for user in group.users],
+        "users": users,
         "date_created": group.date_created,
         "daily_reset_timestamp": group.daily_reset_timestamp.strftime("%H:%M")
     }
@@ -73,3 +76,13 @@ def build_item_model(most_voted_user: dict, last_question: QuestionModel) -> Ite
         item_name=last_question.item_name,
         acquired_at=last_question.date
     )
+
+def build_item_response(item: ItemModel) -> dict:
+    return {
+        "id": item.id,
+        "item_name": item.item_name,
+        "acquired_at": item.acquired_at.isoformat()
+    }
+
+def get_user_items_in_group(user_id: int, group_id: int) -> list[ItemModel]:
+    return ItemModel.query.filter_by(user_id=user_id, group_id=group_id).all()
