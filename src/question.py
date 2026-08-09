@@ -6,14 +6,14 @@ import datetime
 from flask import Request
 from flask_login import current_user
 
-from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote, Item
+from models import GroupModel, ItemModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote
 from db import add_to_db, update_from_db, db
 
 from lite_logging.lite_logging import log
 
 from auth import get_user_object
 
-from builder import build_question_response, build_user_response
+from builder import build_item_model, build_question_response, build_user_response, build_question_model
 
 from config import ALLOWED_LANGUAGES
 
@@ -166,23 +166,6 @@ def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
 
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     return user in group.users
-
-def build_question_model(question_data: dict, group: GroupModel, language: str) -> QuestionModel:
-    now = datetime.datetime.now(datetime.timezone.utc)
-    reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
-    date = reset_time if now >= reset_time else reset_time - datetime.timedelta(days=1)
-    return QuestionModel(
-        question_id=question_data['question_id'],
-        content=question_data['content'][language],
-        theme=question_data['theme'][language],
-        enableSelfVote=question_data['enableSelfVote'],
-        enableMultipleVoting=question_data['enableMultipleVoting'],
-        voteNumberLimit=question_data['voteNumberLimit'],
-        canWrite=question_data['canWrite'],
-        item_name=question_data['item_name']["id"],
-        date=date,
-        group=group
-    )
 
 def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: datetime.date = None):
     votes: list[QuestionVote] = question.votes.all()
@@ -337,19 +320,14 @@ def assign_items():
         log(f"Error deleting item_name from user {most_voted_user.id} in group {last_question.group.id}", level="ERROR")
         return
 
-    new_item = Item(
-        user_id=most_voted_user["id"],
-        group_id=last_question.group.id,
-        question_id=last_question.id,
-        item_name=last_question.item_name,
-    )
+    new_item = build_item_model(most_voted_user, last_question)
     result = add_to_db(new_item)
     if result.get("error"):
         log(f"Error assigning item_name: {result.get('error')}", level="ERROR")
 
 def delete_item_from_user(group: GroupModel, item_name: str) -> tuple[dict, int]:
     # Delete the item_name from the user in the group if it exists
-    item_to_delete = Item.query.filter_by(group_id=group.id, item_name=item_name).first()
+    item_to_delete = ItemModel.query.filter_by(group_id=group.id, item_name=item_name).first()
     if not item_to_delete:
         return {"success": True, "message": "Item not found for the user in the group"}, 404
     db.session.delete(item_to_delete)

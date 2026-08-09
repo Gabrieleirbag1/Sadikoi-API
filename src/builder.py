@@ -1,4 +1,6 @@
-from models import ChatMessageModel, GroupModel, QuestionModel, UserModel
+import datetime
+
+from models import ChatMessageModel, GroupModel, ItemModel, QuestionModel, UserModel
 
 def build_user_response(user: UserModel) -> dict:
     return {
@@ -45,3 +47,28 @@ def build_question_response(question: QuestionModel, votes: dict = None) -> dict
         "item_name": question.item_name,
         "votes": votes
     }
+
+def build_question_model(question_data: dict, group: GroupModel, language: str) -> QuestionModel:
+    now = datetime.datetime.now(datetime.timezone.utc)
+    reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
+    date = reset_time if now >= reset_time else reset_time - datetime.timedelta(days=1)
+    return QuestionModel(
+        question_id=question_data['question_id'],
+        content=question_data['content'][language],
+        theme=question_data['theme'][language],
+        enableSelfVote=question_data['enableSelfVote'],
+        enableMultipleVoting=question_data['enableMultipleVoting'],
+        voteNumberLimit=question_data['voteNumberLimit'],
+        canWrite=question_data['canWrite'],
+        item_name=question_data['item_name']["id"],
+        date=date,
+        group=group
+    )
+
+def build_item_model(most_voted_user: dict, last_question: QuestionModel) -> ItemModel:
+    return ItemModel(
+        user_id=most_voted_user["id"],
+        group_id=last_question.group_id,
+        item_name=last_question.item_name,
+        acquired_at=last_question.date
+    )

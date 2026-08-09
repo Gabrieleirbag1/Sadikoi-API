@@ -15,7 +15,7 @@ class GroupUser(db.Model):
     role = db.Column(db.String(50), default='member')
     joined_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     
-class Item(db.Model):
+class ItemModel(db.Model):
     """Tracks items per user, scoped to a group membership"""
     __tablename__ = 'items'
 
@@ -23,7 +23,7 @@ class Item(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     item_name = db.Column(db.String(100), nullable=False)
-    acquired_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    acquired_at = db.Column(db.DateTime(timezone=True), nullable=False)
 
     user = db.relationship('UserModel', backref=db.backref('items', lazy='dynamic'))
 
