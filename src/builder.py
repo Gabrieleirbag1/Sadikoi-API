@@ -33,12 +33,14 @@ def build_chat_message_response(message: ChatMessageModel) -> dict:
         "sender": build_user_response(message.user)
     }
 
-def build_question_response(question: QuestionModel, votes: dict = None) -> dict:
+def build_question_response(question: QuestionModel, question_pool: list, language: str, votes: dict = None) -> dict:
+    content = next((q['content'][language] for q in question_pool if q['question_id'] == question.question_id), None)
+    theme = next((q['theme'][language] for q in question_pool if q['question_id'] == question.question_id), None)
     return {
         "id": question.id,
         "question_id": question.question_id,
-        "content": question.content,
-        "theme": question.theme,
+        "content": content,
+        "theme": theme,
         "enableSelfVote": question.enableSelfVote,
         "enableMultipleVoting": question.enableMultipleVoting,
         "voteNumberLimit": question.voteNumberLimit,
@@ -48,14 +50,13 @@ def build_question_response(question: QuestionModel, votes: dict = None) -> dict
         "votes": votes
     }
 
-def build_question_model(question_data: dict, group: GroupModel, language: str) -> QuestionModel:
+def build_question_model(question_data: dict, group: GroupModel) -> QuestionModel:
     now = datetime.datetime.now(datetime.timezone.utc)
     reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
     date = reset_time if now >= reset_time else reset_time - datetime.timedelta(days=1)
     return QuestionModel(
         question_id=question_data['question_id'],
-        content=question_data['content'][language],
-        theme=question_data['theme'][language],
+        theme=question_data['theme']['id'],
         enableSelfVote=question_data['enableSelfVote'],
         enableMultipleVoting=question_data['enableMultipleVoting'],
         voteNumberLimit=question_data['voteNumberLimit'],

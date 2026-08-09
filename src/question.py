@@ -19,12 +19,12 @@ from config import ALLOWED_LANGUAGES
 
 json_path = os.path.join(os.path.dirname(__file__), 'data', 'questions.json')
 with open(json_path, 'r') as f:
-    questions = json.load(f)
+    question_pool = json.load(f)
 
 MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
 
 def chose_random_question() -> dict:
-    return random.choice(questions)
+    return random.choice(question_pool)
 
 def get_question_counts_by_id(group: GroupModel) -> dict[int, int]:
     """Return a mapping of question_id -> number of times it has been asked in this group.
@@ -63,7 +63,7 @@ def is_question_already_asked(current_count: int, mean_iteration: int) -> bool:
 def chose_question(group: GroupModel, offset: int = 0) -> dict:
     counts_by_id = get_question_counts_by_id(group)
     mean_iteration = get_mean_iterations_question(group, counts_by_id)
-    for _ in range(len(questions)):
+    for _ in range(len(question_pool)):
         question_data = chose_random_question()
         current_count = counts_by_id.get(question_data['question_id'], 0)
         if not is_question_already_asked(current_count, mean_iteration + offset):
@@ -71,7 +71,7 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict:
     # If no question found, pick the one with the least occurrences so far
     if counts_by_id:
         min_question_id = min(counts_by_id, key=lambda qid: counts_by_id[qid])
-        question_data = next(q for q in questions if q['question_id'] == min_question_id)
+        question_data = next(q for q in question_pool if q['question_id'] == min_question_id)
         return question_data
     else:
         # Fallback, shouldn't happen
@@ -198,21 +198,25 @@ def get_question(group_id: int) -> tuple[dict, int]:
         votes = None
         if does_exist_vote_today(group, user):
             votes = extract_votes_info(question, group)
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, votes)}, 200
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes)}, 200
     else:
         try:
             question_data = chose_question(group)
         except StopIteration:
             return {"success": False, "message": "No questions available or not found in the original list"}, 404
         print("Chosen question:", question_data)
-        question = build_question_model(question_data, group, user.language if user.language in ALLOWED_LANGUAGES else 'en')
+        question = build_question_model(question_data, group)
         result = add_to_db(question)
         if result.get("error"):
             return result, 500
         assign_items()
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question)}, 200
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en')}, 200
     
 def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, int]:
+    user_info = current_user.id or current_user.username
+    user = get_user_object(user_info)
+    if not user:
+        return {"success": False, "message": "User not found"}, 404
     group = GroupModel.query.get(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
@@ -222,7 +226,7 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
         votes = extract_votes_info(question, date=question.date.date())
         if not votes and not is_today_based_on_reset(question, group):
             continue
-        questions_data.append(build_question_response(question, votes))
+        questions_data.append(build_question_response(question, questions, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes))
 
     return {"success": True, "message": f"Questions for month {month} and year {year} retrieved successfully", "content": questions_data}, 200
 
