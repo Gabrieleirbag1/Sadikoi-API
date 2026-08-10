@@ -222,7 +222,7 @@ def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     :rtype: bool"""
     return user in group.users
 
-def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: datetime.date = None):
+def extract_votes_info(question: QuestionModel, group: GroupModel, date: datetime.date = None):
     """Extract detailed information about votes for a given question, optionally filtered by group and date.
     
     :param QuestionModel question: The question for which to extract vote information.
@@ -238,9 +238,9 @@ def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: 
     for vote in votes:
         if date and vote.date.date() != date:
             continue
+
         voterUser =  build_user_response(vote.voterUser)
         voterUser["items"] = [build_item_response(item) for item in get_user_items_in_group(voterUser["id"], group.id)]
-
         targets = [build_user_response(target.votedUser) for target in vote.targets]
         for target in targets:
             target["items"] = [build_item_response(item) for item in get_user_items_in_group(target["id"], group.id)]
@@ -307,7 +307,7 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
     questions = group.questions.filter(db.extract('month', QuestionModel.date) == month, db.extract('year', QuestionModel.date) == year).all()
     questions_data = []
     for question in questions:
-        votes = extract_votes_info(question, date=question.date.date())
+        votes = extract_votes_info(question, group, question.date.date())
         if not votes and not is_today_based_on_reset(question, group):
             continue
         questions_data.append(build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes))
