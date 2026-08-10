@@ -2,7 +2,7 @@ from lite_logging.lite_logging import log
 
 from models import ItemModel, QuestionModel, QuestionModel, QuestionVote, GroupModel
 from builder import build_item_model, build_item_model, build_user_response
-from db import add_to_db, update_from_db, db
+from db import add_to_db, update_from_db
 
 def assign_items():
     """Assign items to the user with the most votes for the last question in the group. If there is a tie or no votes, no item will be assigned."""
@@ -13,7 +13,7 @@ def assign_items():
     if not most_voted_user:
         return
     
-    if not delete_item_from_user(last_question.group, last_question.item_name)[0].get("success"):
+    if not set_item_inactive(last_question.group, last_question.item_name)[0].get("success"):
         log(f"Error deleting item_name from user {most_voted_user.id} in group {last_question.group.id}", level="ERROR")
         return
 
@@ -22,8 +22,8 @@ def assign_items():
     if result.get("error"):
         log(f"Error assigning item_name: {result.get('error')}", level="ERROR")
 
-def delete_item_from_user(group: GroupModel, item_name: str) -> tuple[dict, int]:
-    """Delete the item_name from the user in the group if it exists.
+def set_item_inactive(group: GroupModel, item_name: str) -> tuple[dict, int]:
+    """
     
     :param GroupModel group: The group from which to delete the item_name.
     :param str item_name: The name of the item to delete.
@@ -31,10 +31,10 @@ def delete_item_from_user(group: GroupModel, item_name: str) -> tuple[dict, int]
     :return: A tuple containing a dictionary with the result and the HTTP status code.
     :rtype: tuple[dict, int]
     """
-    item_to_delete = ItemModel.query.filter_by(group_id=group.id, item_name=item_name).first()
-    if not item_to_delete:
+    item_to_set_inactive = ItemModel.query.filter_by(group_id=group.id, item_name=item_name).first()
+    if not item_to_set_inactive:
         return {"success": True, "message": "Item not found for the user in the group"}, 404
-    db.session.delete(item_to_delete)
+    item_to_set_inactive.state = "inactive"
     result = update_from_db()
     if result.get("error"):
         return {"success": False, "message": result.get("error")}, 500
