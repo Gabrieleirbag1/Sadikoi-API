@@ -285,7 +285,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
         result = add_to_db(question)
         if result.get("error"):
             return result, 500
-        assign_items()
+        assign_items(question, group)
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en')}, 200
     
 def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, int]:

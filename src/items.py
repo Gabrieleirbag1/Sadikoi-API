@@ -6,16 +6,16 @@ from models import ItemModel, QuestionModel, QuestionModel, QuestionVote, GroupM
 from builder import build_item_model, build_item_model, build_user_response
 from db import add_to_db, update_from_db
 
-def assign_items():
+def assign_items(question: QuestionModel, group: GroupModel) -> None:
     """Assign items to the user with the most votes for the last question in the group. If there is a tie or no votes, no item will be assigned."""
-    last_question = QuestionModel.query.order_by(QuestionModel.date.desc()).offset(1).first()
+    last_question: QuestionModel = QuestionModel.query.order_by(QuestionModel.date.desc()).offset(1).first()
     if not last_question:
         return
     most_voted_user = get_most_voted_user(last_question, last_question.group)
     if not most_voted_user:
         return
     
-    if not set_item_inactive(last_question.group, last_question.item_name)[0].get("success"):
+    if not set_item_inactive(group, last_question.item_name, question.date)[0].get("success"):
         log(f"Error deleting item_name from user {most_voted_user.id} in group {last_question.group.id}", level="ERROR")
         return
 
@@ -24,11 +24,13 @@ def assign_items():
     if result.get("error"):
         log(f"Error assigning item_name: {result.get('error')}", level="ERROR")
 
-def set_item_inactive(group: GroupModel, item_name: str) -> tuple[dict, int]:
+def set_item_inactive(group: GroupModel, item_name: str, date: datetime.datetime) -> tuple[dict, int]:
     """
+    Set the inactive_since date for an item in a group, effectively marking it as deleted.
     
     :param GroupModel group: The group from which to delete the item_name.
     :param str item_name: The name of the item to delete.
+    :param datetime.datetime date: The date to set as the inactive since date.
 
     :return: A tuple containing a dictionary with the result and the HTTP status code.
     :rtype: tuple[dict, int]
@@ -36,7 +38,7 @@ def set_item_inactive(group: GroupModel, item_name: str) -> tuple[dict, int]:
     item_to_set_inactive: ItemModel = ItemModel.query.filter_by(group_id=group.id, item_name=item_name).first()
     if not item_to_set_inactive:
         return {"success": True, "message": "Item not found for the user in the group"}, 404
-    item_to_set_inactive.inactive_since = datetime.datetime.now(datetime.timezone.utc)
+    item_to_set_inactive.inactive_since = date
     result = update_from_db()
     if result.get("error"):
         return {"success": False, "message": result.get("error")}, 500
