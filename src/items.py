@@ -1,3 +1,5 @@
+import datetime
+
 from lite_logging.lite_logging import log
 
 from models import ItemModel, QuestionModel, QuestionModel, QuestionVote, GroupModel
@@ -31,10 +33,10 @@ def set_item_inactive(group: GroupModel, item_name: str) -> tuple[dict, int]:
     :return: A tuple containing a dictionary with the result and the HTTP status code.
     :rtype: tuple[dict, int]
     """
-    item_to_set_inactive = ItemModel.query.filter_by(group_id=group.id, item_name=item_name).first()
+    item_to_set_inactive: ItemModel = ItemModel.query.filter_by(group_id=group.id, item_name=item_name).first()
     if not item_to_set_inactive:
         return {"success": True, "message": "Item not found for the user in the group"}, 404
-    item_to_set_inactive.state = "inactive"
+    item_to_set_inactive.inactive_since = datetime.datetime.now(datetime.timezone.utc)
     result = update_from_db()
     if result.get("error"):
         return {"success": False, "message": result.get("error")}, 500
