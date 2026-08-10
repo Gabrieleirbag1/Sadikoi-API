@@ -1,8 +1,7 @@
+from lite_logging.lite_logging import log
 
 from models import ItemModel, QuestionModel, QuestionModel, QuestionVote, GroupModel
 from builder import build_item_model, build_item_model, build_user_response
-
-from lite_logging.lite_logging import log
 from db import add_to_db, update_from_db, db
 
 def assign_items():
