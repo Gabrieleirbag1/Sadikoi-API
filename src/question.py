@@ -13,7 +13,7 @@ from lite_logging.lite_logging import log
 
 from auth import get_user_object
 
-from builder import build_item_model, build_question_response, build_user_response, build_question_model
+from builder import build_item_model, build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group
 
 from config import ALLOWED_LANGUAGES
 
@@ -175,11 +175,18 @@ def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: 
     for vote in votes:
         if date and vote.date.date() != date:
             continue
+        voterUser =  build_user_response(vote.voterUser)
+        voterUser["items"] = [build_item_response(item) for item in get_user_items_in_group(voterUser["id"], group.id)]
+
+        targets = [build_user_response(target.votedUser) for target in vote.targets]
+        for target in targets:
+            target["items"] = [build_item_response(item) for item in get_user_items_in_group(target["id"], group.id)]
+
         vote_info = {
-            "voterUser": build_user_response(vote.voterUser),
+            "voterUser": voterUser,
             "voteDate": vote.date.isoformat(),
             "writtenAnswer": vote.written_answer,
-            "targets": [build_user_response(target.votedUser) for target in vote.targets]
+            "targets": targets
         }
         votes_data.append(vote_info)
     return votes_data
