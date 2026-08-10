@@ -21,6 +21,10 @@ with open(json_path, 'r') as f:
 MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
 
 def chose_random_question() -> dict:
+    """Choose a random question from the question pool.
+    
+    :return: A dictionary containing the chosen question data.
+    :rtype: dict"""
     return random.choice(question_pool)
 
 def get_question_counts_by_id(group: GroupModel) -> dict[int, int]:
@@ -29,6 +33,11 @@ def get_question_counts_by_id(group: GroupModel) -> dict[int, int]:
     This replaces the old stored `iteration` column: iteration is now simply
     "how many rows exist for this (group_id, question_id) pair", computed on
     the fly with a GROUP BY count.
+
+    :param GroupModel group: The group for which to count questions.
+
+    :return: A dictionary mapping question_id to the number of times it has been asked in the group.
+    :rtype: dict[int, int]
     """
     rows = (
         db.session.query(QuestionModel.question_id, db.func.count(QuestionModel.id))
@@ -39,7 +48,13 @@ def get_question_counts_by_id(group: GroupModel) -> dict[int, int]:
     return {question_id: count for question_id, count in rows}
 
 def get_question_iteration_count(group: GroupModel, question_id: int) -> int:
-    """How many times this specific question_id has been asked in this group so far (0 if never)."""
+    """How many times this specific question_id has been asked in this group so far (0 if never).
+    
+    :param GroupModel group: The group to check.
+    :param int question_id: The question_id to check.
+    
+    :return: The number of times the question has been asked in the group.
+    :rtype: int"""
     return (
         db.session.query(db.func.count(QuestionModel.id))
         .filter(QuestionModel.group_id == group.id, QuestionModel.question_id == question_id)
@@ -47,17 +62,36 @@ def get_question_iteration_count(group: GroupModel, question_id: int) -> int:
     ) or 0
 
 def get_mean_iterations_question(group: GroupModel, counts_by_id: dict[int, int] | None = None) -> int:
-    """Mean number of times each already-asked question has been asked in this group."""
+    """Mean number of times each already-asked question has been asked in this group.
+    
+    :param GroupModel group: The group for which to compute the mean.
+    :param dict[int, int] counts_by_id: Optional; a precomputed mapping of question_id -> number of times it has been asked in this group. If not provided, it will be computed.
+    
+    :return: The mean number of times each question has been asked in the group.
+    :rtype: int"""
     counts_by_id = counts_by_id if counts_by_id is not None else get_question_counts_by_id(group)
     if not counts_by_id:
         return 1
     return sum(counts_by_id.values()) // len(counts_by_id)
 
 def is_question_already_asked(current_count: int, mean_iteration: int) -> bool:
-    """A question counts as 'already asked (enough)' once its count reaches the mean (+ offset)."""
+    """A question counts as 'already asked (enough)' once its count reaches the mean (+ offset).
+    
+    :param int current_count: How many times this question has been asked in the group.
+    :param int mean_iteration: The mean number of times questions have been asked in the group
+    
+    :return: True if the question has been asked enough times, False otherwise.
+    :rtype: bool"""
     return current_count >= mean_iteration
 
 def chose_question(group: GroupModel, offset: int = 0) -> dict:
+    """Choose a question for the group, preferring questions that have been asked less than the mean number of times.
+    
+    :param GroupModel group: The group for which to choose a question.
+    :param int offset: Optional; an offset to add to the mean iteration count for determining if a question has been asked enough. Default is 0.
+    
+    :return: A dictionary containing the chosen question data.
+    :rtype: dict"""
     counts_by_id = get_question_counts_by_id(group)
     mean_iteration = get_mean_iterations_question(group, counts_by_id)
     for _ in range(len(question_pool)):
@@ -77,7 +111,11 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict:
 def is_today_based_on_reset(question_or_vote: QuestionModel | QuestionVote, group: GroupModel) -> bool:
     """Check if the question or vote is from today based on the group's daily reset time.
     
-    Returns True if the question or vote is from today, False otherwise."""
+    :param QuestionModel | QuestionVote question_or_vote: The question or vote to check.
+    :param GroupModel group: The group to check against.
+    
+    :return: True if the question or vote is from today based on the group's reset time, False otherwise.
+    :rtype: bool"""
     if not question_or_vote:
         return False
 
@@ -100,6 +138,13 @@ def is_today_based_on_reset(question_or_vote: QuestionModel | QuestionVote, grou
     return start_time <= item_date < end_time
     
 def does_exist_question_today(group: GroupModel) -> bool:
+    """Check if there is a question for today based on the group's daily reset time.
+    
+    :param GroupModel group: The group to check for today's question.
+    
+    :return: True if there is a question for today, False otherwise.
+    :rtype: bool
+    """
     question = group.questions.order_by(QuestionModel.date.desc()).first()
     if not question:
         return False
@@ -149,6 +194,12 @@ def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
     Tied directly to the current question's id rather than a recomputed date
     window, so it isn't affected by daily_reset_timestamp changes after the
     question/vote were created.
+
+    :param GroupModel group: The group to check for today's question.
+    :param UserModel user: The user to check for a vote.
+
+    :return: True if the user has already voted today, False otherwise.
+    :rtype: bool
     """
     question = group.questions.order_by(QuestionModel.date.desc()).first()
     if not question or not does_exist_question_today(group):
@@ -162,9 +213,24 @@ def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
     return vote is not None
 
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
+    """Check if a user is a member of a group.
+    
+    :param UserModel user: The user to check.
+    :param GroupModel group: The group to check against.
+    
+    :return: True if the user is in the group, False otherwise.
+    :rtype: bool"""
     return user in group.users
 
 def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: datetime.date = None):
+    """Extract detailed information about votes for a given question, optionally filtered by group and date.
+    
+    :param QuestionModel question: The question for which to extract vote information.
+    :param GroupModel group: Optional; the group to filter votes by.
+    :param datetime.date date: Optional; the date to filter votes by.
+
+    :return: A list of dictionaries containing the extracted vote information.
+    :rtype: list[dict]"""
     votes: list[QuestionVote] = question.votes.all()
     votes_data = []
     if not group and not date:
@@ -189,6 +255,12 @@ def extract_votes_info(question: QuestionModel, group: GroupModel = None, date: 
     return votes_data
     
 def get_question(group_id: int) -> tuple[dict, int]:
+    """Retrieve the current question for a group, or generate a new one if none exists for today.
+    
+    :param int group_id: The ID of the group for which to retrieve the question.
+    
+    :return: A tuple containing a dictionary with the result and the HTTP status code.
+    :rtype: tuple[dict, int]"""
     group = GroupModel.query.get(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
@@ -217,6 +289,14 @@ def get_question(group_id: int) -> tuple[dict, int]:
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en')}, 200
     
 def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, int]:
+    """Retrieve all questions for a group filtered by month and year.
+    
+    :param int group_id: The ID of the group for which to retrieve questions.
+    :param int month: The month to filter questions by (1-12).
+    :param int year: The year to filter questions by (e.g., 2024).
+    
+    :return: A tuple containing a dictionary with the result and the HTTP status code.
+    :rtype: tuple[dict, int]"""
     user_info = current_user.id or current_user.username
     user = get_user_object(user_info)
     if not user:
@@ -235,6 +315,13 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
     return {"success": True, "message": f"Questions for month {month} and year {year} retrieved successfully", "content": questions_data}, 200
 
 def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
+    """Handle voting for the current question in a group, either by selecting users or providing a written answer.
+    
+    :param int group_id: The ID of the group for which to vote on the current question.
+    :param Request request: The Flask request object containing the vote data.
+
+    :return: A tuple containing a dictionary with the result and the HTTP status code.
+    :rtype: tuple[dict, int]"""
     written_answer = None
     group = GroupModel.query.get(group_id)
     if not group:
