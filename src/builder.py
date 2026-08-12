@@ -1,6 +1,7 @@
 import datetime
 
 from models import ChatMessageModel, GroupModel, ItemModel, QuestionModel, UserModel
+from db import db
 
 def build_user_response(user: UserModel) -> dict:
     return {
@@ -15,7 +16,7 @@ def build_user_response(user: UserModel) -> dict:
 def build_group_response(group: GroupModel) -> dict:
     users = [build_user_response(user) for user in group.users]
     for user in users:
-        user["items"] = [build_item_response(item) for item in get_user_items_in_group(user["id"], group.id)]
+        user["items"] = [build_item_response(item) for item in get_user_items_in_group(user["id"], group.id, group.daily_reset_timestamp)]
     return {
         "id": group.id,
         "name": group.name,
@@ -84,5 +85,24 @@ def build_item_response(item: ItemModel) -> dict:
         "acquired_at": item.acquired_at.isoformat()
     }
 
-def get_user_items_in_group(user_id: int, group_id: int) -> list[ItemModel]:
-    return ItemModel.query.filter_by(user_id=user_id, group_id=group_id).all()
+def get_user_items_in_group(user_id: int, group_id: int, date: datetime.datetime) -> list[ItemModel]:
+    """Return the items a user held in a group as of the given date.
+
+    An item counts as "held" at `date` if it was acquired on or before
+    `date` and either hasn't gone inactive yet, or went inactive after
+    `date` (i.e. the user still had it at that point in time).
+    """
+    items: list[ItemModel] = ItemModel.query.filter(
+        ItemModel.user_id == user_id,
+        ItemModel.group_id == group_id,
+        ItemModel.acquired_at < date,
+        db.or_(
+            ItemModel.inactive_since.is_(None),
+            ItemModel.inactive_since > date
+        )
+    ).all()
+
+    for item in items:
+        streak = (date - item.acquired_at).days
+
+    return items
