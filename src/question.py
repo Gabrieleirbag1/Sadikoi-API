@@ -240,10 +240,10 @@ def extract_votes_info(question: QuestionModel, group: GroupModel, date: datetim
             continue
 
         voterUser =  build_user_response(vote.voterUser)
-        voterUser["items"] = [build_item_response(item) for item in get_user_items_in_group(voterUser["id"], group.id, question.date)]
+        voterUser["items"] = [build_item_response(item, streak) for item, streak in get_user_items_in_group(voterUser["id"], group.id, question.date)]
         targets = [build_user_response(target.votedUser) for target in vote.targets]
         for target in targets:
-            target["items"] = [build_item_response(item) for item in get_user_items_in_group(target["id"], group.id, question.date)]
+            target["items"] = [build_item_response(item, streak) for item, streak in get_user_items_in_group(target["id"], group.id, question.date)]
 
         vote_info = {
             "voterUser": voterUser,

@@ -16,7 +16,7 @@ def build_user_response(user: UserModel) -> dict:
 def build_group_response(group: GroupModel) -> dict:
     users = [build_user_response(user) for user in group.users]
     for user in users:
-        user["items"] = [build_item_response(item) for item in get_user_items_in_group(user["id"], group.id, group.daily_reset_timestamp)]
+        user["items"] = [build_item_response(item, streak) for item, streak in get_user_items_in_group(user["id"], group.id, group.daily_reset_timestamp)]
     return {
         "id": group.id,
         "name": group.name,
@@ -78,14 +78,15 @@ def build_item_model(most_voted_user: dict, last_question: QuestionModel) -> Ite
         acquired_at=last_question.date
     )
 
-def build_item_response(item: ItemModel) -> dict:
+def build_item_response(item: ItemModel, streak: int) -> dict:
     return {
         "id": item.id,
         "item_name": item.item_name,
-        "acquired_at": item.acquired_at.isoformat()
+        "acquired_at": item.acquired_at.isoformat(),
+        "streak": streak
     }
 
-def get_user_items_in_group(user_id: int, group_id: int, date: datetime.datetime) -> list[ItemModel]:
+def get_user_items_in_group(user_id: int, group_id: int, date: datetime.datetime):
     """Return the items a user held in a group as of the given date.
 
     An item counts as "held" at `date` if it was acquired on or before
@@ -102,7 +103,4 @@ def get_user_items_in_group(user_id: int, group_id: int, date: datetime.datetime
         )
     ).all()
 
-    for item in items:
-        streak = (date - item.acquired_at).days
-
-    return items
+    return [(item, (date - item.acquired_at).days) for item in items]
