@@ -35,7 +35,7 @@ def set_item_inactive(group: GroupModel, item_name: str, date: datetime.datetime
     :return: A tuple containing a dictionary with the result and the HTTP status code.
     :rtype: tuple[dict, int]
     """
-    item_to_set_inactive: ItemModel = ItemModel.query.filter_by(group_id=group.id, item_name=item_name).first()
+    item_to_set_inactive: ItemModel = ItemModel.query.filter_by(group_id=group.id, item_name=item_name).filter(ItemModel.inactive_since.is_(None)).first() # this ensure that we only set inactive for items that are currently active
     if not item_to_set_inactive:
         return {"success": True, "message": "Item not found for the user in the group"}, 404
     item_to_set_inactive.inactive_since = date
