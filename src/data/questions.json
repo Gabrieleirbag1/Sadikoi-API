@@ -6,6 +6,7 @@
       "en": "who is a jerk like a table ?"
     },
     "theme": {
+      "id": "connerie",
       "fr": "connerie",
       "en": "stupidity"
     },
@@ -13,10 +14,31 @@
     "enableMultipleVoting": false,
     "voteNumberLimit": 0,
     "canWrite": false,
-    "item": {
+    "item_name": {
       "id": "bonnet_honte",
       "fr": "Bonnet de la Honte",
       "en": "Dunce Cap of Shame"
+    }
+  },
+    {
+    "question_id": 10,
+    "content": {
+      "fr": "qui est stylé de ouf ?",
+      "en": "who is very swag ?"
+    },
+    "theme": {
+      "id": "style",
+      "fr": "style",
+      "en": "style"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 0,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_puissante",
+      "fr": "Cape de la Puissance",
+      "en": "Cape of Power"
     }
   }
 ]
