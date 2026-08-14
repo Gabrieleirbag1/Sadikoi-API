@@ -1,6 +1,6 @@
 import datetime
 
-from models import ChatMessageModel, GroupModel, ItemModel, QuestionModel, UserModel
+from models import ChatMessageModel, GroupModel, ItemModel, QuestionModel, UserModel, GroupUser
 from db import db
 
 def build_user_response(user: UserModel) -> dict:
@@ -15,8 +15,16 @@ def build_user_response(user: UserModel) -> dict:
 
 def build_group_response(group: GroupModel) -> dict:
     users = [build_user_response(user) for user in group.users]
+
+    roles = {
+        group_user.user_id: group_user.role
+        for group_user in GroupUser.query.filter_by(group_id=group.id).all()
+    }
+
     for user in users:
         user["items"] = [build_item_response(item, streak) for item, streak in get_user_items_in_group(user["id"], group.id, group.daily_reset_timestamp)]
+        user["role"] = roles.get(user["id"])
+
     return {
         "id": group.id,
         "name": group.name,
