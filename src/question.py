@@ -312,7 +312,7 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
             continue
         has_user_voted_to_this_question = any(vote['voterUser']['id'] == user.id for vote in votes)
         if not has_user_voted_to_this_question and is_today_based_on_reset(question, group):
-            continue
+            votes = []
         questions_data.append(build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes))
 
     return {"success": True, "message": f"Questions for month {month} and year {year} retrieved successfully", "content": questions_data}, 200
