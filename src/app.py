@@ -5,7 +5,7 @@ import os
 from lite_logging.lite_logging import log
 
 from models import UserModel
-from group import create_group, get_group, promote_user_group_role, promote_user_role, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
+from group import create_group, get_group, promote_user_group_role, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, vote_question, get_questions_by_date
 from feedback import create_bug_report, create_suggestion

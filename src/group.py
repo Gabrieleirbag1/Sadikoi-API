@@ -184,17 +184,21 @@ def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
+    group = GroupModel.query.get(group_id)
+    if not group:
+        return {"success": False, "message": "Group not found"}, 404
+
     admin_role = "admin"
 
     user_to_update_role_info = request.json.get('user_info')
     if not user_to_update_role_info:
         return {"success": False, "message": "User info is required to set role"}, 400
 
-    group_user = GroupUser.query.filter_by(user_id=user.id, group_id=group_id, role='admin').first()
+    group_user: GroupUser = GroupUser.query.filter_by(user_id=user.id, group_id=group_id, role='admin').first()
     if not group_user:
         return {"success": False, "message": "User is not a member of the group or not an admin"}, 403
 
-    group_user_to_update = GroupUser.query.filter_by(user_id=get_user_object(user_to_update_role_info).id, group_id=group_id).first()
+    group_user_to_update: GroupUser = GroupUser.query.filter_by(user_id=get_user_object(user_to_update_role_info).id, group_id=group_id).first()
     if not group_user_to_update:
         return {"success": False, "message": "User to update role is not a member of the group"}, 404
 
@@ -211,7 +215,7 @@ def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
 
-    return {"success": True, "message": f"User role updated to {admin_role}"}, 200
+    return {"success": True, "message": f"User role updated to {admin_role}", "content": build_group_response(group)}, 200
 
 def answer_invitation(token: str) -> tuple[dict, int]:
     user_info = current_user.id or current_user.username
