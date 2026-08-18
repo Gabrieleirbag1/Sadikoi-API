@@ -179,7 +179,7 @@ def remove_user_from_group(group_id: int, user_to_remove_info: str) -> tuple[dic
     
     return {"success": True, "message": "User removed from group successfully", "content": build_group_response(group)}, 200
 
-def promote_user_role(group_id: int) -> tuple[dict, int]:
+def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     user: UserModel | None = get_user_object(current_user.id)
     if not user:
         return {"success": False, "message": "User not found"}, 404
