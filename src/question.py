@@ -13,6 +13,7 @@ from auth import get_user_object
 from items import assign_items
 from builder import build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group
 from config import ALLOWED_LANGUAGES
+from sockets import socketio
 
 json_path = os.path.join(os.path.dirname(__file__), 'data', 'questions.json')
 with open(json_path, 'r') as f:
@@ -286,6 +287,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
         if result.get("error"):
             return result, 500
         assign_items(question, group)
+        socketio.emit('new_question', {"group_id": group_id}, to=str(group_id))
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en')}, 200
     
 def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, int]:
@@ -403,4 +405,8 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
-    return {"success": True, "message": "Vote recorded successfully", "content": extract_votes_info(question, group)}, 200
+
+    votes = extract_votes_info(question, group)
+    socketio.emit('new_vote', {"question_id": question.id, "votes": votes}, to=str(group_id))
+
+    return {"success": True, "message": "Vote recorded successfully", "content": votes}, 200

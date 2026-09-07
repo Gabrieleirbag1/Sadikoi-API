@@ -8,6 +8,7 @@ from flask import Request, request
 from db import add_to_db, delete_from_db, update_from_db
 from auth import get_user_object
 from builder import build_group_response, build_groups_response
+from sockets import socketio
 
 def create_group(request: Request) -> tuple[dict, int]:
     user_info = current_user.id or current_user.username
@@ -86,8 +87,11 @@ def update_group(group_id: int) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
-    
-    return {"success": True, "message": "Group updated successfully", "content": build_group_response(group)}, 200
+
+    response_data = build_group_response(group)
+    socketio.emit('group_updated', response_data, to=str(group_id))
+
+    return {"success": True, "message": "Group updated successfully", "content": response_data}, 200
 
 def delete_group(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
@@ -105,11 +109,14 @@ def delete_group(group_id: int) -> tuple[dict, int]:
     if not group_user or group_user.role != 'admin':
         return {"success": False, "message": "Only admins can delete the group"}, 403
 
+    response_data = build_group_response(group)
     result = delete_from_db(group)
     if result.get("error"):
         return result, 500
-    
-    return {"success": True, "message": "Group deleted successfully", "content": build_group_response(group)}, 200
+
+    socketio.emit('group_deleted', {"group_id": group_id}, to=str(group_id))
+
+    return {"success": True, "message": "Group deleted successfully", "content": response_data}, 200
 
 def get_user_groups() -> tuple[dict, int]:
     user: UserModel | None = get_user_object(current_user.id or current_user.username)
@@ -136,8 +143,11 @@ def add_user_to_group(group_id: int, user_info: str) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
-    
-    return {"success": True, "message": "User added to group successfully", "content": build_group_response(group)}, 200
+
+    response_data = build_group_response(group)
+    socketio.emit('member_joined', response_data, to=str(group_id))
+
+    return {"success": True, "message": "User added to group successfully", "content": response_data}, 200
 
 def remove_user_from_group(group_id: int, user_to_remove_info: str) -> tuple[dict, int]:
     user_info = current_user.id or current_user.username
@@ -174,10 +184,13 @@ def remove_user_from_group(group_id: int, user_to_remove_info: str) -> tuple[dic
     result = delete_from_db(group_user_to_remove)
     if result.get("error"):
         return result, 500
-    
+
     update_from_db()
-    
-    return {"success": True, "message": "User removed from group successfully", "content": build_group_response(group)}, 200
+
+    response_data = build_group_response(group)
+    socketio.emit('member_left', response_data, to=str(group_id))
+
+    return {"success": True, "message": "User removed from group successfully", "content": response_data}, 200
 
 def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     user: UserModel | None = get_user_object(current_user.id)
@@ -215,7 +228,10 @@ def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
 
-    return {"success": True, "message": f"User role updated to {admin_role}", "content": build_group_response(group)}, 200
+    response_data = build_group_response(group)
+    socketio.emit('role_updated', response_data, to=str(group_id))
+
+    return {"success": True, "message": f"User role updated to {admin_role}", "content": response_data}, 200
 
 def answer_invitation(token: str) -> tuple[dict, int]:
     user_info = current_user.id or current_user.username
