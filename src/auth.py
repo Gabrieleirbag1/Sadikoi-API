@@ -12,7 +12,7 @@ from lite_logging.lite_logging import log
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
-from models import UserModel, UserSecurity
+from models import GroupUser, UserModel, UserSecurity
 from config import allowed_file
 from db import add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
