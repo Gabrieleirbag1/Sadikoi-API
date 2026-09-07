@@ -1,6 +1,7 @@
 from flask import Flask, request, send_from_directory, session
 from flask_cors import CORS
 from flask_login import LoginManager, logout_user
+from flask_socketio import SocketIO, join_room, leave_room, emit
 import os
 from lite_logging.lite_logging import log
 
@@ -17,6 +18,20 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 CORS(app, supports_credentials=True)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+@socketio.on('join_group')
+def handle_join(data):
+    group_id = data['groupId']
+    join_room(group_id)
+    # Informe les autres membres qu'un utilisateur est arrivé
+    emit('user_joined', {'user': data['username']}, to=group_id)
+
+@socketio.on('update_page_data')
+def handle_update(data):
+    group_id = data['groupId']
+    # Répercute la modification à TOUS les utilisateurs du groupe (sauf l'émetteur)
+    emit('page_updated', data['patch'], to=group_id, include_self=False)
 
 def configure_app(db_name: str) -> None:
     """Configure the Flask app with the given database name.
