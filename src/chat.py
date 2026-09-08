@@ -5,6 +5,7 @@ from flask import Request
 from db import add_to_db
 from auth import get_user_object
 from builder import build_chat_message_response
+from sockets import socketio
 
 def get_messages(group_id: int) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
@@ -41,5 +42,8 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
     result = add_to_db(message)
     if result.get("error"):
         return result, 500
-    
-    return {"success": True, "message": "Message sent successfully", "content": build_chat_message_response(message)}, 201
+
+    response_data = build_chat_message_response(message)
+    socketio.emit('new_message', response_data, to=str(group_id))
+
+    return {"success": True, "message": "Message sent successfully", "content": response_data}, 201

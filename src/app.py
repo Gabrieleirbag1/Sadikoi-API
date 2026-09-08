@@ -1,15 +1,17 @@
 from flask import Flask, request, send_from_directory, session
 from flask_cors import CORS
-from flask_login import LoginManager, logout_user
+from flask_login import LoginManager, current_user, logout_user
+from flask_socketio import join_room, leave_room
 import os
 from lite_logging.lite_logging import log
 
-from models import UserModel
+from models import UserModel, GroupUser
 from group import create_group, get_group, promote_user_group_role, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, vote_question, get_questions_by_date
 from feedback import create_bug_report, create_suggestion
 from db import db
+from sockets import socketio
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device
 from config import SECRET_KEY
 
@@ -17,6 +19,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 CORS(app, supports_credentials=True)
+socketio.init_app(app)
 
 def configure_app(db_name: str) -> None:
     """Configure the Flask app with the given database name.
@@ -210,6 +213,37 @@ def create_bug_report_endpoint():
 def create_suggestion_endpoint():
     return create_suggestion(request)
 
+
+
+############## SOCKET IO EVENTS ##############
+
+@socketio.on('connect')
+def handle_connect():
+    if not current_user.is_authenticated:
+        return False
+    log(f"User {current_user.id} connected", level="DEBUG")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    log("User disconnected", level="DEBUG")
+
+@socketio.on('join_group')
+def handle_join(data):
+    if not current_user.is_authenticated:
+        return
+    group_id = int(data['groupId'])
+    if not GroupUser.query.filter_by(user_id=current_user.id, group_id=group_id).first():
+        log(f"Denied join_group: user {current_user.id} not a member of group {group_id}", level="WARNING")
+        return
+    join_room(str(group_id))
+    log(f"User {current_user.id} joined room {group_id}", level="DEBUG")
+
+@socketio.on('leave_group')
+def handle_leave(data):
+    group_id = str(data['groupId'])
+    leave_room(group_id)
+    log(f"User left room {group_id}", level="DEBUG")
+
 def main(db_name: str = "data-local") -> None:
     """Main function to create the app and initialize the database."
     
@@ -224,4 +258,4 @@ def main(db_name: str = "data-local") -> None:
 
 if __name__ == '__main__':
     main()
-    app.run(port=8082, debug=True)
+    socketio.run(app, port=8082, debug=True)
