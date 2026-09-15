@@ -389,7 +389,7 @@ def send_auth_code(user: UserModel, device: UserSecurity) -> tuple[dict, int]:
         log(f"Failed to send auth code email: {e}", level="ERROR")
         return {"success": False, "message": "Could not send authorization email"}, 500
 
-    return {"success": True, "message": "Authorization code sent to your email"}, 200
+    return {"success": True, "message": "Authorization code sent to your email"}, 203
 
 def verify_device(request: Request) -> tuple[dict, int]:
     """Verify the auth code submitted for a given device, authorizing it on success."""
@@ -441,7 +441,7 @@ def check_device_authorization(user: UserModel, device_id: str, device_name: str
         result, status = send_auth_code(user, device)
         result["requires_verification"] = True
         result["device_id"] = device.device_id
-        return result, 401 if not result.get("success") else 403
+        return result, status
 
     # Device is authorized and recent: update login metadata and let login proceed
     device.last_login = datetime.datetime.now(datetime.timezone.utc)
