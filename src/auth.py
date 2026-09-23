@@ -207,9 +207,10 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
                 return result
             user_to_login = result[0].get("content")
         else:
-            if google_picture and not user.profile_picture:
-                user.profile_picture = google_picture
-                update_from_db()
+            # if google_picture and not user.profile_picture:
+            #     profile_picture = save_profile_picture(google_picture, external=True)
+            #     user.profile_picture = profile_picture
+            #     update_from_db()
             user_to_login = user
 
         device_id = request.json.get('device_id')
