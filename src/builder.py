@@ -31,7 +31,8 @@ def build_group_response(group: GroupModel) -> dict:
         "description": group.description,
         "users": users,
         "date_created": group.date_created,
-        "daily_reset_timestamp": group.daily_reset_timestamp.strftime("%H:%M")
+        "daily_reset_timestamp": group.daily_reset_timestamp.strftime("%H:%M"),
+        "themes": group.themes
     }
 
 def build_groups_response(groups: list[GroupModel]) -> list[dict]:

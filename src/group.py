@@ -1,6 +1,7 @@
 import datetime
 import secrets
 
+from sockets import socketio
 from flask_login import current_user
 
 from models import GroupInvitationModel, GroupModel, UserModel, GroupUser
@@ -8,7 +9,10 @@ from flask import Request, request
 from db import add_to_db, delete_from_db, update_from_db
 from auth import get_user_object
 from builder import build_group_response, build_groups_response
-from sockets import socketio
+from utils import question_themes
+
+def is_theme_valid(theme: str) -> bool:
+    return theme in question_themes.keys()
 
 def create_group(request: Request) -> tuple[dict, int]:
     user_info = current_user.id or current_user.username
@@ -17,6 +21,7 @@ def create_group(request: Request) -> tuple[dict, int]:
     name = request.json.get('name')
     description = request.json.get('description')
     daily_reset_timestamp_str = request.json.get('daily_reset_timestamp')
+    themes = request.json.get('themes', [])
 
     if not name:
         return {"success": False, "message": "Name is required"}, 400
@@ -25,14 +30,20 @@ def create_group(request: Request) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
+    if not themes or len(themes) == 0:
+        return {"success": False, "message": "At least one theme is required"}, 400
+
+    if not all(is_theme_valid(theme) for theme in themes):
+        return {"success": False, "message": "One or more themes are invalid"}, 400
+
     if daily_reset_timestamp_str:
         try:
             daily_reset_timestamp = datetime.datetime.strptime(daily_reset_timestamp_str, "%H:%M").time()
-            group = GroupModel(name=name, description=description, daily_reset_timestamp=daily_reset_timestamp)
+            group = GroupModel(name=name, description=description, daily_reset_timestamp=daily_reset_timestamp, themes=themes)
         except ValueError:
             return {"success": False, "message": "Invalid time format. Please use HH:MM format."}, 400
     else:
-        group = GroupModel(name=name, description=description)
+        group = GroupModel(name=name, description=description, themes=themes)
 
     result = add_to_db(group)
     if result.get("error"):
@@ -77,6 +88,16 @@ def update_group(group_id: int) -> tuple[dict, int]:
     data = request.json
     group.name = data.get('name', group.name)
     group.description = data.get('description', group.description)
+
+    themes = data.get('themes')
+    if not themes or len(themes) == 0:
+        return {"success": False, "message": "At least one theme is required"}, 400
+
+    if not all(is_theme_valid(theme) for theme in themes):
+        return {"success": False, "message": "One or more themes are invalid"}, 400
+
+    group.themes = themes
+    
     daily_reset_timestamp_str = data.get('daily_reset_timestamp')
     if daily_reset_timestamp_str:
         try:

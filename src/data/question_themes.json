@@ -1,0 +1,14 @@
+{
+  "style": {
+    "id": "style",
+    "fr": "style",
+    "en": "style",
+    "checked": true
+  },
+  "connerie": {
+    "id": "connerie",
+    "fr": "connerie",
+    "en": "stupidity",
+    "checked": false
+  }
+}
