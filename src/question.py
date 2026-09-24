@@ -17,12 +17,18 @@ from utils import question_pool
 
 MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
 
-def chose_random_question() -> dict:
-    """Choose a random question from the question pool.
+def chose_random_question(themes: list) -> dict:
+    """Choose a random question from the question pool that matches the given themes.
     
     :return: A dictionary containing the chosen question data.
     :rtype: dict"""
-    return random.choice(question_pool)
+    matching_questions = [
+        question for question in question_pool
+        if question['theme']['id'] in themes
+    ]
+    if not matching_questions:
+        raise StopIteration("No questions match the group's selected themes")
+    return random.choice(matching_questions)
 
 def get_question_counts_by_id(group: GroupModel) -> dict[int, int]:
     """Return a mapping of question_id -> number of times it has been asked in this group.
@@ -92,7 +98,7 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict:
     counts_by_id = get_question_counts_by_id(group)
     mean_iteration = get_mean_iterations_question(group, counts_by_id)
     for _ in range(len(question_pool)):
-        question_data = chose_random_question()
+        question_data = chose_random_question(group.themes)
         current_count = counts_by_id.get(question_data['question_id'], 0)
         if not is_question_already_asked(current_count, mean_iteration + offset):
             return question_data
@@ -103,7 +109,7 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict:
         return question_data
     else:
         # Fallback, shouldn't happen
-        return chose_random_question()
+        return chose_random_question(group.themes)
     
 def is_today_based_on_reset(question_or_vote: QuestionModel | QuestionVote, group: GroupModel) -> bool:
     """Check if the question or vote is from today based on the group's daily reset time.
