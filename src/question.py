@@ -1,6 +1,4 @@
 import random
-import os 
-import json
 import datetime
 
 from flask import Request
@@ -14,10 +12,8 @@ from items import assign_items
 from builder import build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group
 from config import ALLOWED_LANGUAGES
 from sockets import socketio
+from utils import question_pool
 
-json_path = os.path.join(os.path.dirname(__file__), 'data', 'questions.json')
-with open(json_path, 'r') as f:
-    question_pool = json.load(f)
 
 MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
 
