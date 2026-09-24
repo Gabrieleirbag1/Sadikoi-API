@@ -5,7 +5,7 @@ from flask_socketio import join_room, leave_room
 import os
 from lite_logging.lite_logging import log
 
-from models import UserModel, GroupUser
+from models import UserModel, GroupUser, UserSecurity
 from group import create_group, get_group, promote_user_group_role, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, vote_question, get_questions_by_date
@@ -53,29 +53,38 @@ def create_app():
         # since the user_id is just the primary key of our user table, use it in the query for the user
         return db.session.get(UserModel, int(user_id))
         
+
+    def _force_logout(message: str):
+        logout_user()
+        session.clear()
+        return {"success": False, "message": message}, 401
+
     @app.before_request
     def check_authentication():
-        # Allow OPTIONS requests for CORS preflight
         if request.method == 'OPTIONS':
             return
-            
+
         ignore_routes = ['/api/auth/login/', '/api/auth/register/', '/api/auth/google/', '/api/auth/security/verify-device/']
-        log(f"Request path: {request.path}, method: {request.method}", level="DEBUG")
         if request.path in ignore_routes and request.method == 'POST':
             return
         if request.path.startswith('/api/auth/profile-picture/'):
             return
-            
-        from flask_login import current_user
+
         if not current_user.is_authenticated:
             return {"success": False, "message": "Unauthorized access. Please login first."}, 401
 
-        stored_version = session.get('session_version')
         user = db.session.get(UserModel, int(current_user.id))
-        if user and stored_version != user.session_version:
-            logout_user()
-            return {"success": False, "message": "Session invalidated. Please login again."}, 401
+        if not user or user.deleted or session.get('session_version') != user.session_version:
+            return _force_logout("Session invalidated. Please login again.")
 
+        # Device check: revoked / unauthorized / unknown device => logged out immediately
+        device_id = session.get('device_id')
+        device = (
+            UserSecurity.query.filter_by(user_id=user.id, device_id=device_id).first()
+            if device_id else None
+        )
+        if not device or not device.authorized:
+            return _force_logout("Device revoked. Please login again.")
 ############## AUTH ENDPOINTS ##############
 
 #### REGISTER ENDPOINTS ####

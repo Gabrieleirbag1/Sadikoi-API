@@ -100,7 +100,7 @@ def register_user(request: Request) -> tuple[dict, int]:
             auth_check = check_device_authorization(user, device_id, device_name, request)
             if auth_check is not None:
                 return auth_check  # blocks login, returns "requires_verification"
-            return login_user_with_session(user, remember=True)
+            return login_user_with_session(user, remember=True, device_id=device_id)
         return {"success": True, "message": "User created successfully. Could not login in user because of no device id", "content": build_user_response(result[0].get("content"))}, 201
     else:
         result[0]["content"] = build_user_response(result[0].get("content"))
@@ -222,7 +222,7 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         if result.get("error"):
             return result, 500
 
-        login_result = login_user_with_session(user_to_login, remember=True)
+        login_result = login_user_with_session(user_to_login, remember=True, device_id=device_id)
         if not login_result[0].get("success"):
             return login_result
         return {"success": True, "message": "Login with Google successful", "content": login_result[0].get("content")}, 200
@@ -255,9 +255,9 @@ def login(request: Request) -> tuple[dict, int]:
     if auth_check is not None:
         return auth_check  # blocks login, returns "requires_verification"
 
-    return login_user_with_session(user, remember)
+    return login_user_with_session(user, remember, device_id=device_id)
         
-def login_user_with_session(user: UserModel, remember: bool = False) -> tuple[dict, int]:
+def login_user_with_session(user: UserModel, remember: bool = False, device_id: str | None = None) -> tuple[dict, int]:
     """Login the user and set the session to permanent if remember is True."""
     if remember:
         session.permanent = True
@@ -268,6 +268,8 @@ def login_user_with_session(user: UserModel, remember: bool = False) -> tuple[di
         return {'success': False, 'message': 'Login failed due to server error.'}, 500
     
     session['session_version'] = user.session_version
+    if device_id:
+        session['device_id'] = device_id
     
     return {'success': True, 'message': 'Login successful.', 'content': build_user_response(user)}, 200
 
@@ -329,6 +331,7 @@ def get_user() -> tuple[dict, int]:
         if device:
             if not device.authorized:
                 return {'success': False, 'message': 'Device not authorized.'}, 403
+            session['device_id'] = device_id
             device.last_login = datetime.datetime.now(datetime.timezone.utc)
             update_from_db()
         else:
@@ -486,6 +489,10 @@ def revoke_device(request: Request) -> tuple[dict, int]:
     result = delete_from_db(device)
     if result.get("error"):
         return result, 500
+
+    if session.get('device_id') == device_id:
+        logout_user()
+        session.clear()
 
     return {"success": True, "message": "Device revoked successfully"}, 200
 
