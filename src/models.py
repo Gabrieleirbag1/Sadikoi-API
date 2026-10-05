@@ -173,7 +173,7 @@ class GroupModel(db.Model):
     __tablename__ = 'groups'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80))
+    name = db.Column(db.String(30))
     description = db.Column(db.String(200), server_default="")
     date_created = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     daily_reset_timestamp = db.Column(db.Time, server_default=db.text("'15:00:00'"))
@@ -189,6 +189,38 @@ class GroupModel(db.Model):
         :rtype: str
         """
         return f'Group: {self.name}'
+
+    @validates('name')
+    def validate_name(self, _key: str, name: str) -> str:
+        """Validate the group name to ensure it is 30 characters or less.
+        
+        :param str key: The key to validate.
+        :param str name: The group name to validate.
+
+        :raise ValueTooLongException: If the group name is more than 30 characters.
+
+        :return: The group name.
+        :rtype: str
+        """
+        if len(name) > 30:
+            raise ValueTooLongException("Group name must be 30 characters or less")
+        return name
+
+    @validates('description')
+    def validate_description(self, _key: str, description: str) -> str:
+        """Validate the group description to ensure it is 200 characters or less.
+        
+        :param str key: The key to validate.
+        :param str description: The group description to validate.
+
+        :raise ValueTooLongException: If the group description is more than 200 characters.
+
+        :return: The group description.
+        :rtype: str
+        """
+        if len(description) > 200:
+            raise ValueTooLongException("Group description must be 200 characters or less")
+        return description
     
 class ChatMessageModel(db.Model):
     """Chat message model for the database."""

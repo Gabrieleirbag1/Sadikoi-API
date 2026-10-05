@@ -14,6 +14,7 @@ from db import db
 from sockets import socketio
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device
 from config import SECRET_KEY
+from exceptions import ValueTooLongException
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -85,6 +86,11 @@ def create_app():
         )
         if not device or not device.authorized:
             return _force_logout("Device revoked. Please login again.")
+
+@app.errorhandler(ValueTooLongException)
+def handle_too_long(e):
+    return {"success": False, "message": str(e)}, 400
+
 ############## AUTH ENDPOINTS ##############
 
 #### REGISTER ENDPOINTS ####
