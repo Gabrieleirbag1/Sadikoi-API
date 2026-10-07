@@ -2,6 +2,8 @@ import datetime
 
 from models import ChatMessageModel, GroupModel, ItemModel, QuestionModel, UserModel, GroupUser
 from db import db
+from flask_login import current_user
+from utils import question_pool
 
 def build_user_response(user: UserModel) -> dict:
     return {
@@ -25,6 +27,15 @@ def build_group_response(group: GroupModel) -> dict:
         user["items"] = [build_item_response(item, streak) for item, streak in get_user_items_in_group(user["id"], group.id, group.daily_reset_timestamp)]
         user["role"] = roles.get(user["id"])
 
+    from question import does_exist_vote_today
+
+    has_user_voted_today, daily_question = False, None
+    has_user_voted_today, question = does_exist_vote_today(group, current_user)
+    if has_user_voted_today:
+        if not question:
+            raise ValueError("User has voted today, but no question was found.")
+        daily_question = question
+
     return {
         "id": group.id,
         "name": group.name,
@@ -32,7 +43,9 @@ def build_group_response(group: GroupModel) -> dict:
         "users": users,
         "date_created": group.date_created,
         "daily_reset_timestamp": group.daily_reset_timestamp.strftime("%H:%M"),
-        "themes": group.themes
+        "themes": group.themes,
+        "has_user_voted_today": has_user_voted_today,
+        "question": build_question_response(daily_question, question_pool, current_user.language) if has_user_voted_today else None,
     }
 
 def build_groups_response(groups: list[GroupModel]) -> list[dict]:

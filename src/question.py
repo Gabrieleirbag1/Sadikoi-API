@@ -191,7 +191,7 @@ def does_exist_question_today(group: GroupModel) -> bool:
 
     return False
 
-def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
+def does_exist_vote_today(group: GroupModel, user: UserModel) -> tuple[bool, QuestionModel | None]:
     """Whether `user` has already voted on the group's *current* question.
 
     Tied directly to the current question's id rather than a recomputed date
@@ -201,19 +201,20 @@ def does_exist_vote_today(group: GroupModel, user: UserModel) -> bool:
     :param GroupModel group: The group to check for today's question.
     :param UserModel user: The user to check for a vote.
 
-    :return: True if the user has already voted today, False otherwise.
-    :rtype: bool
+    :return: A tuple containing whether the user has voted today and the
+        current question, if one exists.
+    :rtype: tuple[bool, QuestionModel | None]
     """
     question = group.questions.order_by(QuestionModel.date.desc()).first()
     if not question or not does_exist_question_today(group):
-        return False
+        return False, question
 
     vote = QuestionVote.query.filter_by(
         group_id=group.id,
         voterUser_id=user.id,
         question_id=question.id,
     ).first()
-    return vote is not None
+    return vote is not None, question
 
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     """Check if a user is a member of a group.
@@ -275,7 +276,8 @@ def get_question(group_id: int) -> tuple[dict, int]:
     if does_exist_question_today(group):
         question = group.questions.order_by(QuestionModel.date.desc()).first()
         votes = None
-        if does_exist_vote_today(group, user):
+        has_user_voted_today, _ = does_exist_vote_today(group, user)
+        if has_user_voted_today:
             votes = extract_votes_info(question, group)
         return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes)}, 200
     else:
@@ -352,7 +354,8 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     if not is_user_in_group(user, group):
         return {"success": False, "message": "User is not a member of the group"}, 403
 
-    if does_exist_vote_today(group, user):
+    has_user_voted_today, _ = does_exist_vote_today(group, user)
+    if has_user_voted_today:
         return {"success": False, "message": "User has already voted today"}, 400
     
     votedUsers = request.json.get("votedUsers")
