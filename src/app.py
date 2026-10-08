@@ -12,7 +12,7 @@ from question import get_question, vote_question, get_questions_by_date
 from feedback import create_bug_report, create_suggestion
 from db import db
 from sockets import socketio
-from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device
+from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device, forgot_password, reset_password
 from config import SECRET_KEY
 from exceptions import ValueTooLongException
 
@@ -65,7 +65,7 @@ def create_app():
         if request.method == 'OPTIONS':
             return
 
-        ignore_routes = ['/api/auth/login/', '/api/auth/register/', '/api/auth/google/', '/api/auth/security/verify-device/']
+        ignore_routes = ['/api/auth/login/', '/api/auth/register/', '/api/auth/google/', '/api/auth/security/verify-device/', '/api/auth/security/forgot-password/', '/api/auth/security/reset-password/']
         if request.path in ignore_routes and request.method == 'POST':
             return
         if request.path.startswith('/api/auth/profile-picture/'):
@@ -150,7 +150,13 @@ def logout_devices_endpoint():
 def revoke_device_endpoint():
     return revoke_device(request)
 
+@app.route('/api/auth/security/forgot-password/', methods=['POST'])
+def forgot_password_endpoint():
+    return forgot_password(request)
 
+@app.route('/api/auth/security/reset-password/', methods=['POST'])
+def reset_password_endpoint():
+    return reset_password(request)
 
 ############## USER-GROUP ENDPOINTS ##############
 

@@ -12,16 +12,18 @@ from lite_logging.lite_logging import log
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
-from models import GroupUser, UserModel, UserSecurity
+from models import GroupUser, PasswordResetToken, UserModel, UserSecurity
 from config import allowed_file
-from db import add_to_db, delete_from_db, update_from_db
+from db import db, add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
-from email_sender import send_auth_code_email
-from config import GOOGLE_CLIENT_ID
+from email_sender import send_auth_code_email, send_password_reset_email, RESET_TOKEN_TTL_MINUTES
+from config import GOOGLE_CLIENT_ID, FRONTEND_URL
 
 MAX_LOGIN_ATTEMPTS = 5
 AUTH_CODE_TTL_MINUTES = 10
 REAUTH_AFTER_DAYS = 60
+RESET_REQUEST_COOLDOWN_SECONDS = 60
+FORGOT_PASSWORD_MESSAGE = "If an account exists for this email, a reset link has been sent."
 
 def save_profile_picture(file, external=False) -> str | None:
     upload_folder = current_app.config['UPLOAD_FOLDER']
@@ -509,3 +511,74 @@ def prohibit_devices(user: UserModel) -> tuple[dict, int]:
         return result, 500
 
     return {"success": True, "message": "All devices marked as unauthorized"}, 200
+
+def forgot_password(request: Request) -> tuple[dict, int]:
+    """Email a single-use password reset link. Always answers 200 so accounts can't be enumerated."""
+    email = (request.json or {}).get('email')
+    if not email:
+        return {"success": False, "message": "Email is required"}, 400
+
+    ok_response = {"success": True, "message": FORGOT_PASSWORD_MESSAGE}, 200
+
+    user = get_user_object(email)
+    if not user or user.deleted:
+        return ok_response
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    pending = PasswordResetToken.query.filter_by(user_id=user.id, used=False).all()
+    for existing in pending:
+        created_at = existing.created_at
+        if created_at is not None and created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=datetime.timezone.utc)
+        if created_at and (now - created_at).total_seconds() < RESET_REQUEST_COOLDOWN_SECONDS:
+            return ok_response
+        existing.used = True
+
+    token = secrets.token_urlsafe(32)
+    reset_token = PasswordResetToken(
+        user_id=user.id,
+        token_hash=PasswordResetToken.hash_token(token),
+        expiration_date=now + datetime.timedelta(minutes=RESET_TOKEN_TTL_MINUTES),
+    )
+    result = add_to_db(reset_token)
+    if result.get("error"):
+        return {"success": False, "message": "Could not generate reset link"}, 500
+
+    try:
+        send_password_reset_email(user, f"{FRONTEND_URL}/reset-password/{token}", language=user.language)
+    except Exception as e:
+        log(f"Failed to send password reset email: {e}", level="ERROR")
+        return {"success": False, "message": "Could not send reset email"}, 500
+
+    log(f"Password reset requested for user {user.username}", level="INFO")
+    return ok_response
+
+def reset_password(request: Request) -> tuple[dict, int]:
+    """Set a new password using a valid reset token, then invalidate all existing sessions."""
+    data = request.json or {}
+    token = data.get('token')
+    password = data.get('password')
+    confirm_password = data.get('confirm_password')
+
+    if not token or not password:
+        return {"success": False, "message": "Token and password are required"}, 400
+    if password != confirm_password:
+        return {"success": False, "message": "Passwords do not match"}, 400
+
+    reset_token = PasswordResetToken.query.filter_by(token_hash=PasswordResetToken.hash_token(token)).first()
+    if not reset_token or not reset_token.is_valid():
+        return {"success": False, "message": "Invalid or expired reset link"}, 400
+
+    user = db.session.get(UserModel, reset_token.user_id)
+    if not user or user.deleted:
+        return {"success": False, "message": "Invalid or expired reset link"}, 400
+
+    user.password = generate_password_hash(password, method='pbkdf2:sha256')
+    user.session_version += 1
+    reset_token.used = True
+    result = update_from_db()
+    if result.get("error"):
+        return {"success": False, "message": "Could not reset password"}, 500
+
+    log(f"Password reset completed for user {user.username}", level="INFO")
+    return {"success": True, "message": "Password reset successfully"}, 200
