@@ -41,3 +41,7 @@ ALLOWED_LANGUAGES = {'en', 'fr'}
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Load FRONTEND_URL (used to build links sent by email)
+frontend_secrets_path = os.path.join(os.path.dirname(__file__), '.frontend.secrets')
+FRONTEND_URL = load_secret_var('FRONTEND_URL', frontend_secrets_path, default='http://localhost:4200').rstrip('/')

@@ -1,6 +1,7 @@
 from flask_login import UserMixin
 import datetime
 import secrets
+import hashlib
 from db import db
 from sqlalchemy.orm import validates
 import uuid
@@ -158,6 +159,32 @@ class UserModel(UserMixin, db.Model):
         :rtype: str
         """
         return f'User: {self.username}'
+
+class PasswordResetToken(db.Model):
+    """Single-use password reset token. Only the SHA-256 hash of the token is stored."""
+    __tablename__ = 'password_reset_tokens'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    token_hash = db.Column(db.String(64), unique=True, nullable=False)
+    expiration_date = db.Column(db.DateTime(timezone=True), nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+
+    user = db.relationship('UserModel', backref=db.backref('password_reset_tokens', lazy='dynamic'))
+
+    @staticmethod
+    def hash_token(token: str) -> str:
+        return hashlib.sha256(token.encode()).hexdigest()
+
+    def is_valid(self) -> bool:
+        """True if the token has not been used and has not expired."""
+        if self.used:
+            return False
+        expiration = self.expiration_date
+        if expiration.tzinfo is None:
+            expiration = expiration.replace(tzinfo=datetime.timezone.utc)
+        return datetime.datetime.now(datetime.timezone.utc) <= expiration
 
 class GroupInvitationModel(db.Model):
     """Group invitation model for the database."""

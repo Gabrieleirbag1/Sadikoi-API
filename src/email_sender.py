@@ -10,6 +10,7 @@ from googleapiclient.errors import HttpError
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
 AUTH_CODE_TTL_MINUTES = 10
+RESET_TOKEN_TTL_MINUTES = 15
 
 def get_gmail_service():
     creds = None
@@ -73,6 +74,31 @@ def send_auth_code_email(user, device, code, language='en'):
                 f"Your verification code is: {code}\n\n"
                 f"This code will expire in {AUTH_CODE_TTL_MINUTES} minutes.\n\n"
                 f"If this wasn't you, please change your password immediately."
+            )
+    send_email(
+        destinataire=user.email,
+        email_subject=email_subject,
+        email_content=email_content,
+    )
+
+def send_password_reset_email(user, reset_url, language='en'):
+    if language == 'fr':
+        email_subject = "Réinitialisation de votre mot de passe"
+        email_content = (
+                f"Bonjour {user.username},\n\n"
+                f"Une demande de réinitialisation de mot de passe a été effectuée pour votre compte.\n\n"
+                f"Cliquez sur ce lien pour choisir un nouveau mot de passe : {reset_url}\n\n"
+                f"Ce lien expire dans {RESET_TOKEN_TTL_MINUTES} minutes et ne peut être utilisé qu'une seule fois.\n\n"
+                f"Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email."
+            )
+    else:
+        email_subject = "Reset Your Password"
+        email_content = (
+                f"Hello {user.username},\n\n"
+                f"A password reset was requested for your account.\n\n"
+                f"Click this link to choose a new password: {reset_url}\n\n"
+                f"This link expires in {RESET_TOKEN_TTL_MINUTES} minutes and can only be used once.\n\n"
+                f"If you didn't request this, you can safely ignore this email."
             )
     send_email(
         destinataire=user.email,
