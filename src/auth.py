@@ -582,3 +582,21 @@ def reset_password(request: Request) -> tuple[dict, int]:
 
     log(f"Password reset completed for user {user.username}", level="INFO")
     return {"success": True, "message": "Password reset successfully"}, 200
+
+def report_user(request: Request) -> tuple[dict, int]:
+    """Report a user for inappropriate behavior."""
+    reporter: UserModel | None = get_user_object(current_user.id)
+    if not reporter:
+        return {"success": False, "message": "Reporter not found"}, 404
+
+    reported_user_info = request.json.get('reported_user_info')
+    reason = request.json.get('reason', 'No reason provided')
+
+    reported_user: UserModel | None = get_user_object(reported_user_info)
+    if not reported_user:
+        return {"success": False, "message": "Reported user not found"}, 404
+
+    # Here you would typically log the report to a database or send it to an admin
+    log(f"User {reporter.username} reported user {reported_user.username} for reason: {reason}", level="INFO")
+
+    return {"success": True, "message": "User reported successfully"}, 200
