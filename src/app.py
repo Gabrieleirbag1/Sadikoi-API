@@ -12,7 +12,7 @@ from question import get_question, vote_question, get_questions_by_date
 from feedback import create_bug_report, create_suggestion
 from db import db
 from sockets import socketio
-from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device, forgot_password, reset_password
+from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device, forgot_password, reset_password, report_user
 from config import SECRET_KEY
 from exceptions import ValueTooLongException
 
@@ -157,6 +157,10 @@ def forgot_password_endpoint():
 @app.route('/api/auth/security/reset-password/', methods=['POST'])
 def reset_password_endpoint():
     return reset_password(request)
+
+@app.route('/api/auth/security/report-user/', methods=['POST'])
+def report_user_endpoint():
+    return report_user(request)
 
 ############## USER-GROUP ENDPOINTS ##############
 
