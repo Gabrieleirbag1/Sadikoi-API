@@ -341,6 +341,27 @@ class BugReportModel(db.Model):
         :rtype: str
         """
         return f'BugReport: {self.description} at {self.timestamp}'
+
+class ReportUserModel(db.Model):
+    """Report user model for the database."""
+    __tablename__ = 'report_users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    reported_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    reason = db.Column(db.String(200), nullable=False)
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+
+    reporter = db.relationship('UserModel', foreign_keys=[reporter_id], backref=db.backref('reports_made', lazy='dynamic'))
+    reported = db.relationship('UserModel', foreign_keys=[reported_id], backref=db.backref('reports_received', lazy='dynamic'))
+
+    def __repr__(self) -> str:
+        """Return the report reason and timestamp.
+        
+        :return: The report reason and timestamp.
+        :rtype: str
+        """
+        return f'ReportUser: {self.reason} at {self.timestamp}'
     
 class SuggestionModel(db.Model):
     """Suggestion model for the database."""
