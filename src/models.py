@@ -245,6 +245,8 @@ class GroupModel(db.Model):
         :return: The group description.
         :rtype: str
         """
+        if description is None:
+            return ""
         if len(description) > 200:
             raise ValueTooLongException("Group description must be 200 characters or less")
         return description
