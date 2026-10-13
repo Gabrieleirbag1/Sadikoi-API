@@ -12,7 +12,7 @@ from lite_logging.lite_logging import log
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
-from models import GroupUser, PasswordResetToken, UserModel, UserSecurity
+from models import PasswordResetToken, UserModel, UserSecurity, ReportUserModel
 from config import allowed_file
 from db import db, add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
@@ -596,7 +596,17 @@ def report_user(request: Request) -> tuple[dict, int]:
     if not reported_user:
         return {"success": False, "message": "Reported user not found"}, 404
 
-    # Here you would typically log the report to a database or send it to an admin
+    report: ReportUserModel = ReportUserModel(
+        reporter_id=reporter.id,
+        reported_id=reported_user.id,
+        reason=reason,
+        timestamp=datetime.datetime.now(datetime.timezone.utc)
+    )
+
+    result = add_to_db(report)
+    if result.get("error"):
+        return result, 500
+
     log(f"User {reporter.username} reported user {reported_user.username} for reason: {reason}", level="INFO")
 
     return {"success": True, "message": "User reported successfully"}, 200
