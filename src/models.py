@@ -349,11 +349,15 @@ class ReportUserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     reporter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     reported_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('chat_messages.id'), nullable=True)
     reason = db.Column(db.String(200), nullable=False)
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
 
     reporter = db.relationship('UserModel', foreign_keys=[reporter_id], backref=db.backref('reports_made', lazy='dynamic'))
     reported = db.relationship('UserModel', foreign_keys=[reported_id], backref=db.backref('reports_received', lazy='dynamic'))
+    group = db.relationship('GroupModel', foreign_keys=[group_id], backref=db.backref('reports', lazy='dynamic'))
+    message = db.relationship('ChatMessageModel', foreign_keys=[message_id], backref=db.backref('reports', lazy='dynamic'))
 
     def __repr__(self) -> str:
         """Return the report reason and timestamp.
