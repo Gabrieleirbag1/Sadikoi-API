@@ -1,129 +1,129 @@
-# Lancer les tests du backend
+# Running the backend tests
 
-Toutes les commandes se lancent depuis `Sadikoi-API/` avec le venv du projet.
+All commands are run from `Sadikoi-API/` using the project's virtual environment.
 
 ```bash
 cd Sadikoi-API
-source venv/bin/activate          # ou préfixer par venv/bin/python -m
-pip install -r requirements-dev.txt   # une seule fois (pytest + pytest-cov)
+source venv/bin/activate          # or prefix commands with venv/bin/python -m
+pip install -r requirements-dev.txt   # once only (pytest + pytest-cov)
 ```
 
-> `pytest.ini` définit `addopts = -q` (sortie compacte par défaut). Conséquence : `-v` seul **s'annule** avec `-q`.
-> Utilisez `-vv`, ou `-o addopts=""` pour repartir d'une config vierge.
+> `pytest.ini` sets `addopts = -q` (compact output by default). As a result, `-v` by itself is **cancelled out** by `-q`.
+> Use `-vv`, or `-o addopts=""` to start with a clean configuration.
 
-## 1. Lancer la suite
+## 1. Running the test suite
 
-| Besoin | Commande |
+| Need | Command |
 |---|---|
-| Tout lancer (sortie compacte) | `python -m pytest` |
-| Verbose : un test par ligne (PASSED / FAILED) | `python -m pytest -vv` |
-| Verbose sans le `-q` du `pytest.ini` | `python -m pytest -o addopts="" -v` |
-| Très silencieux (juste le résumé) | `python -m pytest -qq` |
-| S'arrêter au premier échec | `python -m pytest -x` |
-| S'arrêter après N échecs | `python -m pytest --maxfail=3` |
-| Relancer uniquement les tests tombés la dernière fois | `python -m pytest --lf` |
-| Tombés d'abord, puis le reste | `python -m pytest --ff` |
-| Afficher les `print()` / logs en direct | `python -m pytest -s` |
+| Run everything (compact output) | `python -m pytest` |
+| Verbose: one test per line (PASSED / FAILED) | `python -m pytest -vv` |
+| Verbose without `pytest.ini`'s `-q` | `python -m pytest -o addopts="" -v` |
+| Very quiet (summary only) | `python -m pytest -qq` |
+| Stop at the first failure | `python -m pytest -x` |
+| Stop after N failures | `python -m pytest --maxfail=3` |
+| Rerun only tests that failed last time | `python -m pytest --lf` |
+| Failed tests first, then the rest | `python -m pytest --ff` |
+| Display `print()` output / logs live | `python -m pytest -s` |
 
-## 2. Cibler des tests
+## 2. Targeting tests
 
-### Par fichier
+### By file
 
-| Domaine | Commande |
+| Area | Command |
 |---|---|
-| Inscription / connexion / compte | `python -m pytest tests/test_auth_register_login.py` |
-| Sécurité auth (OTP, appareils, mot de passe oublié, signalement) | `python -m pytest tests/test_auth_security.py` |
-| Garde de session (`before_request`) | `python -m pytest tests/test_session_guard.py` |
-| Groupes (CRUD, rôles, invitations) | `python -m pytest tests/test_groups.py` |
+| Registration / login / account | `python -m pytest tests/test_auth_register_login.py` |
+| Auth security (OTP, devices, forgot password, reports) | `python -m pytest tests/test_auth_security.py` |
+| Session guard (`before_request`) | `python -m pytest tests/test_session_guard.py` |
+| Groups (CRUD, roles, invitations) | `python -m pytest tests/test_groups.py` |
 | Chat | `python -m pytest tests/test_chat.py` |
 | Questions & votes | `python -m pytest tests/test_questions_votes.py` |
 | Feedback (bugs / suggestions) | `python -m pytest tests/test_feedback.py` |
-| Sécurité (rate-limit, en-têtes, CORS, taille) | `python -m pytest tests/test_security.py` |
+| Security (rate limiting, headers, CORS, size) | `python -m pytest tests/test_security.py` |
 | Socket.IO | `python -m pytest tests/test_sockets.py` |
-| Unitaires (fonctions pures, modèles) | `python -m pytest tests/test_unit.py` |
-| Couverture des routes (fin de suite) | `python -m pytest tests/test_zz_route_coverage.py` |
+| Unit tests (pure functions, models) | `python -m pytest tests/test_unit.py` |
+| Route coverage (end of suite) | `python -m pytest tests/test_zz_route_coverage.py` |
 
-Plusieurs fichiers : `python -m pytest tests/test_chat.py tests/test_groups.py`
+Multiple files: `python -m pytest tests/test_chat.py tests/test_groups.py`
 
-### Par classe ou par test précis
+### By class or specific test
 
 ```bash
 python -m pytest tests/test_groups.py::TestPromote
 python -m pytest tests/test_groups.py::TestPromote::test_cannot_promote_yourself
-python -m pytest "tests/test_groups.py::TestCreateGroup::test_invalid_payloads[change3]"   # cas paramétré
+python -m pytest "tests/test_groups.py::TestCreateGroup::test_invalid_payloads[change3]"   # parametrized case
 ```
 
-### Par mot-clé (`-k`, sur le nom du fichier / classe / test)
+### By keyword (`-k`, on the file / class / test name)
 
 ```bash
-python -m pytest -k "vote"                       # tout ce qui contient "vote"
-python -m pytest -k "expired or previous_day"    # OU
-python -m pytest -k "vote and not written"       # ET / NON
+python -m pytest -k "vote"                       # everything containing "vote"
+python -m pytest -k "expired or previous_day"    # OR
+python -m pytest -k "vote and not written"       # AND / NOT
 python -m pytest tests/test_chat.py -k "non_member"
 ```
 
-### Par marqueur
+### By marker
 
 ```bash
-python -m pytest -m ratelimit                    # uniquement les tests de rate-limit (limiteur réel)
-python -m pytest -m "not ratelimit"              # tout sauf ceux-là
+python -m pytest -m ratelimit                    # rate-limit tests only (real limiter)
+python -m pytest -m "not ratelimit"              # everything except those
 ```
 
-## 3. Comprendre ce qui est lancé
+## 3. Understanding what is being run
 
-| Besoin | Commande |
+| Need | Command |
 |---|---|
-| Lister les tests sans les exécuter | `python -m pytest --collect-only -q` |
-| Lister ceux d'un fichier / d'un filtre | `python -m pytest tests/test_chat.py --collect-only -q` |
-| Voir les 10 tests les plus lents | `python -m pytest --durations=10` |
-| Raisons des `xfail` / `skip` | `python -m pytest -rxs` |
-| Résumé complet (échecs, xfail, skip, erreurs) | `python -m pytest -ra` |
-| Liste des marqueurs et fixtures | `python -m pytest --markers` / `python -m pytest --fixtures` |
+| List tests without running them | `python -m pytest --collect-only -q` |
+| List tests from a file / filter | `python -m pytest tests/test_chat.py --collect-only -q` |
+| Show the 10 slowest tests | `python -m pytest --durations=10` |
+| Reasons for `xfail` / `skip` | `python -m pytest -rxs` |
+| Full summary (failures, xfail, skip, errors) | `python -m pytest -ra` |
+| List markers and fixtures | `python -m pytest --markers` / `python -m pytest --fixtures` |
 
-## 4. Déboguer un échec
+## 4. Debugging a failure
 
-| Besoin | Commande |
+| Need | Command |
 |---|---|
-| Traceback court | `python -m pytest --tb=short` |
-| Traceback ligne unique | `python -m pytest --tb=line` |
-| Traceback complet avec variables locales | `python -m pytest --tb=long -l` |
-| Aucune trace (juste la liste) | `python -m pytest --tb=no` |
-| Ouvrir `pdb` au premier échec | `python -m pytest -x --pdb` |
-| Dernier échec uniquement, très détaillé | `python -m pytest --lf -vv -l --tb=long` |
-| Voir le test comme s'il n'était pas `xfail` | `python -m pytest --runxfail tests/test_groups.py -k unknown_user` |
+| Short traceback | `python -m pytest --tb=short` |
+| One-line traceback | `python -m pytest --tb=line` |
+| Full traceback with local variables | `python -m pytest --tb=long -l` |
+| No traceback (list only) | `python -m pytest --tb=no` |
+| Open `pdb` on the first failure | `python -m pytest -x --pdb` |
+| Last failure only, highly detailed | `python -m pytest --lf -vv -l --tb=long` |
+| Run the test as if it were not `xfail` | `python -m pytest --runxfail tests/test_groups.py -k unknown_user` |
 
-## 5. Couverture de code
+## 5. Code coverage
 
 ```bash
-python -m pytest --cov=src                                   # résumé par fichier
-python -m pytest --cov=src --cov-report=term-missing         # + lignes non couvertes
-python -m pytest --cov=src --cov-report=html                 # rapport dans htmlcov/index.html
-python -m pytest --cov=src --cov-fail-under=85               # échoue sous 85 %
+python -m pytest --cov=src                                   # summary by file
+python -m pytest --cov=src --cov-report=term-missing         # + uncovered lines
+python -m pytest --cov=src --cov-report=html                 # report in htmlcov/index.html
+python -m pytest --cov=src --cov-fail-under=85               # fails below 85%
 python -m pytest tests/test_chat.py --cov=src/chat.py --cov-report=term-missing
 ```
 
-## 6. Défauts connus (`xfail`)
+## 6. Known bugs (`xfail`)
 
-Les tests `@pytest.mark.xfail(strict=True)` décrivent le **comportement attendu** d'un bug encore présent dans l'API. *(Aucun pour l'instant : les 6 défauts initiaux sont corrigés.)*
-
-```bash
-python -m pytest -rx                       # liste les xfail et la raison
-python -m pytest --runxfail -k "duplicate" # voir l'échec réel
-```
-
-Quand le bug est corrigé, le test devient une **erreur** (`XPASS(strict)`) : retirer alors le décorateur `xfail`.
-
-## 7. Recettes rapides
+Tests using `@pytest.mark.xfail(strict=True)` describe the **expected behavior** of a bug that is still present in the API. *(None for now: the 6 initial bugs have been fixed.)*
 
 ```bash
-python -m pytest -x -vv --lf                       # boucle de correction : je relance ce qui a cassé, détaillé
-python -m pytest -m ratelimit -vv                  # vérifier les limites de débit
-python -m pytest -q --cov=src --cov-report=term-missing --cov-fail-under=85   # check « CI »
-python -m pytest tests/test_security.py tests/test_session_guard.py -vv        # toute la partie sécurité
+python -m pytest -rx                       # list xfail tests and the reason
+python -m pytest --runxfail -k "duplicate" # see the actual failure
 ```
 
-## 8. Où ça tourne
+When the bug is fixed, the test becomes an **error** (`XPASS(strict)`): remove the `xfail` decorator.
 
-- Base SQLite **temporaire**, recréée à chaque test : `instance/` et `uploads/` ne sont jamais touchés.
-- Réseau, emails, Turnstile et Socket.IO sont simulés (fixture `externals` dans `conftest.py`).
-- Aucune variable d'environnement n'est nécessaire ; `FLASK_DEBUG` n'a pas d'effet sur les tests.
+## 7. Quick recipes
+
+```bash
+python -m pytest -x -vv --lf                       # fix loop: rerun what broke, with details
+python -m pytest -m ratelimit -vv                  # check rate limits
+python -m pytest -q --cov=src --cov-report=term-missing --cov-fail-under=85   # "CI" check
+python -m pytest tests/test_security.py tests/test_session_guard.py -vv        # all security-related tests
+```
+
+## 8. Where tests run
+
+- **Temporary** SQLite database, recreated for every test: `instance/` and `uploads/` are never touched.
+- Network, email, Turnstile, and Socket.IO are mocked (the `externals` fixture in `conftest.py`).
+- No environment variables are required; `FLASK_DEBUG` has no effect on the tests.
