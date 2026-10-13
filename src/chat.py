@@ -44,9 +44,10 @@ def get_messages(group_id: int) -> tuple[dict, int]:
     :param int group_id: The group whose messages to fetch.
     :param int | None question_id: The question whose day to fetch; defaults to the group's current question.
     """
-    group = GroupModel.query.get(group_id)
-    if not group:
-        return {"success": False, "message": "Group not found"}, 404
+    from question import get_group_for_member
+    group, _, error = get_group_for_member(group_id)
+    if error:
+        return error
 
     question_id = request.args.get('question_id', type=int)
 
@@ -88,11 +89,13 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
     if user not in group.users:
         return {"success": False, "message": "User is not a member of the group"}, 403
 
-    # Messages of a previous day can be read but not written to.
-    question_id = request.json.get('question_id')
-    if question_id is not None:
-        current_question = group.questions.order_by(QuestionModel.date.desc()).first()
-        if not current_question or current_question.id != question_id:
+    # Messages of a previous day can be read but not written to: the group's latest question must
+    # still be open, and a question_id, when given, must be that question.
+    current_question = group.questions.order_by(QuestionModel.date.desc()).first()
+    if current_question:
+        from question import does_exist_question_today
+        question_id = request.json.get('question_id')
+        if not does_exist_question_today(group) or (question_id is not None and question_id != current_question.id):
             return {"success": False, "message": "Cannot send messages to a previous day"}, 403
 
     message = ChatMessageModel(content=content, user_id=user.id, group_id=group_id)
