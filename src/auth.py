@@ -17,12 +17,14 @@ from config import allowed_file
 from db import db, add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
 from email_sender import send_auth_code_email, send_password_reset_email, RESET_TOKEN_TTL_MINUTES
-from config import GOOGLE_CLIENT_ID, FRONTEND_URL
+from config import GOOGLE_CLIENT_ID, FRONTEND_URL, TURNSTILE_SECRET_KEY
 
 MAX_LOGIN_ATTEMPTS = 5
 AUTH_CODE_TTL_MINUTES = 10
 REAUTH_AFTER_DAYS = 60
 RESET_REQUEST_COOLDOWN_SECONDS = 60
+TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+TURNSTILE_TIMEOUT_SECONDS = 5
 FORGOT_PASSWORD_MESSAGE = "If an account exists for this email, a reset link has been sent."
 
 def save_profile_picture(file, external=False) -> str | None:
@@ -71,8 +73,37 @@ def save_profile_picture(file, external=False) -> str | None:
         
     return None
 
+def verify_captcha(token: str | None, request: Request) -> tuple[dict, int] | None:
+    """Verify a Cloudflare Turnstile token. Returns None when valid, else the (response, status) to return.
+
+    Fails closed: if the secret is missing or Cloudflare is unreachable, the request is refused.
+    """
+    if not TURNSTILE_SECRET_KEY:
+        return {"success": False, "message": "Server configuration error."}, 500
+    if not token:
+        return {"success": False, "message": "Captcha is required."}, 400
+
+    try:
+        response = requests.post(
+            TURNSTILE_VERIFY_URL,
+            data={"secret": TURNSTILE_SECRET_KEY, "response": token, "remoteip": get_client_ip(request)},
+            timeout=TURNSTILE_TIMEOUT_SECONDS,
+        )
+        result = response.json()
+    except (requests.RequestException, ValueError) as e:
+        log(f"Captcha verification failed: {e}", level="ERROR")
+        return {"success": False, "message": "Could not verify captcha."}, 503
+
+    if not result.get("success"):
+        log(f"Captcha rejected: {result.get('error-codes')}", level="WARNING")
+        return {"success": False, "message": "Captcha verification failed."}, 400
+    return None
+
 def register_user(request: Request) -> tuple[dict, int]:
     data = request.json if request.is_json else request.form
+    captcha_error = verify_captcha(data.get('captcha_token'), request)
+    if captcha_error is not None:
+        return captcha_error
     log("Creating user with data: " + str(data), level="DEBUG")
     email = data.get('email')
     username = data.get('username')
@@ -245,6 +276,13 @@ def login(request: Request) -> tuple[dict, int]:
     if not (username_or_email and password):
         return {'success': False, 'message': 'Please fill in all fields.'}, 400
 
+    # The captcha is single-use, so the re-login right after the device code was verified
+    # carries none: it is only accepted for a device that is already authorized.
+    if not is_known_authorized_device(username_or_email, device_id):
+        captcha_error = verify_captcha(request.json.get('captcha_token'), request)
+        if captcha_error is not None:
+            return captcha_error
+
     user: UserModel = get_user_object(username_or_email)
     if not (user and check_password_hash(user.password, password)):
         return {'success': False, 'message': 'Invalid username / email or password.'}, 401
@@ -259,6 +297,16 @@ def login(request: Request) -> tuple[dict, int]:
 
     return login_user_with_session(user, remember, device_id=device_id)
         
+def is_known_authorized_device(user_info: str, device_id: str | None) -> bool:
+    """True if device_id is an already-authorized device of this user (device ids are unguessable)."""
+    if not device_id:
+        return False
+    user = get_user_object(user_info)
+    if not user:
+        return False
+    device = UserSecurity.query.filter_by(user_id=user.id, device_id=device_id).first()
+    return bool(device and device.authorized)
+
 def login_user_with_session(user: UserModel, remember: bool = False, device_id: str | None = None) -> tuple[dict, int]:
     """Login the user and set the session to permanent if remember is True."""
     if remember:

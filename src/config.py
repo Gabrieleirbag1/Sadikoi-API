@@ -35,13 +35,21 @@ GOOGLE_CLIENT_ID = load_secret_var('GOOGLE_CLIENT_ID', google_secrets_path)
 if not GOOGLE_CLIENT_ID:
     log("GOOGLE_CLIENT_ID not found in .google.secrets file.", level="ERROR")
 
+# Load FRONTEND_URL (used to build links sent by email)
+frontend_secrets_path = os.path.join(os.path.dirname(__file__), '.frontend.secrets')
+FRONTEND_URL = load_secret_var('FRONTEND_URL', frontend_secrets_path, default='http://localhost:4200').rstrip('/')
+
+# Load TURNSTILE_SECRET_KEY (Cloudflare Turnstile captcha, verified on login / register)
+turnstile_secrets_path = os.path.join(os.path.dirname(__file__), '.turnstile.secrets')
+TURNSTILE_SECRET_KEY = load_secret_var('TURNSTILE_SECRET_KEY', turnstile_secrets_path)
+
+if not TURNSTILE_SECRET_KEY:
+    log("TURNSTILE_SECRET_KEY not found in .turnstile.secrets file.", level="ERROR")
+
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_LANGUAGES = {'en', 'fr'}
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# Load FRONTEND_URL (used to build links sent by email)
-frontend_secrets_path = os.path.join(os.path.dirname(__file__), '.frontend.secrets')
-FRONTEND_URL = load_secret_var('FRONTEND_URL', frontend_secrets_path, default='http://localhost:4200').rstrip('/')
