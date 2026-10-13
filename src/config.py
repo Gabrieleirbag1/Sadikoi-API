@@ -47,6 +47,8 @@ if not TURNSTILE_SECRET_KEY:
     log("TURNSTILE_SECRET_KEY not found in .turnstile.secrets file.", level="ERROR")
 
 
+ALLOWED_ORIGINS = ["http://localhost:4200", "https://sadikoi.missclick.net"]
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_LANGUAGES = {'en', 'fr'}
 

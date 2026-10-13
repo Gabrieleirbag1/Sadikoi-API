@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_login import LoginManager, current_user, logout_user
 from flask_socketio import join_room, leave_room
 import os
+from werkzeug.middleware.proxy_fix import ProxyFix
 from lite_logging.lite_logging import log
 
 from models import UserModel, GroupUser, UserSecurity
@@ -13,14 +14,20 @@ from feedback import create_bug_report, create_suggestion
 from db import db
 from sockets import socketio
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device, forgot_password, reset_password, report_user
-from config import SECRET_KEY
+from config import SECRET_KEY, ALLOWED_ORIGINS
+from security import limiter, init_security, json_field_key, user_or_ip_key, SocketRateLimiter
 from exceptions import ValueTooLongException
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
-CORS(app, supports_credentials=True)
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1000 * 1000
+# Exactly one reverse proxy (Apache) sits in front: trust its X-Forwarded-* headers, nothing more.
+# Flask must therefore only listen on 127.0.0.1, otherwise X-Forwarded-For becomes spoofable.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+CORS(app, supports_credentials=True, origins=ALLOWED_ORIGINS)
+init_security(app)
 socketio.init_app(app)
+socket_join_limiter = SocketRateLimiter(max_events=30, window_seconds=60)
 
 def configure_app(db_name: str) -> None:
     """Configure the Flask app with the given database name.
@@ -96,6 +103,7 @@ def handle_too_long(e):
 #### REGISTER ENDPOINTS ####
 
 @app.route('/api/auth/register/', methods=['POST'])
+@limiter.limit("5 per hour")
 def create_user_endpoint():
     return register_user(request)
 
@@ -118,11 +126,13 @@ def uploaded_file(filename):
 ### LOGIN ENDPOINTS ###
 
 @app.route('/api/auth/login/', methods=['POST'])
+@limiter.limit("10 per minute; 50 per hour")
+@limiter.limit("5 per 15 minutes", key_func=json_field_key("username_or_email"))
 def login_endpoint():
-    log("Login request received with data: " + str(request.json), level="DEBUG")
     return login(request)
 
 @app.route('/api/auth/google/', methods=['POST'])
+@limiter.limit("20 per minute")
 def google_login_endpoint():
     log("Google login request received", level="DEBUG")
     return google_login_handler(request)
@@ -134,6 +144,8 @@ def logout_endpoint():
 ############## SECURITY ENDPOINTS ##############
 
 @app.route('/api/auth/security/verify-device/', methods=['POST'])
+@limiter.limit("10 per minute")
+@limiter.limit("10 per 15 minutes", key_func=json_field_key("user_info"))
 def verify_device_endpoint():
     return verify_device(request)
 
@@ -151,14 +163,18 @@ def revoke_device_endpoint():
     return revoke_device(request)
 
 @app.route('/api/auth/security/forgot-password/', methods=['POST'])
+@limiter.limit("3 per hour")
+@limiter.limit("3 per hour", key_func=json_field_key("email"))
 def forgot_password_endpoint():
     return forgot_password(request)
 
 @app.route('/api/auth/security/reset-password/', methods=['POST'])
+@limiter.limit("10 per hour")
 def reset_password_endpoint():
     return reset_password(request)
 
 @app.route('/api/auth/security/report-user/', methods=['POST'])
+@limiter.limit("5 per hour", key_func=user_or_ip_key)
 def report_user_endpoint():
     return report_user(request)
 
@@ -209,6 +225,7 @@ def get_messages_endpoint(group_id):
     return get_messages(group_id)
 
 @app.route('/api/groups/<int:group_id>/messages/', methods=['POST'])
+@limiter.limit("30 per minute", key_func=user_or_ip_key)
 def send_message_endpoint(group_id):
     return send_message(group_id, request)
 
@@ -225,16 +242,19 @@ def get_questions_by_date_endpoint(group_id, month, year):
     return get_questions_by_date(group_id, month, year)
 
 @app.route('/api/questions/<int:group_id>/vote/', methods=['POST'])
+@limiter.limit("30 per minute", key_func=user_or_ip_key)
 def vote_question_endpoint(group_id):
     return vote_question(group_id, request)
 
 ############## FEEDBACK ENDPOINTS ##############
 
 @app.route('/api/feedback/bug-reports/', methods=['POST'])
+@limiter.limit("5 per hour", key_func=user_or_ip_key)
 def create_bug_report_endpoint():
     return create_bug_report(request)
 
 @app.route('/api/feedback/suggestions/', methods=['POST'])
+@limiter.limit("5 per hour", key_func=user_or_ip_key)
 def create_suggestion_endpoint():
     return create_suggestion(request)
 
@@ -255,6 +275,9 @@ def handle_disconnect():
 @socketio.on('join_group')
 def handle_join(data):
     if not current_user.is_authenticated:
+        return
+    if not socket_join_limiter.allow(str(current_user.id)):
+        log(f"Rate limited join_group for user {current_user.id}", level="WARNING")
         return
     group_id = int(data['groupId'])
     if not GroupUser.query.filter_by(user_id=current_user.id, group_id=group_id).first():
@@ -283,4 +306,6 @@ def main(db_name: str = "data-local") -> None:
 
 if __name__ == '__main__':
     main()
-    socketio.run(app, port=8082, debug=True)
+    # Werkzeug's debugger allows remote code execution: opt-in only, never in production.
+    debug = os.environ.get('FLASK_DEBUG') == '1'
+    socketio.run(app, host='127.0.0.1', port=8082, debug=debug)

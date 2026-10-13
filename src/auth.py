@@ -27,6 +27,14 @@ TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverif
 TURNSTILE_TIMEOUT_SECONDS = 5
 FORGOT_PASSWORD_MESSAGE = "If an account exists for this email, a reset link has been sent."
 
+IMAGE_SIGNATURES = (b'\x89PNG\r\n\x1a\n', b'\xff\xd8\xff', b'GIF87a', b'GIF89a')
+
+def has_image_signature(stream) -> bool:
+    """Check the file's magic bytes so a renamed non-image is not stored as a profile picture."""
+    head = stream.read(8)
+    stream.seek(0)
+    return head.startswith(IMAGE_SIGNATURES)
+
 def save_profile_picture(file, external=False) -> str | None:
     upload_folder = current_app.config['UPLOAD_FOLDER']
     
@@ -61,7 +69,7 @@ def save_profile_picture(file, external=False) -> str | None:
             
         return None
 
-    elif file and getattr(file, 'filename', None) and allowed_file(file.filename):
+    elif file and getattr(file, 'filename', None) and allowed_file(file.filename) and has_image_signature(file.stream):
         filename = secure_filename(file.filename)
         ext = os.path.splitext(filename)[1]
         unique_filename = f"{uuid.uuid4().hex}{ext}"
@@ -104,7 +112,7 @@ def register_user(request: Request) -> tuple[dict, int]:
     captcha_error = verify_captcha(data.get('captcha_token'), request)
     if captcha_error is not None:
         return captcha_error
-    log("Creating user with data: " + str(data), level="DEBUG")
+    log("Creating user", level="DEBUG")
     email = data.get('email')
     username = data.get('username')
     password = data.get('password')
@@ -391,10 +399,8 @@ def get_user() -> tuple[dict, int]:
     return {'success': True, 'message': 'User found', 'content': build_user_response(user)}, 200
 
 def get_client_ip(request: Request) -> str:
-    """Best-effort extraction of the real client IP, accounting for reverse proxies."""
-    forwarded = request.headers.get('X-Forwarded-For')
-    if forwarded:
-        return forwarded.split(',')[0].strip()
+    """Client IP. Behind the reverse proxy, ProxyFix (app.py) has already put the real IP in remote_addr;
+    never read X-Forwarded-For here, it is client-controlled."""
     return request.remote_addr or 'unknown'
 
 def get_or_create_device(user: UserModel, device_id: str, device_name: str, request: Request, authorized: bool = False) -> tuple[UserSecurity, bool]:
@@ -562,6 +568,10 @@ def prohibit_devices(user: UserModel) -> tuple[dict, int]:
 
 def forgot_password(request: Request) -> tuple[dict, int]:
     """Email a single-use password reset link. Always answers 200 so accounts can't be enumerated."""
+    captcha_error = verify_captcha((request.json or {}).get('captcha_token'), request)
+    if captcha_error is not None:
+        return captcha_error
+
     email = (request.json or {}).get('email')
     if not email:
         return {"success": False, "message": "Email is required"}, 400
