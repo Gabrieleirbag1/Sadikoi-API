@@ -127,3 +127,17 @@ python -m pytest tests/test_security.py tests/test_session_guard.py -vv        #
 - **Temporary** SQLite database, recreated for every test: `instance/` and `uploads/` are never touched.
 - Network, email, Turnstile, and Socket.IO are mocked (the `externals` fixture in `conftest.py`).
 - No environment variables are required; `FLASK_DEBUG` has no effect on the tests.
+
+## 9. CI (GitHub Actions)
+
+The `.github/workflows/tests.yml` workflow is triggered for every pull request to `main`, every push to `main`, and on demand (*Actions → Tests → Run workflow*). It fails if any test fails **or** if code coverage drops below 85%.
+
+To exactly replicate the CI locally:
+
+```bash
+python -m pytest -ra --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=85 --junitxml=junit.xml
+```
+
+The `coverage.xml` and `junit.xml` reports are retained for 7 days as run artifacts, and the code coverage table is displayed in the job summary.
+
+Translated with DeepL.com (free version)
