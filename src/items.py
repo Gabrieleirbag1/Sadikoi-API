@@ -8,10 +8,15 @@ from db import add_to_db, update_from_db
 
 def assign_items(question: QuestionModel, group: GroupModel) -> None:
     """Assign items to the user with the most votes for the last question in the group. If there is a tie or no votes, no item will be assigned."""
-    last_question: QuestionModel = QuestionModel.query.order_by(QuestionModel.date.desc()).offset(1).first()
+    last_question: QuestionModel | None = (
+        QuestionModel.query
+        .filter(QuestionModel.group_id == group.id, QuestionModel.date < question.date)
+        .order_by(QuestionModel.date.desc())
+        .first()
+    )
     if not last_question:
         return
-    most_voted_user = get_most_voted_user(last_question, last_question.group)
+    most_voted_user = get_most_voted_user(last_question, group)
     if not most_voted_user:
         return
     

@@ -151,6 +151,12 @@ def create_user(email: str, username: str, password: str, profile_picture: str |
     if not email or not username or not password:
         return {"success": False, "message": "Email, username, and password are required"}, 400
 
+    # Unique constraints also cover soft-deleted accounts, so they are checked without the `deleted` filter.
+    if UserModel.query.filter_by(email=email).first():
+        return {"success": False, "message": "Email already in use"}, 409
+    if UserModel.query.filter_by(username=username).first():
+        return {"success": False, "message": "Username already in use"}, 409
+
     user = UserModel(email=email, username=username, password=generate_password_hash(password, method='pbkdf2:sha256'), profile_picture=profile_picture, language=language)
 
     result = add_to_db(user)
@@ -158,6 +164,14 @@ def create_user(email: str, username: str, password: str, profile_picture: str |
         return result, 500
     
     return {"success": True, "message": "User created successfully", "content": user}, 201
+
+def make_unique_username(base: str) -> str:
+    """Return `base`, or `base` + a short random suffix when that username is already taken (max 40 chars)."""
+    base = base[:40]
+    candidate = base
+    while UserModel.query.filter_by(username=candidate).first():
+        candidate = f"{base[:33]}_{secrets.token_hex(3)}"
+    return candidate
 
 def update_user(request: Request) -> tuple[dict, int]:
     user: UserModel | None = get_user_object(current_user.id)
@@ -240,6 +254,7 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         
         if not user:
             random_password = secrets.token_urlsafe(32)
+            username = make_unique_username(username)
             profile_picture = None
             if google_picture:
                 profile_picture = save_profile_picture(google_picture, external=True)
@@ -369,7 +384,9 @@ def logout_sessions(user: UserModel = None) -> tuple[dict, int]:
     return set_session_version(user)
         
 def get_user_object(user_info: str | int) -> UserModel | None:
-    """Get the user object with the given user_info."""
+    """Get the user object with the given user_info (an id, a username or an email)."""
+    if user_info is None or not isinstance(user_info, (int, str)) or user_info == "":
+        return None
     if isinstance(user_info, int) or user_info.isdigit():
         user = UserModel.query.get(int(user_info))
     else:
@@ -453,16 +470,17 @@ def send_auth_code(user: UserModel, device: UserSecurity) -> tuple[dict, int]:
 
 def verify_device(request: Request) -> tuple[dict, int]:
     """Verify the auth code submitted for a given device, authorizing it on success."""
-    user_info = request.json.get('user_info')
+    data = request.json or {}
+    user_info = data.get('user_info')
+    device_id = data.get('device_id')
+    submitted_code = data.get('code')
+
+    if not user_info or not device_id or not submitted_code:
+        return {"success": False, "message": "user_info, device_id and code are required"}, 400
+
     user = get_user_object(user_info)
     if not user:
         return {"success": False, "message": "User not found"}, 404
-
-    device_id = request.json.get('device_id')
-    submitted_code = request.json.get('code')
-
-    if not device_id or not submitted_code:
-        return {"success": False, "message": "device_id and code are required"}, 400
 
     device = UserSecurity.query.filter_by(user_id=user.id, device_id=device_id).first()
     if not device:

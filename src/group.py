@@ -86,8 +86,9 @@ def update_group(group_id: int) -> tuple[dict, int]:
         return {"success": False, "message": "Only admins can update the group"}, 403
 
     data = request.json
-    group.name = data.get('name', group.name)
-    group.description = data.get('description', group.description)
+    group.name = data.get('name') or group.name
+    if data.get('description') is not None:
+        group.description = data['description']
 
     themes = data.get('themes')
     if not themes or len(themes) == 0:
@@ -232,7 +233,11 @@ def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     if not group_user:
         return {"success": False, "message": "User is not a member of the group or not an admin"}, 403
 
-    group_user_to_update: GroupUser = GroupUser.query.filter_by(user_id=get_user_object(user_to_update_role_info).id, group_id=group_id).first()
+    user_to_update_role = get_user_object(user_to_update_role_info)
+    if not user_to_update_role:
+        return {"success": False, "message": "User not found"}, 404
+
+    group_user_to_update: GroupUser = GroupUser.query.filter_by(user_id=user_to_update_role.id, group_id=group_id).first()
     if not group_user_to_update:
         return {"success": False, "message": "User to update role is not a member of the group"}, 404
 
@@ -294,8 +299,10 @@ def get_group_invitation(group_id: int) -> tuple[dict, int]:
     if user not in group.users:
         return {"success": False, "message": "User is not a member of the group"}, 403
 
-    invitation: GroupInvitationModel = GroupInvitationModel.query.filter_by(group_id=group_id).first()
-    if not invitation or invitation.expiration_date.replace(tzinfo=datetime.timezone.utc) < datetime.datetime.now(datetime.timezone.utc):
+    now = datetime.datetime.now(datetime.timezone.utc)
+    invitations = GroupInvitationModel.query.filter_by(group_id=group_id).order_by(GroupInvitationModel.id.desc()).all()
+    invitation = next((i for i in invitations if i.expiration_date.replace(tzinfo=datetime.timezone.utc) >= now), None)
+    if not invitation:
         return create_invitation(group)
     
     return {"success": True, "message": "Invitation retrieved successfully", "content": invitation.token}, 200
