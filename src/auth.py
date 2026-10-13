@@ -596,9 +596,14 @@ def report_user(request: Request) -> tuple[dict, int]:
     if not reported_user:
         return {"success": False, "message": "Reported user not found"}, 404
 
+    group_id = request.json.get('group_id', None)  # Optional: if the report is related to a group
+    message_id = request.json.get('message_id', None)  # Optional: if the report is related to a specific message
+
     report: ReportUserModel = ReportUserModel(
         reporter_id=reporter.id,
         reported_id=reported_user.id,
+        group_id = group_id,
+        message_id = message_id,
         reason=reason,
         timestamp=datetime.datetime.now(datetime.timezone.utc)
     )
