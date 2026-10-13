@@ -226,6 +226,23 @@ def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     :rtype: bool"""
     return user in group.users
 
+def get_group_for_member(group_id: int) -> tuple[GroupModel | None, UserModel | None, tuple[dict, int] | None]:
+    """Load a group and the current user, making sure the user is a member of the group.
+
+    :param int group_id: The ID of the group.
+
+    :return: (group, user, error); error is the (response, status) to return when the access is denied, else None.
+    :rtype: tuple[GroupModel | None, UserModel | None, tuple[dict, int] | None]"""
+    group = GroupModel.query.get(group_id)
+    if not group:
+        return None, None, ({"success": False, "message": "Group not found"}, 404)
+    user = get_user_object(current_user.id or current_user.username)
+    if not user:
+        return None, None, ({"success": False, "message": "User not found"}, 404)
+    if not is_user_in_group(user, group):
+        return None, None, ({"success": False, "message": "User is not a member of the group"}, 403)
+    return group, user, None
+
 def extract_votes_info(question: QuestionModel, group: GroupModel, date: datetime.date = None):
     """Extract detailed information about votes for a given question, optionally filtered by group and date.
     
@@ -265,14 +282,10 @@ def get_question(group_id: int) -> tuple[dict, int]:
     
     :return: A tuple containing a dictionary with the result and the HTTP status code.
     :rtype: tuple[dict, int]"""
-    group = GroupModel.query.get(group_id)
-    if not group:
-        return {"success": False, "message": "Group not found"}, 404
+    group, user, error = get_group_for_member(group_id)
+    if error:
+        return error
     db.session.add(group)  # Ensure group is in session
-    user_info = current_user.id or current_user.username
-    user = get_user_object(user_info)
-    if not user:
-        return {"success": False, "message": "User not found"}, 404
     if does_exist_question_today(group):
         question = group.questions.order_by(QuestionModel.date.desc()).first()
         votes = None
@@ -303,13 +316,9 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
     
     :return: A tuple containing a dictionary with the result and the HTTP status code.
     :rtype: tuple[dict, int]"""
-    user_info = current_user.id or current_user.username
-    user = get_user_object(user_info)
-    if not user:
-        return {"success": False, "message": "User not found"}, 404
-    group = GroupModel.query.get(group_id)
-    if not group:
-        return {"success": False, "message": "Group not found"}, 404
+    group, user, error = get_group_for_member(group_id)
+    if error:
+        return error
     questions = group.questions.filter(db.extract('month', QuestionModel.date) == month, db.extract('year', QuestionModel.date) == year).all()
     questions_data = []
     for question in questions:
@@ -332,32 +341,25 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     :return: A tuple containing a dictionary with the result and the HTTP status code.
     :rtype: tuple[dict, int]"""
     written_answer = None
-    group = GroupModel.query.get(group_id)
-    if not group:
-        return {"success": False, "message": "Group not found"}, 404
-    
+    group, user, error = get_group_for_member(group_id)
+    if error:
+        return error
+
     question: QuestionModel = group.questions.order_by(QuestionModel.date.desc()).first()
     if not question:
         return {"success": False, "message": "Question not found"}, 404
-    
-    user_info = current_user.id or current_user.username
-    if not user_info:
-        return {"success": False, "message": "User info is required to vote"}, 400
-    
-    user = get_user_object(user_info)
-    if not user:
-        return {"success": False, "message": "User not found"}, 404
-    
-    if not group:
-        return {"success": False, "message": "Group not found"}, 404
-    
-    if not is_user_in_group(user, group):
-        return {"success": False, "message": "User is not a member of the group"}, 403
+
+    # Only the current day's question can be voted on.
+    if not does_exist_question_today(group):
+        return {"success": False, "message": "Question is no longer open"}, 400
+    question_id = request.json.get("question_id")
+    if question_id is not None and question_id != question.id:
+        return {"success": False, "message": "Question is no longer open"}, 400
 
     has_user_voted_today, _ = does_exist_vote_today(group, user)
     if has_user_voted_today:
         return {"success": False, "message": "User has already voted today"}, 400
-    
+
     votedUsers = request.json.get("votedUsers")
 
     if question.canWrite:
@@ -382,12 +384,17 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
         if all(isinstance(item_name, int) for item_name in votedUsers):
             votedUser_ids = votedUsers
         elif all(isinstance(item_name, str) for item_name in votedUsers):
-            votedUsers = UserModel.query.filter(UserModel.username.in_(votedUsers)).all()
-            if len(votedUsers) != len(votedUsers):
+            requested_names = votedUsers
+            found_users = UserModel.query.filter(UserModel.username.in_(requested_names)).all()
+            if len(found_users) != len(set(requested_names)):
                 return {"success": False, "message": "One or more voted users not found"}, 404
-            votedUser_ids = [votedUser.id for votedUser in votedUsers]
+            votedUser_ids = [votedUser.id for votedUser in found_users]
         else:
             return {"success": False, "message": "votedUsers must contain only ids or usernames"}, 400
+
+        member_ids = {member.id for member in group.users}
+        if not all(voted_id in member_ids for voted_id in votedUser_ids):
+            return {"success": False, "message": "Voted users must be members of the group"}, 400
 
         if not question.enableSelfVote and user.id in votedUser_ids:
             return {"success": False, "message": "User cannot vote for themselves"}, 400
