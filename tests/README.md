@@ -104,7 +104,7 @@ python -m pytest tests/test_chat.py --cov=src/chat.py --cov-report=term-missing
 
 ## 6. Défauts connus (`xfail`)
 
-Les tests `@pytest.mark.xfail(strict=True)` décrivent le **comportement attendu** d'un bug encore présent dans l'API.
+Les tests `@pytest.mark.xfail(strict=True)` décrivent le **comportement attendu** d'un bug encore présent dans l'API. *(Aucun pour l'instant : les 6 défauts initiaux sont corrigés.)*
 
 ```bash
 python -m pytest -rx                       # liste les xfail et la raison
