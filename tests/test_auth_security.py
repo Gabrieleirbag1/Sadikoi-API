@@ -82,11 +82,14 @@ class TestVerifyDevice:
     def test_unknown_device(self, anon):
         assert self.verify(anon, device_id="other-device").status_code == 404
 
-    @pytest.mark.xfail(strict=True, raises=AttributeError,
-                       reason="verify_device() calls get_user_object(None) -> AttributeError (500) when user_info is missing")
     def test_missing_user_info(self, anon):
         response = anon.post(VERIFY, json={"device_id": self.user.device_id, "code": self.code})
         assert response.status_code == 400
+
+    @pytest.mark.parametrize("user_info", [None, "", 123456789])
+    def test_user_info_edge_values(self, anon, user_info):
+        payload = {"user_info": user_info, "device_id": self.user.device_id, "code": self.code}
+        assert anon.post(VERIFY, json=payload).status_code in (400, 404)
 
     @pytest.mark.parametrize("missing", ["device_id", "code"])
     def test_missing_fields(self, anon, missing):

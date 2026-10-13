@@ -92,6 +92,30 @@ class TestGetQuestion:
             [item] = ItemModel.query.filter_by(group_id=group.id).all()
             assert (item.user_id, item.item_name) == (world.member.id, "bonnet_honte")
 
+    def test_item_depends_only_on_the_day_before_today_not_on_older_days(self, login_as, world, group, ctx):
+        with ctx():
+            two_days_ago = factories.make_question(group, days_ago=2)
+            factories.make_vote(two_days_ago, world.admin, [world.admin])    # older winner: admin
+            yesterday = factories.make_question(group, days_ago=1)
+            factories.make_vote(yesterday, world.admin, [world.member])       # yesterday's winner: member
+        assert login_as(world.admin).get(q_url(group.id)).status_code == 200
+        with ctx():
+            [item] = ItemModel.query.filter_by(group_id=group.id).all()
+            assert item.user_id == world.member.id
+            assert item.acquired_at.replace(tzinfo=None) == yesterday.date.replace(tzinfo=None)
+
+    def test_votes_on_todays_question_do_not_change_items(self, login_as, world, group, ctx):
+        client = login_as(world.admin)
+        with ctx():
+            old = factories.make_question(group, days_ago=1)
+            factories.make_vote(old, world.admin, [world.member])
+        client.get(q_url(group.id))                                           # generates today's question + item
+        login_as(world.member).post(q_url(group.id, "vote"), json={"votedUsers": [world.admin.id]})
+        client.get(q_url(group.id))                                           # today's question already exists
+        with ctx():
+            [item] = ItemModel.query.filter_by(group_id=group.id).all()
+            assert item.user_id == world.member.id                            # still yesterday's winner, no new item
+
     def test_no_item_when_yesterday_ended_in_a_tie(self, login_as, world, group, ctx):
         with ctx():
             old = factories.make_question(group, days_ago=1)
@@ -101,8 +125,6 @@ class TestGetQuestion:
         with ctx():
             assert ItemModel.query.count() == 0
 
-    @pytest.mark.xfail(strict=True, reason="assign_items() picks the 2nd most recent question of ALL groups "
-                                           "(QuestionModel.query without a group filter)")
     def test_items_are_computed_from_the_groups_own_previous_question(self, login_as, world, group, ctx):
         with ctx():
             old = factories.make_question(group, days_ago=1)

@@ -85,17 +85,28 @@ class TestRegister:
         response = anon.post(REGISTER, json=register_payload(email="x" * 70 + "@example.com"))
         assert response.status_code == 400
 
-    @pytest.mark.xfail(strict=True, reason="duplicate email/username currently surfaces as a 500 instead of a 4xx")
     def test_duplicate_email(self, anon, ctx):
         with ctx():
             factories.make_user("taken", email="newbie@example.com")
         assert anon.post(REGISTER, json=register_payload()).status_code in (400, 409)
 
-    @pytest.mark.xfail(strict=True, reason="duplicate email/username currently surfaces as a 500 instead of a 4xx")
     def test_duplicate_username(self, anon, ctx):
         with ctx():
             factories.make_user("newbie", email="other@example.com")
         assert anon.post(REGISTER, json=register_payload()).status_code in (400, 409)
+
+    def test_duplicate_email_is_case_exact_and_creates_nothing(self, anon, ctx):
+        with ctx():
+            factories.make_user("taken", email="newbie@example.com")
+        response = anon.post(REGISTER, json=register_payload())
+        assert response.status_code == 409 and "Email" in response.get_json()["message"]
+        with ctx():
+            assert UserModel.query.count() == 1
+
+    def test_username_of_a_deleted_account_stays_reserved(self, anon, ctx):
+        with ctx():
+            factories.make_user("newbie", email="gone@example.com", deleted=True)
+        assert anon.post(REGISTER, json=register_payload()).status_code == 409
 
     def test_login_true_without_device_id_creates_account_only(self, anon):
         response = anon.post(REGISTER, json=register_payload(login=True, device_id=None))
@@ -268,6 +279,15 @@ class TestGoogle:
             assert user.username == "Gina" and user.language == "fr"
             assert UserSecurity.query.filter_by(user_id=user.id, device_id="g-dev").one().authorized is True
         assert anon.post(ACCOUNT, json={"device_id": "g-dev"}).status_code == 200
+
+    def test_name_collision_gets_a_unique_username(self, anon, monkeypatch, ctx):
+        with ctx():
+            factories.make_user("Gina", email="someone-else@example.com")
+        self.fake_verify(monkeypatch, {"email": "gina@gmail.com", "name": "Gina"})
+        assert anon.post(GOOGLE, json={"token": "t", "device_id": "g-dev"}).status_code == 200
+        with ctx():
+            user = UserModel.query.filter_by(email="gina@gmail.com").one()
+            assert user.username != "Gina" and user.username.startswith("Gina_")
 
     def test_existing_account(self, anon, monkeypatch, ctx):
         with ctx():

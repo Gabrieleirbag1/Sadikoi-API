@@ -42,11 +42,15 @@ class TestCreateGroup:
         assert response.status_code == 201
         assert response.get_json()["content"]["daily_reset_timestamp"] == "15:00"
 
-    @pytest.mark.xfail(strict=True, raises=TypeError,
-                       reason="description is optional in the API but GroupModel's validator calls len(None)")
     def test_description_is_optional(self, login_as, world):
         payload = {k: v for k, v in self.payload.items() if k != "description"}
         assert login_as(world.outsider).post(GROUPS, json=payload).status_code == 201
+
+    def test_null_description_is_stored_as_empty(self, login_as, world):
+        payload = {**self.payload, "description": None}
+        response = login_as(world.outsider).post(GROUPS, json=payload)
+        assert response.status_code == 201
+        assert response.get_json()["content"]["description"] == ""
 
     @pytest.mark.parametrize("change", [
         {"name": ""}, {"name": None}, {"themes": []}, {"themes": None}, {"themes": ["nope"]},
@@ -106,6 +110,19 @@ class TestUpdateGroup:
             assert group.daily_reset_timestamp == datetime.time(21, 15)
         [event] = events(externals, "group_updated")
         assert event["to"] == str(world.group.id) and event["data"]["name"] == "Renamed"
+
+    def test_null_name_and_description_keep_current_values(self, login_as, world, ctx):
+        response = login_as(world.admin).put(url(world.group.id), json={"name": None, "description": None,
+                                                                         "themes": ["style"]})
+        assert response.status_code == 200
+        with ctx():
+            group = GroupModel.query.get(world.group.id)
+            assert (group.name, group.description) == ("Team", "desc")
+
+    def test_description_can_be_cleared(self, login_as, world, ctx):
+        assert login_as(world.admin).put(url(world.group.id), json={"description": "", "themes": ["style"]}).status_code == 200
+        with ctx():
+            assert GroupModel.query.get(world.group.id).description == ""
 
     def test_name_and_description_are_optional_but_themes_are_required(self, login_as, world):
         response = login_as(world.admin).put(url(world.group.id), json={"themes": ["style"]})
@@ -234,8 +251,6 @@ class TestPromote:
     def test_outside_admin_cannot_promote(self, login_as, world):
         assert self.promote(login_as(world.other), world.group, "member").status_code == 403
 
-    @pytest.mark.xfail(strict=True, raises=AttributeError,
-                       reason="promote_user_group_role() dereferences get_user_object(...).id for an unknown user -> 500")
     def test_unknown_user(self, login_as, world):
         assert self.promote(login_as(world.admin), world.group, "ghost").status_code == 404
 
@@ -262,8 +277,6 @@ class TestInvitations:
         response = login_as(world.member).get(url(world.group.id, "invitations"))
         assert response.status_code == 201 and response.get_json()["content"] != old
 
-    @pytest.mark.xfail(strict=True, reason="once the first invitation row expired, every call creates a new token "
-                                           "(filter_by(group_id).first() keeps returning the expired one)")
     def test_replacement_invitation_is_then_reused(self, login_as, world, ctx):
         with ctx():
             factories.make_invitation(world.group, expired=True)
