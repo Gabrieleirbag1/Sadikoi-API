@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash
 from db import db
 from models import (
     ChatMessageModel, GroupInvitationModel, GroupModel, GroupUser, ItemModel, QuestionModel,
-    QuestionVote, QuestionVoteTarget, UserModel, UserSecurity,
+    QuestionVote, QuestionVoteTarget, UserModel, UserSecurity, BugReportModel, SuggestionModel,
 )
 
 PASSWORD = "Passw0rd!"
@@ -125,3 +125,17 @@ def make_item(user: U, group: G, item_name: str = "bonnet_honte", *, acquired_da
     db.session.add(item)
     db.session.commit()
     return item.id
+
+
+def make_bug_report(user: U, title: str = "Crash", *, status: str = "open", description: str = "It crashes") -> int:
+    report = BugReportModel(user_id=user.id, title=title, description=description, device_name="Pixel", status=status)
+    db.session.add(report)
+    db.session.commit()
+    return report.id
+
+
+def make_suggestion(user: U, question: str = "Qui dort le plus ?", *, theme: str = "connerie") -> int:
+    suggestion = SuggestionModel(user_id=user.id, theme=theme, question=question)
+    db.session.add(suggestion)
+    db.session.commit()
+    return suggestion.id
