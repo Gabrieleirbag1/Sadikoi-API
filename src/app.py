@@ -12,6 +12,7 @@ from chat import get_messages, send_message
 from question import get_question, vote_question, get_questions_by_date
 from feedback import create_bug_report, create_suggestion
 from db import db
+from manage import has_pending_migrations
 from sockets import socketio
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device, forgot_password, reset_password, report_user
 from config import SECRET_KEY, ALLOWED_ORIGINS
@@ -293,7 +294,7 @@ def handle_leave(data):
     log(f"User left room {group_id}", level="DEBUG")
 
 def main(db_name: str = "data-local") -> None:
-    """Main function to create the app and initialize the database."
+    """Main function to create the app and check the database schema."
     
     :param str db_name: The name of the database.
 
@@ -301,8 +302,10 @@ def main(db_name: str = "data-local") -> None:
     """
     configure_app(db_name)
     create_app()
+    # The schema is owned by the migrations (python src/manage.py migrate), never by db.create_all().
     with app.app_context():
-        db.create_all()
+        if has_pending_migrations():
+            log("The database is not up to date: run `python src/manage.py migrate`.", level="ERROR")
 
 if __name__ == '__main__':
     main()

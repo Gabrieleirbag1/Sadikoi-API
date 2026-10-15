@@ -47,6 +47,9 @@ if not TURNSTILE_SECRET_KEY:
     log("TURNSTILE_SECRET_KEY not found in .turnstile.secrets file.", level="ERROR")
 
 
+# The local SQLite database (the API names it 'data-local' and runs from the repo root).
+DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'instance', 'data-local.db')
+
 ALLOWED_ORIGINS = ["http://localhost:4200", "https://sadikoi.missclick.net"]
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
