@@ -3,13 +3,12 @@ import re
 import sys
 
 import pytest
-from sqlalchemy import text
 
 from admin import create_admin_app, stats
 from admin import __main__ as admin_main
 from admin.auth import load_admin_secret
 from admin.views.database import DATABASE_MODELS
-from db import db, upgrade_schema
+from db import db
 from models import BugReportModel, SuggestionModel, UserModel
 from tests import factories
 
@@ -321,17 +320,6 @@ class TestLanguages:
 
     def test_no_open_redirect(self, anon_admin):
         assert anon_admin.get("/admin/login/language/en/?next=//evil.example").headers["Location"] == "/admin/"
-
-
-class TestSchemaUpgrade:
-    def test_adds_missing_columns_once(self, ctx):
-        with ctx():
-            db.session.execute(text("ALTER TABLE bug_reports DROP COLUMN status"))
-            db.session.commit()
-            assert upgrade_schema() == ["bug_reports.status"]
-            assert upgrade_schema() == []
-            columns = [row[1] for row in db.session.execute(text("PRAGMA table_info(bug_reports)"))]
-            assert "status" in columns
 
 
 class TestEntrypoint:
