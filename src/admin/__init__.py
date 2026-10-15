@@ -7,8 +7,8 @@ from flask_admin import Admin
 from flask_admin.theme import Bootstrap4Theme
 from flask_babel import Babel
 
-from config import SECRET_KEY
-from db import db, upgrade_schema
+from config import DEFAULT_DB_PATH, SECRET_KEY
+from db import db
 from models import BugReportModel, SuggestionModel, UserModel
 from security import SocketRateLimiter
 
@@ -20,7 +20,6 @@ from admin.views.feedback import BugReportAdminView, SuggestionAdminView
 from admin.views.users import UserAdminView
 
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEFAULT_DB_PATH = os.path.join(os.path.dirname(SRC_DIR), 'instance', 'data-local.db')
 
 
 def create_admin_app(config: dict | None = None) -> Flask:
@@ -46,8 +45,6 @@ def create_admin_app(config: dict | None = None) -> Flask:
     Babel(app, locale_selector=get_locale)  # Flask-Admin's own labels (filters, actions, pager) follow the switch
 
     db.init_app(app)
-    with app.app_context():
-        upgrade_schema()
 
     admin = Admin(
         app,
