@@ -13,6 +13,7 @@ from models import BugReportModel, SuggestionModel, UserModel
 from security import SocketRateLimiter
 
 from admin.auth import LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_SECONDS, LoginView, is_admin_authenticated, load_admin_secret
+from admin.i18n import LANGUAGES, format_date, get_locale, lazy, tr
 from admin.views.dashboard import DashboardView
 from admin.views.database import register_database_views
 from admin.views.feedback import BugReportAdminView, SuggestionAdminView
@@ -39,8 +40,10 @@ def create_admin_app(config: dict | None = None) -> Flask:
     # Stable across restarts, but distinct from the key signing the API sessions.
     app.secret_key = hashlib.sha256(f"admin:{SECRET_KEY}".encode()).hexdigest()
     app.extensions['admin_login_limiter'] = SocketRateLimiter(LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_SECONDS)
-    app.jinja_env.globals['is_admin_authenticated'] = is_admin_authenticated
-    Babel(app, locale_selector=lambda: 'fr')  # Flask-Admin's own labels (filters, actions, pager) in French
+    app.jinja_env.globals.update(is_admin_authenticated=is_admin_authenticated, tr=tr, get_locale=get_locale,
+                                 languages=LANGUAGES)
+    app.jinja_env.filters['local_date'] = format_date
+    Babel(app, locale_selector=get_locale)  # Flask-Admin's own labels (filters, actions, pager) follow the switch
 
     db.init_app(app)
     with app.app_context():
@@ -50,16 +53,16 @@ def create_admin_app(config: dict | None = None) -> Flask:
         app,
         name='Sadikoi Admin',
         theme=Bootstrap4Theme(swatch='flatly', fluid=True, base_template='admin/sadikoi_base.html'),
-        index_view=DashboardView(name='Dashboard', url='/admin', menu_icon_type='fa', menu_icon_value='fa-tachometer'),
+        index_view=DashboardView(name=lazy('Dashboard'), url='/admin', menu_icon_type='fa', menu_icon_value='fa-tachometer'),
     )
-    admin.add_view(UserAdminView(UserModel, db.session, name='Utilisateurs', endpoint='users', url='/admin/users',
+    admin.add_view(UserAdminView(UserModel, db.session, name=lazy('Users'), endpoint='users', url='/admin/users',
                                  menu_icon_type='fa', menu_icon_value='fa-users'))
-    admin.add_view(SuggestionAdminView(SuggestionModel, db.session, name='Suggestions', endpoint='suggestions',
+    admin.add_view(SuggestionAdminView(SuggestionModel, db.session, name=lazy('Suggestions'), endpoint='suggestions',
                                        url='/admin/suggestions', menu_icon_type='fa', menu_icon_value='fa-lightbulb-o'))
-    admin.add_view(BugReportAdminView(BugReportModel, db.session, name='Bugs', endpoint='bugs', url='/admin/bugs',
+    admin.add_view(BugReportAdminView(BugReportModel, db.session, name=lazy('Bugs'), endpoint='bugs', url='/admin/bugs',
                                       menu_icon_type='fa', menu_icon_value='fa-bug'))
     register_database_views(admin)
-    admin.add_view(LoginView(name='Connexion', endpoint='login', url='/admin/login'))
+    admin.add_view(LoginView(name=lazy('Login'), endpoint='login', url='/admin/login'))
 
     @app.route('/')
     def root():

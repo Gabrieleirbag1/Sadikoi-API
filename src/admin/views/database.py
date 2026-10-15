@@ -2,6 +2,7 @@
 from flask_admin import Admin
 from sqlalchemy import Boolean, Date, DateTime, Integer, String, Time, inspect
 
+from admin.i18n import lazy
 from admin.views.base import ProtectedModelView
 from db import db
 from models import (
@@ -38,4 +39,4 @@ def register_database_views(admin: Admin) -> None:
     for model in DATABASE_MODELS:
         table = model.__tablename__
         admin.add_view(ReadOnlyModelView(model, db.session, name=table, endpoint=f'db_{table}',
-                                         url=f'/admin/db/{table}', category='Base de données'))
+                                         url=f'/admin/db/{table}', category=lazy('Database')))

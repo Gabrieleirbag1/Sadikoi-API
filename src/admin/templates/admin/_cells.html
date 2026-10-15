@@ -12,39 +12,39 @@
     <a class="sk-user" href="{{ url_for('users.details_view', id=user.id) }}">
       {{ avatar(user) }}
       <span class="sk-user-text">
-        <span class="sk-user-name">{{ user.username }}{% if user.deleted %} <span class="badge badge-secondary">désactivé</span>{% endif %}</span>
+        <span class="sk-user-name">{{ user.username }}{% if user.deleted %} <span class="badge badge-secondary">{{ tr('disabled') }}</span>{% endif %}</span>
         <span class="sk-user-meta">{{ user.email }} · #{{ user.id }}</span>
       </span>
     </a>
   {%- else -%}
-    <span class="text-muted">Utilisateur supprimé</span>
+    <span class="text-muted">{{ tr('Deleted user') }}</span>
   {%- endif -%}
 {%- endmacro %}
 
 {% macro user_status(user, csrf_field, return_url) -%}
   <div class="sk-status">
     {% if user.deleted %}
-      <span class="badge badge-pill badge-danger">Désactivé</span>
+      <span class="badge badge-pill badge-danger">{{ tr('Disabled') }}</span>
     {% else %}
-      <span class="badge badge-pill badge-success">Actif</span>
+      <span class="badge badge-pill badge-success">{{ tr('Active') }}</span>
     {% endif %}
     <form method="POST" action="{{ url_for('users.toggle_view', user_id=user.id) }}" class="d-inline">
       {{ csrf_field }}
       <input type="hidden" name="url" value="{{ return_url }}">
       {% if user.deleted %}
-        <button type="submit" class="btn btn-outline-success btn-xs">Réactiver</button>
+        <button type="submit" class="btn btn-outline-success btn-xs">{{ tr('Reactivate') }}</button>
       {% else %}
         <button type="submit" class="btn btn-outline-danger btn-xs"
-                onclick='return confirm({{ ("Désactiver le compte de " ~ user.username ~ " ?") | tojson }});'>Désactiver</button>
+                onclick='return confirm({{ tr("Disable {username}'s account?", username=user.username) | tojson }});'>{{ tr('Disable') }}</button>
       {% endif %}
     </form>
   </div>
 {%- endmacro %}
 
 {% macro bug_status(status) -%}
-  {% set styles = {'open': ('danger', 'Ouvert'), 'in_progress': ('warning', 'En cours'), 'resolved': ('success', 'Résolu')} %}
+  {% set styles = {'open': ('danger', 'Open'), 'in_progress': ('warning', 'In progress'), 'resolved': ('success', 'Resolved')} %}
   {% set style = styles.get(status, ('secondary', status)) %}
-  <span class="badge badge-pill badge-{{ style[0] }}">{{ style[1] }}</span>
+  <span class="badge badge-pill badge-{{ style[0] }}">{{ tr(style[1]) }}</span>
 {%- endmacro %}
 
 {% macro multiline(text) -%}

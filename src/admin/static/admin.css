@@ -13,6 +13,14 @@ body { background: var(--sk-bg); }
 .sk-navbar .navbar-brand { font-weight: 700; letter-spacing: .02em; }
 .sk-brand-tag { font-weight: 400; opacity: .75; font-size: .8em; }
 .sk-navbar .dropdown-menu { max-height: 70vh; overflow-y: auto; }
+.sk-navbar-end { display: flex; align-items: center; gap: .5rem; margin-left: auto; }
+@media (min-width: 992px) { .sk-navbar-end { margin-left: .75rem; } }
+
+/* EN | FR segmented switch */
+.sk-lang { display: inline-flex; border: 1px solid rgba(255, 255, 255, .45); border-radius: 999px; overflow: hidden; }
+.sk-lang-option { padding: .15rem .6rem; font-size: .75rem; font-weight: 600; letter-spacing: .04em; color: rgba(255, 255, 255, .8); }
+.sk-lang-option:hover { color: #fff; text-decoration: none; background: rgba(255, 255, 255, .12); }
+.sk-lang-option.active { background: #fff; color: var(--primary); }
 
 .sk-main { padding-top: 1.25rem; padding-bottom: 2rem; }
 .sk-page-title { font-size: 1.35rem; font-weight: 600; margin-bottom: 1rem; }

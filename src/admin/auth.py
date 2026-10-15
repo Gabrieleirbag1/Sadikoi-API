@@ -11,6 +11,7 @@ from lite_logging.lite_logging import log
 from wtforms import PasswordField
 from wtforms.validators import DataRequired
 
+from admin.i18n import LANGUAGES, lazy, tr
 from config import load_secret_var
 from security import SocketRateLimiter
 
@@ -68,7 +69,15 @@ class SecretProtectedMixin:
 
 
 class LoginForm(SecureForm):
-    secret = PasswordField('Secret admin', validators=[DataRequired()])
+    secret = PasswordField(lazy('Admin secret'), validators=[DataRequired()])
+
+
+def reset_session() -> None:
+    """Clear the session but keep the chosen language."""
+    language = session.get('admin_lang')
+    session.clear()
+    if language:
+        session['admin_lang'] = language
 
 
 class LoginView(BaseView):
@@ -84,19 +93,26 @@ class LoginView(BaseView):
         if request.method == 'POST':
             limiter: SocketRateLimiter = current_app.extensions['admin_login_limiter']
             if not limiter.allow(request.remote_addr or 'local'):
-                flash("Trop de tentatives. Réessayez dans une minute.", 'error')
+                flash(tr("Too many attempts. Try again in a minute."), 'error')
                 status = 429
             elif form.validate() and hmac.compare_digest(form.secret.data.encode(), current_app.config['ADMIN_SECRET'].encode()):
-                session.clear()
+                reset_session()
                 session['admin_fp'] = secret_fingerprint(current_app.config['ADMIN_SECRET'])
                 return redirect(safe_next_url(request.args.get('next')))
             else:
                 log(f"Failed admin login from {request.remote_addr}", level="WARNING")
-                flash("Secret invalide.", 'error')
+                flash(tr("Invalid secret."), 'error')
                 status = 401
         return self.render('admin/login.html', form=form), status
 
     @expose('/logout/')
     def logout(self):
-        session.clear()
+        reset_session()
         return redirect(url_for('login.index'))
+
+    @expose('/language/<language>/')
+    def language(self, language: str):
+        """Language switch of the navbar (reachable before login, like the login page)."""
+        if language in LANGUAGES:
+            session['admin_lang'] = language
+        return redirect(safe_next_url(request.args.get('next')))

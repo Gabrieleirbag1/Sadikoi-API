@@ -4,6 +4,7 @@ from flask_admin.actions import action
 from lite_logging.lite_logging import log
 
 from admin.auth import safe_next_url
+from admin.i18n import lazy, tr
 from admin.views.base import CsrfOnlyForm, ProtectedModelView, cell, current_url
 from db import db
 from models import UserModel
@@ -26,8 +27,9 @@ class UserAdminView(ProtectedModelView):
     column_details_list = ['profile_picture', 'id', 'username', 'email', 'language', 'date_created', 'group_count',
                            'session_version', 'deleted']
     column_labels = {
-        'profile_picture': '', 'id': 'ID', 'username': 'Pseudo', 'email': 'Email', 'language': 'Langue',
-        'date_created': 'Inscription', 'group_count': 'Groupes', 'deleted': 'Statut', 'session_version': 'Version de session',
+        'profile_picture': '', 'id': 'ID', 'username': lazy('Username'), 'email': lazy('Email'),
+        'language': lazy('Language'), 'date_created': lazy('Signed up'), 'group_count': lazy('Groups'),
+        'deleted': lazy('Status'), 'session_version': lazy('Session version'),
     }
     column_searchable_list = ['username', 'email']
     column_filters = ['deleted', 'language', 'date_created']
@@ -43,14 +45,15 @@ class UserAdminView(ProtectedModelView):
     def toggle_view(self, user_id: int):
         back = safe_next_url(request.form.get('url'))
         if not CsrfOnlyForm(request.form).validate():
-            flash("Jeton CSRF invalide, rechargez la page.", 'error')
+            flash(tr("Invalid CSRF token, reload the page."), 'error')
             return redirect(back)
         user = db.session.get(UserModel, user_id)
         if user is None:
             abort(404)
         set_user_disabled(user, not user.deleted)
         db.session.commit()
-        flash(f"Compte de {user.username} {'désactivé' if user.deleted else 'réactivé'}.", 'success')
+        message = "{username}'s account disabled." if user.deleted else "{username}'s account reactivated."
+        flash(tr(message, username=user.username), 'success')
         return redirect(back)
 
     def _set_disabled(self, ids: list[str], disabled: bool) -> None:
@@ -58,12 +61,13 @@ class UserAdminView(ProtectedModelView):
         for user in users:
             set_user_disabled(user, disabled)
         db.session.commit()
-        flash(f"{len(users)} compte(s) {'désactivé(s)' if disabled else 'réactivé(s)'}.", 'success')
+        message = "{count} account(s) disabled." if disabled else "{count} account(s) reactivated."
+        flash(tr(message, count=len(users)), 'success')
 
-    @action('disable', 'Désactiver', 'Désactiver les comptes sélectionnés ?')
+    @action('disable', lazy('Disable'), lazy('Disable the selected accounts?'))
     def action_disable(self, ids):
         self._set_disabled(ids, True)
 
-    @action('enable', 'Réactiver', 'Réactiver les comptes sélectionnés ?')
+    @action('enable', lazy('Reactivate'), lazy('Reactivate the selected accounts?'))
     def action_enable(self, ids):
         self._set_disabled(ids, False)

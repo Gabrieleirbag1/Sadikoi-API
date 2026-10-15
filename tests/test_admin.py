@@ -229,6 +229,16 @@ class TestFeedback:
             with pytest.raises(ValueError):
                 BugReportModel(status="lost")
 
+    @pytest.mark.parametrize("url", ["/admin/bugs/", "/admin/suggestions/"])
+    def test_author_filter(self, admin, world, ctx, url):
+        with ctx():
+            for user in (world.member, world.outsider):
+                factories.make_bug_report(user, f"bug-{user.username}")
+                factories.make_suggestion(user, f"idea-{user.username}")
+        arg = re.search(r'"Auteur": \[\{"arg": "(\d+)"', admin.get(url).text).group(1)
+        page = admin.get(f"{url}?flt0_{arg}=outs").text
+        assert "-outsider" in page and "-member" not in page
+
     def test_bulk_status(self, admin, world, ctx):
         with ctx():
             ids = [str(factories.make_bug_report(world.member)) for _ in range(2)]
@@ -262,6 +272,55 @@ class TestDatabaseBrowser:
     def test_search_and_filters(self, admin, world):
         assert admin.get("/admin/db/users/?search=member").status_code == 200
         assert admin.get("/admin/db/chat_messages/?flt0_0=hello").status_code == 200
+
+
+class TestLanguages:
+    def test_french_by_default(self, admin, world):
+        page = admin.get("/admin/users/").text
+        assert "Utilisateurs" in page and "Déconnexion" in page and "Ajouter un filtre" in page
+
+    def test_browser_language_is_used(self, admin, world):
+        page = admin.get("/admin/users/", headers={"Accept-Language": "en-US,en;q=0.9"}).text
+        assert "Logout" in page and "Add Filter" in page
+
+    def test_switch_to_english_and_back(self, admin, world, ctx):
+        response = admin.get("/admin/login/language/en/?next=/admin/users/")
+        assert response.headers["Location"] == "/admin/users/"
+        page = admin.get("/admin/users/").text
+        assert "Users" in page and "Logout" in page and "Signed up" in page and "Add Filter" in page
+        assert "Utilisateurs" not in page
+
+        token = csrf(admin, "/admin/users/")
+        admin.post(f"/admin/users/toggle/{world.member.id}/", data={"csrf_token": token})
+        assert "member&#39;s account disabled." in admin.get("/admin/users/").text
+
+        admin.get("/admin/login/language/fr/")
+        assert "Utilisateurs" in admin.get("/admin/users/").text
+
+    @pytest.mark.parametrize("url", ["/admin/", "/admin/bugs/", "/admin/suggestions/", "/admin/db/users/"])
+    def test_pages_render_in_english(self, admin, world, ctx, url):
+        with ctx():
+            bug_id = factories.make_bug_report(world.member)
+            factories.make_suggestion(world.member)
+        admin.get("/admin/login/language/en/")
+        page = admin.get(url).text
+        assert "Add Filter" in page or "Active users" in page
+        assert admin.get(f"/admin/bugs/details/?id={bug_id}").text.count("Open") >= 1
+
+    def test_unknown_language_is_ignored(self, admin):
+        admin.get("/admin/login/language/de/")
+        assert "Déconnexion" in admin.get("/admin/").text
+
+    def test_language_survives_login_and_logout(self, anon_admin):
+        anon_admin.get("/admin/login/language/en/")
+        assert "Sign in" in anon_admin.get("/admin/login/").text
+        login(anon_admin)
+        assert "Logout" in anon_admin.get("/admin/").text
+        anon_admin.get("/admin/login/logout/")
+        assert "Sign in" in anon_admin.get("/admin/login/").text
+
+    def test_no_open_redirect(self, anon_admin):
+        assert anon_admin.get("/admin/login/language/en/?next=//evil.example").headers["Location"] == "/admin/"
 
 
 class TestSchemaUpgrade:
