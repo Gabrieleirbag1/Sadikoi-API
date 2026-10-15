@@ -1,0 +1,41 @@
+{% extends 'admin/base.html' %}
+{% import 'admin/layout.html' as layout with context %}
+
+{% block title %}{{ admin_view.name }} · Sadikoi Admin{% endblock %}
+
+{% block head_css %}
+  {{ super() }}
+  <link href="{{ url_for('static', filename='admin.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block page_body %}
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary sk-navbar" role="navigation">
+    <a class="navbar-brand" href="{{ url_for('admin.index') }}">
+      <span class="fa fa-bolt"></span> Sadikoi <span class="sk-brand-tag">admin</span>
+    </a>
+    {% if is_admin_authenticated() %}
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#admin-navbar-collapse"
+              aria-controls="admin-navbar-collapse" aria-expanded="false" aria-label="Menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="admin-navbar-collapse">
+        <ul class="nav navbar-nav mr-auto">{{ layout.menu() }}</ul>
+        <ul class="nav navbar-nav">
+          {{ layout.menu_links() }}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('login.logout') }}"><span class="fa fa-sign-out"></span> Déconnexion</a>
+          </li>
+        </ul>
+      </div>
+    {% endif %}
+  </nav>
+
+  <main class="container{% if theme.fluid %}-fluid{% endif %} sk-main">
+    {% block messages %}{{ layout.messages() }}{% endblock %}
+    {% set render_ctx = h.resolve_ctx() %}
+    {% block page_title %}
+      <h1 class="sk-page-title">{{ layout.menu_icon(admin_view.menu) }} {{ admin_view.name }}</h1>
+    {% endblock %}
+    {% block body %}{% endblock %}
+  </main>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'admin/master.html' %}
+{% from 'admin/_cells.html' import user_cell, avatar, bug_status %}
+
+{% macro kpi(label, value, sub=None, url=None, tone='primary') -%}
+  <a class="sk-kpi sk-kpi-{{ tone }}" {% if url %}href="{{ url }}"{% endif %}>
+    <span class="sk-kpi-label">{{ label }}</span>
+    <span class="sk-kpi-value">{{ value }}</span>
+    {% if sub %}<span class="sk-kpi-sub">{{ sub }}</span>{% endif %}
+  </a>
+{%- endmacro %}
+
+{% block body %}
+  <section class="sk-kpis">
+    {{ kpi('Utilisateurs actifs', kpis.users_active,
+           '%d désactivé(s) · +%d sur 7 j · +%d sur 30 j'|format(kpis.users_disabled, kpis.users_new_7d, kpis.users_new_30d),
+           url_for('users.index_view')) }}
+    {{ kpi('Groupes', kpis.groups_total, '%s membres en moyenne'|format(kpis.groups_avg_members),
+           url_for('db_groups.index_view')) }}
+    {{ kpi('Messages', kpis.messages_total, '+%d sur 7 j'|format(kpis.messages_7d), url_for('db_chat_messages.index_view')) }}
+    {{ kpi('Votes', kpis.votes_total, '+%d sur 7 j · %d questions servies'|format(kpis.votes_7d, kpis.questions_total),
+           url_for('db_question_vote.index_view')) }}
+    {{ kpi('Bugs ouverts', kpis.bugs_open, '%d en cours · %d résolu(s)'|format(kpis.bugs_in_progress, kpis.bugs_resolved),
+           url_for('bugs.index_view'), 'danger' if kpis.bugs_open else 'success') }}
+    {{ kpi('Suggestions', kpis.suggestions_total, '+%d sur 7 j'|format(kpis.suggestions_7d), url_for('suggestions.index_view'), 'info') }}
+    {{ kpi('Signalements', kpis.user_reports_total, 'utilisateurs signalés', url_for('db_report_users.index_view'),
+           'warning' if kpis.user_reports_total else 'primary') }}
+    {{ kpi('Comptes', kpis.users_total, 'total en base', url_for('db_users.index_view'), 'secondary') }}
+  </section>
+
+  <section class="sk-panels">
+    <div class="card sk-panel">
+      <div class="card-header"><span class="fa fa-bug"></span> Bugs non résolus
+        <a class="float-right small" href="{{ url_for('bugs.index_view') }}">Tout voir</a></div>
+      <ul class="list-group list-group-flush">
+        {% for bug in latest_bugs %}
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start">
+              <a href="{{ url_for('bugs.details_view', id=bug.id) }}" class="font-weight-bold">{{ bug.title }}</a>
+              {{ bug_status(bug.status) }}
+            </div>
+            <div class="sk-row-meta">{{ user_cell(bug.user) }} <span>{{ bug.timestamp.strftime('%d/%m/%Y %H:%M') }}</span></div>
+          </li>
+        {% else %}
+          <li class="list-group-item text-muted">Aucun bug ouvert 🎉</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card sk-panel">
+      <div class="card-header"><span class="fa fa-lightbulb-o"></span> Dernières suggestions
+        <a class="float-right small" href="{{ url_for('suggestions.index_view') }}">Tout voir</a></div>
+      <ul class="list-group list-group-flush">
+        {% for s in latest_suggestions %}
+          <li class="list-group-item">
+            <div><span class="badge badge-light">{{ s.theme }}</span> {{ s.question }}</div>
+            <div class="sk-row-meta">{{ user_cell(s.user) }} <span>{{ s.timestamp.strftime('%d/%m/%Y %H:%M') }}</span></div>
+          </li>
+        {% else %}
+          <li class="list-group-item text-muted">Aucune suggestion.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card sk-panel">
+      <div class="card-header"><span class="fa fa-user-plus"></span> Derniers inscrits
+        <a class="float-right small" href="{{ url_for('users.index_view') }}">Tout voir</a></div>
+      <ul class="list-group list-group-flush">
+        {% for user in latest_users %}
+          <li class="list-group-item sk-row-meta">
+            {{ user_cell(user) }}
+            <span>{{ user.date_created.strftime('%d/%m/%Y') if user.date_created else '' }}</span>
+          </li>
+        {% else %}
+          <li class="list-group-item text-muted">Aucun utilisateur.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card sk-panel">
+      <div class="card-header"><span class="fa fa-comments"></span> Groupes les plus actifs</div>
+      <ul class="list-group list-group-flush">
+        {% for group, n_messages, n_members in top_groups %}
+          <li class="list-group-item d-flex justify-content-between">
+            <a href="{{ url_for('db_groups.details_view', id=group.id) }}">{{ group.name }}</a>
+            <span class="text-muted small">{{ n_members }} membres · {{ n_messages }} messages</span>
+          </li>
+        {% else %}
+          <li class="list-group-item text-muted">Aucun groupe.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+{% endblock %}
