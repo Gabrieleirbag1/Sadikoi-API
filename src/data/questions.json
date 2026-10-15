@@ -34,7 +34,7 @@
     "enableSelfVote": true,
     "enableMultipleVoting": false,
     "voteNumberLimit": 0,
-    "canWrite": false,
+    "canWrite": true,
     "item_name": {
       "id": "cape_puissante",
       "fr": "Cape de la Puissance",

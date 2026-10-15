@@ -1,0 +1,52 @@
+{% macro avatar(user, size='sm') -%}
+  {%- if user and user.profile_picture -%}
+    <img class="sk-avatar sk-avatar-{{ size }}" alt="" loading="lazy"
+         src="{{ url_for('admin.uploads', filename=user.profile_picture) }}">
+  {%- else -%}
+    <span class="sk-avatar sk-avatar-{{ size }} sk-avatar-initial">{{ (user.username or '?')[:1] | upper if user else '?' }}</span>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro user_cell(user) -%}
+  {%- if user -%}
+    <a class="sk-user" href="{{ url_for('users.details_view', id=user.id) }}">
+      {{ avatar(user) }}
+      <span class="sk-user-text">
+        <span class="sk-user-name">{{ user.username }}{% if user.deleted %} <span class="badge badge-secondary">{{ tr('disabled') }}</span>{% endif %}</span>
+        <span class="sk-user-meta">{{ user.email }} · #{{ user.id }}</span>
+      </span>
+    </a>
+  {%- else -%}
+    <span class="text-muted">{{ tr('Deleted user') }}</span>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro user_status(user, csrf_field, return_url) -%}
+  <div class="sk-status">
+    {% if user.deleted %}
+      <span class="badge badge-pill badge-danger">{{ tr('Disabled') }}</span>
+    {% else %}
+      <span class="badge badge-pill badge-success">{{ tr('Active') }}</span>
+    {% endif %}
+    <form method="POST" action="{{ url_for('users.toggle_view', user_id=user.id) }}" class="d-inline">
+      {{ csrf_field }}
+      <input type="hidden" name="url" value="{{ return_url }}">
+      {% if user.deleted %}
+        <button type="submit" class="btn btn-outline-success btn-xs">{{ tr('Reactivate') }}</button>
+      {% else %}
+        <button type="submit" class="btn btn-outline-danger btn-xs"
+                onclick='return confirm({{ tr("Disable {username}'s account?", username=user.username) | tojson }});'>{{ tr('Disable') }}</button>
+      {% endif %}
+    </form>
+  </div>
+{%- endmacro %}
+
+{% macro bug_status(status) -%}
+  {% set styles = {'open': ('danger', 'Open'), 'in_progress': ('warning', 'In progress'), 'resolved': ('success', 'Resolved')} %}
+  {% set style = styles.get(status, ('secondary', status)) %}
+  <span class="badge badge-pill badge-{{ style[0] }}">{{ tr(style[1]) }}</span>
+{%- endmacro %}
+
+{% macro multiline(text) -%}
+  <div class="sk-multiline">{{ text }}</div>
+{%- endmacro %}

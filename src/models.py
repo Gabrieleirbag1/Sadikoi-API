@@ -323,6 +323,8 @@ class QuestionVote(db.Model):
     question = db.relationship('QuestionModel', back_populates='votes')
     targets = db.relationship('QuestionVoteTarget', back_populates='vote', lazy='dynamic')
 
+BUG_STATUSES = ("open", "in_progress", "resolved")
+
 class BugReportModel(db.Model):
     """Bug report model for the database."""
     __tablename__ = 'bug_reports'
@@ -333,8 +335,22 @@ class BugReportModel(db.Model):
     description = db.Column(db.String(1000), nullable=False)
     device_name = db.Column(db.String(100), nullable=False, default="Unknown Device")
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+    status = db.Column(db.String(20), nullable=False, default="open", server_default="open")
 
     user = db.relationship('UserModel', backref=db.backref('bug_reports', lazy='dynamic'))
+
+    @validates('status')
+    def validate_status(self, _key: str, status: str) -> str:
+        """Validate the status against BUG_STATUSES.
+
+        :raise ValueError: If the status is unknown.
+
+        :return: The status.
+        :rtype: str
+        """
+        if status not in BUG_STATUSES:
+            raise ValueError(f"Bug report status must be one of {', '.join(BUG_STATUSES)}")
+        return status
 
     def __repr__(self) -> str:
         """Return the bug report description and timestamp.

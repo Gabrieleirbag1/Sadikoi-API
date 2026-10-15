@@ -1,0 +1,20 @@
+{% extends 'admin/master.html' %}
+
+{% block page_title %}{% endblock %}
+
+{% block body %}
+  <div class="sk-login card">
+    <div class="card-body">
+      <h1 class="h4 mb-1"><span class="fa fa-lock"></span> {{ tr('Admin access') }}</h1>
+      <p class="text-muted small mb-4">{{ tr('Enter the local secret') }} (<code>src/.admin.secrets</code>).</p>
+      <form method="POST">
+        {{ form.csrf_token }}
+        <div class="form-group">
+          <label for="secret">{{ form.secret.label.text }}</label>
+          {{ form.secret(class_='form-control', autofocus=true, autocomplete='current-password') }}
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">{{ tr('Sign in') }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
