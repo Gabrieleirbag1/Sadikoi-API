@@ -1,58 +1,50 @@
-import os.path
-import base64
+import requests
 from lite_logging.lite_logging import log
-from email.message import EmailMessage
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
-SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
+from config import BREVO_API_KEY, EMAIL_SENDER_ADDRESS, EMAIL_SENDER_NAME
+
+BREVO_SEND_URL = "https://api.brevo.com/v3/smtp/email"
+BREVO_TIMEOUT_SECONDS = 10
 AUTH_CODE_TTL_MINUTES = 10
 RESET_TOKEN_TTL_MINUTES = 15
 
-def get_gmail_service():
-    creds = None
-    if os.path.exists(os.path.join(os.path.dirname(__file__), "token.json")):
-        creds = Credentials.from_authorized_user_file(os.path.join(os.path.dirname(__file__), "token.json"), SCOPES)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                os.path.join(os.path.dirname(__file__), "credentials.json"), SCOPES
-            )
-            creds = flow.run_local_server(port=0)
-        with open(os.path.join(os.path.dirname(__file__), "token.json"), "w") as token:
-            token.write(creds.to_json())
-
-    return build("gmail", "v1", credentials=creds)
-
 def send_email(destinataire, email_subject, email_content):
+    """Send a plain-text email through Brevo's transactional API.
+
+    Errors are logged, never raised: a failed email must not break the request that triggered it.
+
+    :return: True if Brevo accepted the email.
+    :rtype: bool
+    """
+    if not BREVO_API_KEY:
+        log(f"Email non envoyé à {destinataire} : BREVO_API_KEY manquant.", level="ERROR")
+        return False
+
+    payload = {
+        "sender": {"name": EMAIL_SENDER_NAME, "email": EMAIL_SENDER_ADDRESS},
+        "to": [{"email": destinataire}],
+        "subject": email_subject,
+        "textContent": email_content,
+    }
+    headers = {
+        "api-key": BREVO_API_KEY,
+        "accept": "application/json",
+        "content-type": "application/json",
+    }
+
     try:
-        service = get_gmail_service()
+        response = requests.post(BREVO_SEND_URL, json=payload, headers=headers, timeout=BREVO_TIMEOUT_SECONDS)
+    except requests.RequestException as error:
+        log(f"Erreur lors de l'envoi à {destinataire} : {error}", level="ERROR")
+        return False
 
-        message = EmailMessage()
-        message.set_content(email_content)
-        message["To"] = destinataire
-        message["From"] = "me"
-        message["Subject"] = email_subject
+    if not response.ok:
+        log(f"Erreur Brevo lors de l'envoi à {destinataire} ({response.status_code}) : {response.text}", level="ERROR")
+        return False
 
-        encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-        create_message = {"raw": encoded_message}
-
-        send_message = (
-            service.users()
-            .messages()
-            .send(userId="me", body=create_message)
-            .execute()
-        )
-        log(f'Email envoyé avec succès à {destinataire} ! ID: {send_message["id"]}', level="INFO")
-
-    except HttpError as error:
-        log(f"Erreur lors de l'envoi : {error}", level="ERROR")
+    message_id = response.json().get("messageId")
+    log(f"Email envoyé avec succès à {destinataire} ! ID: {message_id}", level="INFO")
+    return True
 
 def send_auth_code_email(user, device, code, language='en'):
     if language == 'fr':
@@ -107,8 +99,13 @@ def send_password_reset_email(user, reset_url, language='en'):
     )
 
 if __name__ == "__main__":
+    # Manual check: python src/email_sender.py someone@example.com
+    import sys
+
+    if len(sys.argv) != 2:
+        sys.exit("Usage: python src/email_sender.py <destinataire>")
     send_email(
-        destinataire="karimtufaistoujourslecon@gmail.com",
-        email_subject="Salut !",
-        email_content="Ceci est un message personnalisé envoyé automatiquement."
+        destinataire=sys.argv[1],
+        email_subject="Test Sadikoi",
+        email_content="Ceci est un email de test envoyé via Brevo.",
     )

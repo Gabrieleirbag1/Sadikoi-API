@@ -46,6 +46,17 @@ TURNSTILE_SECRET_KEY = load_secret_var('TURNSTILE_SECRET_KEY', turnstile_secrets
 if not TURNSTILE_SECRET_KEY:
     log("TURNSTILE_SECRET_KEY not found in .turnstile.secrets file.", level="ERROR")
 
+# Load BREVO_API_KEY (transactional emails: login codes, password resets)
+brevo_secrets_path = os.path.join(os.path.dirname(__file__), '.brevo.secrets')
+BREVO_API_KEY = load_secret_var('BREVO_API_KEY', brevo_secrets_path)
+
+if not BREVO_API_KEY:
+    log("BREVO_API_KEY not found in .brevo.secrets file.", level="ERROR")
+
+# Sender of every email (must be a verified sender in Brevo)
+EMAIL_SENDER_ADDRESS = 'missclick@missclick.net'
+EMAIL_SENDER_NAME = 'Sadikoi'
+
 
 # The local SQLite database (the API names it 'data-local' and runs from the repo root).
 DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'instance', 'data-local.db')
