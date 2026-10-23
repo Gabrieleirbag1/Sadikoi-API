@@ -17,7 +17,7 @@ Le premier lot généré avait un français « traduit de l'anglais » (« Qui e
    ```bash
    python3 .claude/skills/sadikoi-questions/scripts/build_questions.py lot.txt \
      --out src/data/questions_<nom>.json \
-     --existing src/data/questions_v4.json \
+     --existing src/data/questions_v5.json \
      --themes src/data/question_themes_<nom>.json
    ```
    - `--existing` (répétable) : fichiers déjà en place. Le script refuse les doublons et numérote à la suite (ou `--start-id N`).
@@ -124,7 +124,7 @@ Règles de vote, appliquées par le script : solo, scenario, trap et dynamique �
 
 ## 4. Thèmes
 
-Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Le lot de référence est `questions_v4.json` (fusion de v2 et v3, ids 1 à 1280, sans complot). Ses thèmes : soiree, boulot, ecole, mechant, loisirs, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets, nostalgie (Throwback), avenir (What's Next), travail (Jobs : tous les métiers, pas seulement le bureau), illegal (Illégal et dangereux / Living Dangerously). Le thème complot a été retiré à la demande de l'utilisateur : ne le recrée pas sans qu'il le demande. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
+Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Le lot de référence est `questions_v5.json` (v4 + crado, ids 1 à 1320, sans complot). Ses thèmes : soiree, boulot, ecole, mechant, loisirs, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets, nostalgie (Throwback), avenir (What's Next), travail (Jobs : tous les métiers, pas seulement le bureau), illegal (Illégal et dangereux / Living Dangerously), crado (Crado / Gross). Le thème complot a été retiré à la demande de l'utilisateur : ne le recrée pas sans qu'il le demande. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
 
 Dans le fichier de thèmes, `checked` indique si le thème est activé par défaut ; le script le met à `false` pour `hot` et à `true` pour les autres.
 

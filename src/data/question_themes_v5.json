@@ -1,0 +1,146 @@
+{
+  "soiree": {
+    "id": "soiree",
+    "fr": "Soirée",
+    "en": "Party",
+    "checked": true
+  },
+  "boulot": {
+    "id": "boulot",
+    "fr": "Boulot",
+    "en": "Work",
+    "checked": true
+  },
+  "ecole": {
+    "id": "ecole",
+    "fr": "École",
+    "en": "School",
+    "checked": true
+  },
+  "mechant": {
+    "id": "mechant",
+    "fr": "Méchant",
+    "en": "Villain",
+    "checked": true
+  },
+  "loisirs": {
+    "id": "loisirs",
+    "fr": "Loisirs",
+    "en": "Hobbies",
+    "checked": true
+  },
+  "et_si": {
+    "id": "et_si",
+    "fr": "Et si",
+    "en": "What if",
+    "checked": true
+  },
+  "hot": {
+    "id": "hot",
+    "fr": "Hot",
+    "en": "Spicy",
+    "checked": false
+  },
+  "voyage": {
+    "id": "voyage",
+    "fr": "Voyage",
+    "en": "Travel",
+    "checked": true
+  },
+  "argent": {
+    "id": "argent",
+    "fr": "Argent",
+    "en": "Money",
+    "checked": true
+  },
+  "reseaux": {
+    "id": "reseaux",
+    "fr": "Réseaux",
+    "en": "Social media",
+    "checked": true
+  },
+  "amour": {
+    "id": "amour",
+    "fr": "Amour",
+    "en": "Love",
+    "checked": true
+  },
+  "famille": {
+    "id": "famille",
+    "fr": "Famille",
+    "en": "Family",
+    "checked": true
+  },
+  "survie": {
+    "id": "survie",
+    "fr": "Survie",
+    "en": "Survival",
+    "checked": true
+  },
+  "absurde": {
+    "id": "absurde",
+    "fr": "Absurde",
+    "en": "Absurd",
+    "checked": true
+  },
+  "amitie": {
+    "id": "amitie",
+    "fr": "Amitié",
+    "en": "Friendship",
+    "checked": true
+  },
+  "futur": {
+    "id": "futur",
+    "fr": "Futur",
+    "en": "Future",
+    "checked": true
+  },
+  "bouffe": {
+    "id": "bouffe",
+    "fr": "Bouffe",
+    "en": "Food",
+    "checked": true
+  },
+  "sport": {
+    "id": "sport",
+    "fr": "Sport",
+    "en": "Sports",
+    "checked": true
+  },
+  "secrets": {
+    "id": "secrets",
+    "fr": "Secrets",
+    "en": "Secrets",
+    "checked": true
+  },
+  "nostalgie": {
+    "id": "nostalgie",
+    "fr": "Nostalgie",
+    "en": "Throwback",
+    "checked": true
+  },
+  "avenir": {
+    "id": "avenir",
+    "fr": "Avenir",
+    "en": "What's Next",
+    "checked": true
+  },
+  "travail": {
+    "id": "travail",
+    "fr": "Travail",
+    "en": "Jobs",
+    "checked": true
+  },
+  "illegal": {
+    "id": "illegal",
+    "fr": "Illégal et dangereux",
+    "en": "Living Dangerously",
+    "checked": true
+  },
+  "crado": {
+    "id": "crado",
+    "fr": "Crado",
+    "en": "Gross",
+    "checked": true
+  }
+}
