@@ -35,6 +35,12 @@ GOOGLE_CLIENT_BROWSER_ID = load_secret_var('GOOGLE_CLIENT_BROWSER_ID', google_se
 if not GOOGLE_CLIENT_BROWSER_ID:
     log("GOOGLE_CLIENT_BROWSER_ID not found in .google.secrets file.", level="ERROR")
 
+# Load GOOGLE_CLIENT_MOBILE_ID
+GOOGLE_CLIENT_MOBILE_ID = load_secret_var('GOOGLE_CLIENT_MOBILE_ID', google_secrets_path)
+
+if not GOOGLE_CLIENT_MOBILE_ID:
+    log("GOOGLE_CLIENT_MOBILE_ID not found in .google.secrets file.", level="ERROR")
+
 # Load FRONTEND_URL (used to build links sent by email)
 frontend_secrets_path = os.path.join(os.path.dirname(__file__), '.frontend.secrets')
 FRONTEND_URL = load_secret_var('FRONTEND_URL', frontend_secrets_path, default='http://localhost:4200').rstrip('/')
