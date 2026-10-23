@@ -249,7 +249,7 @@ class TestLogin:
 class TestGoogle:
     @pytest.fixture(autouse=True)
     def google_config(self, monkeypatch):
-        monkeypatch.setattr(auth, "GOOGLE_CLIENT_ID", "client-id")
+        monkeypatch.setattr(auth, "GOOGLE_CLIENT_BROWSER_ID", "client-id")
 
     def fake_verify(self, monkeypatch, info=None, error=None):
         def verify(token, request, client_id):
@@ -260,7 +260,7 @@ class TestGoogle:
         monkeypatch.setattr(auth.id_token, "verify_oauth2_token", verify)
 
     def test_missing_server_config(self, anon, monkeypatch):
-        monkeypatch.setattr(auth, "GOOGLE_CLIENT_ID", None)
+        monkeypatch.setattr(auth, "GOOGLE_CLIENT_BROWSER_ID", None)
         assert anon.post(GOOGLE, json={"token": "t"}).status_code == 500
 
     def test_missing_token(self, anon):

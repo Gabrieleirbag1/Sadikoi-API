@@ -28,12 +28,12 @@ if not SECRET_KEY:
     with open(auth_secrets_path, 'w') as f:
         f.write(f'SECRET_KEY={SECRET_KEY}')
 
-# Load GOOGLE_CLIENT_ID
+# Load GOOGLE_CLIENT_BROWSER_ID
 google_secrets_path = os.path.join(os.path.dirname(__file__), '.google.secrets')
-GOOGLE_CLIENT_ID = load_secret_var('GOOGLE_CLIENT_ID', google_secrets_path)
+GOOGLE_CLIENT_BROWSER_ID = load_secret_var('GOOGLE_CLIENT_BROWSER_ID', google_secrets_path)
 
-if not GOOGLE_CLIENT_ID:
-    log("GOOGLE_CLIENT_ID not found in .google.secrets file.", level="ERROR")
+if not GOOGLE_CLIENT_BROWSER_ID:
+    log("GOOGLE_CLIENT_BROWSER_ID not found in .google.secrets file.", level="ERROR")
 
 # Load FRONTEND_URL (used to build links sent by email)
 frontend_secrets_path = os.path.join(os.path.dirname(__file__), '.frontend.secrets')
