@@ -42,6 +42,9 @@ def configure_app(db_name: str) -> None:
 
     app.config['SESSION_COOKIE_SAMESITE'] = 'None'
     app.config['SESSION_COOKIE_SECURE'] = True
+    # Flask-Login's "remember me" cookie needs the same settings, or it isn't sent from the mobile app.
+    app.config['REMEMBER_COOKIE_SAMESITE'] = 'None'
+    app.config['REMEMBER_COOKIE_SECURE'] = True
 
 def create_app():
     """Create the Flask app and initialize the database and login manager."""
