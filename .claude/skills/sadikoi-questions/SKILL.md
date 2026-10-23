@@ -1,6 +1,6 @@
 ---
 name: sadikoi-questions
-description: Génère, réécrit ou corrige des questions bilingues (FR/EN) pour l'appli Sadikoi, où chaque jour le groupe vote pour un de ses membres. Produit un fichier JSON compatible avec l'API (src/data/questions*.json, question_themes*.json). Utilise ce skill dès que l'utilisateur veut de nouvelles questions, un nouveau lot, un nouveau thème, des questions plus hot/drôles/gênantes, corriger la traduction ou le français des questions existantes, ou ajouter des items/objets aux questions — même s'il ne dit pas « skill » ni « JSON ».
+description: Génère, réécrit ou corrige des questions bilingues (FR/EN) pour l'appli Sadikoi, où chaque jour le groupe vote pour un de ses membres. Produit un fichier JSON compatible avec l'API (src/data/questions*.json, question_themes*.json). Utilise ce skill dès que l'utilisateur veut de nouvelles questions, un nouveau lot, un nouveau thème, des questions plus hot/drôles/gênantes, corriger la traduction ou le français des questions existantes, ou ajouter des items/objets aux questions, et aussi quand il donne directement une liste de thèmes à ajouter (« ajoute les thèmes nostalgie, avenir… ») — même s'il ne dit pas « skill » ni « JSON ».
 ---
 
 # Questions Sadikoi
@@ -25,6 +25,18 @@ Le premier lot généré avait un français « traduit de l'anglais » (« Qui e
    - Le script s'arrête sur la première passe si une règle est violée et liste chaque problème avec sa ligne. Corrige le `.txt` et relance jusqu'à ce qu'il passe.
 4. **Relire à froid** quelques questions de chaque thème avec la grille de la fin de ce fichier : le script attrape les erreurs mécaniques, pas une phrase maladroite.
 5. **Ne pas écraser** un fichier existant sans que l'utilisateur le demande : crée un nouveau fichier et dis-lui comment le brancher (`src/utils.py` charge `questions.json` et `question_themes.json`).
+
+## Thèmes proposés par l'utilisateur
+
+Quand l'utilisateur donne une liste de thèmes (« ajoute ces thèmes : nostalgie, avenir, complot… »), crée-les directement avec leurs questions, sans lui demander de confirmer ni lui proposer d'options. C'est lui qui choisit les thèmes ; la règle « réutilise un id existant » de la section 4 ne sert qu'à éviter les collisions d'id.
+
+- **L'id existe déjà** dans un `question_themes*.json` (comparaison en snake_case sans accent) : ajoute les nouvelles questions sous ce même id, avec les mêmes noms FR/EN. L'API identifie un thème par son id, donc deux thèmes avec le même id entreraient en collision.
+- **L'id n'existe pas** : crée le thème avec le mot de l'utilisateur (au singulier, en snake_case, sans accent : « entreprises » → `entreprise`), même s'il ressemble à un thème existant (avenir / futur, entreprise / boulot). Lis alors les questions du thème voisin et choisis un angle différent : par exemple futur = célébrité, Mars, prédictions ; avenir = vie d'adulte concrète (appart, mariage, enfants, impôts).
+- **« a/b »** (« ecole/etudes ») désigne un seul thème qui couvre les deux sujets : prends l'id existant s'il y en a un, sinon le premier mot.
+- Le nom EN ne doit pas reprendre celui d'un thème existant (futur s'appelle déjà *Future*, donc avenir devient *What's Next*).
+- Volume par défaut : 40 questions par thème, sauf si l'utilisateur donne un autre chiffre.
+- Mets tous les thèmes dans un seul `.txt` et un seul lot. Le fichier `--themes` contient aussi les thèmes réutilisés, pour que le lot soit complet à lui seul.
+- Dans le compte rendu, sépare les thèmes créés des thèmes complétés, et signale chaque thème proche d'un thème existant.
 
 ## Format compact
 
@@ -103,13 +115,15 @@ Le type décrit la **mécanique de vote**, le thème décrit le **sujet** : ce s
 
 Répartition conseillée : environ 25 % solo, 20 % duo, 10 % ranking, 15 % scenario, 15 % trap, 15 % dynamique.
 
+**Types désactivés** : avant d'écrire, lis `DISABLED_QUESTION_TYPES` dans `src/question.py`. Un type qui y figure n'est jamais posé à un groupe (en ce moment `ranking`, faute d'interface de vote et de score). N'en génère pas et répartis sa part entre les autres types. L'avertissement « ranking = 0 % » du script est alors normal.
+
 Chaque question doit se résoudre par un vote pour des membres du groupe. À éviter : les questions à deux réponses (« qui donne les ordres et qui obéit ? »), les questions oui/non et celles qui visent quelqu'un hors du groupe.
 
 Règles de vote, appliquées par le script : solo, scenario, trap et dynamique → `enableSelfVote: true`, `enableMultipleVoting: false`, `voteNumberLimit: 1` ; duo → `false`, `true`, `2` ; ranking → `true`, `true`, `0` (illimité). `canWrite` vaut toujours `false` (`true` voudrait dire réponse libre en texte au lieu d'un vote, cf. `src/question.py`).
 
 ## 4. Thèmes
 
-Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Thèmes du lot `questions_1000_v2.json` : soiree, boulot, ecole, mechant, loisirs, complot, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
+Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Thèmes du lot `questions_1000_v2.json` : soiree, boulot, ecole, mechant, loisirs, complot, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets. Ajoutés par `questions_v3.json` : nostalgie, avenir (What's Next), entreprise (Corporate). Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
 
 Dans le fichier de thèmes, `checked` indique si le thème est activé par défaut ; le script le met à `false` pour `hot` et à `true` pour les autres.
 
