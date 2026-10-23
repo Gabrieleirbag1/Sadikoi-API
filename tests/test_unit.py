@@ -159,6 +159,18 @@ class TestChooseQuestion:
         with pytest.raises(StopIteration):
             question_module.chose_random_question(["nothing"])
 
+    # TEMPORARY: remove with the RANKING filter in question.py.
+    def test_ranking_questions_are_never_given(self, pool):
+        pool.append({**pool[1], "question_id": 3, "type": "ranking"})
+        pool.append({**pool[1], "question_id": 4, "type": "RANKING"})
+        assert {question_module.chose_random_question(["style"])["question_id"] for _ in range(30)} == {2}
+
+    # TEMPORARY: remove with the RANKING filter in question.py.
+    def test_only_ranking_questions_left_raises(self, pool):
+        pool[:] = [{**pool[1], "type": "ranking"}]
+        with pytest.raises(StopIteration):
+            question_module.chose_random_question(["style"])
+
 
 # -------------------------------------------------------------------- items
 class TestItems:

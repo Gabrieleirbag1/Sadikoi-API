@@ -17,6 +17,20 @@ from utils import question_pool
 
 MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
 
+# =============================================================================
+# TEMPORARY: RANKING questions are not implemented yet (no ranking vote UI or
+# scoring), so they must never be given to a group.
+# Remove this block, and the two `is_question_type_disabled` calls below
+# (in chose_random_question and chose_question), once RANKING is supported.
+# Questions without a `type` field are allowed.
+# =============================================================================
+DISABLED_QUESTION_TYPES = {"ranking"}
+
+def is_question_type_disabled(question: dict) -> bool:
+    """TEMPORARY: whether this question's type can't be given yet (see DISABLED_QUESTION_TYPES)."""
+    return str(question.get("type", "")).lower() in DISABLED_QUESTION_TYPES
+# ============================ END TEMPORARY ==================================
+
 def chose_random_question(themes: list) -> dict:
     """Choose a random question from the question pool that matches the given themes.
     
@@ -25,6 +39,7 @@ def chose_random_question(themes: list) -> dict:
     matching_questions = [
         question for question in question_pool
         if question['theme']['id'] in themes
+        and not is_question_type_disabled(question)  # TEMPORARY: no RANKING questions yet
     ]
     if not matching_questions:
         raise StopIteration("No questions match the group's selected themes")
@@ -103,6 +118,10 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict:
         if not is_question_already_asked(current_count, mean_iteration + offset):
             return question_data
     # If no question found, pick the one with the least occurrences so far
+    # TEMPORARY: skip RANKING questions already asked in the past (before this filter existed)
+    allowed_ids = {q['question_id'] for q in question_pool if not is_question_type_disabled(q)}
+    counts_by_id = {qid: count for qid, count in counts_by_id.items() if qid in allowed_ids}
+    # END TEMPORARY
     if counts_by_id:
         min_question_id = min(counts_by_id, key=lambda qid: counts_by_id[qid])
         question_data = next(q for q in question_pool if q['question_id'] == min_question_id)
