@@ -17,10 +17,11 @@ Le premier lot généré avait un français « traduit de l'anglais » (« Qui e
    ```bash
    python3 .claude/skills/sadikoi-questions/scripts/build_questions.py lot.txt \
      --out src/data/questions_<nom>.json \
-     --existing src/data/questions_1000_v2.json \
+     --existing src/data/questions_v4.json \
      --themes src/data/question_themes_<nom>.json
    ```
    - `--existing` (répétable) : fichiers déjà en place. Le script refuse les doublons et numérote à la suite (ou `--start-id N`).
+   - Ne renumérote jamais les questions existantes : `question_id` est stocké en base et `src/builder.py` s'en sert pour retrouver le texte. Quand on supprime un thème, les trous dans les ids restent.
    - `--themes` : fichier de thèmes à créer ou compléter. Sans ça, l'API refuse les nouveaux thèmes (`src/group.py`).
    - Le script s'arrête sur la première passe si une règle est violée et liste chaque problème avec sa ligne. Corrige le `.txt` et relance jusqu'à ce qu'il passe.
 4. **Relire à froid** quelques questions de chaque thème avec la grille de la fin de ce fichier : le script attrape les erreurs mécaniques, pas une phrase maladroite.
@@ -28,10 +29,10 @@ Le premier lot généré avait un français « traduit de l'anglais » (« Qui e
 
 ## Thèmes proposés par l'utilisateur
 
-Quand l'utilisateur donne une liste de thèmes (« ajoute ces thèmes : nostalgie, avenir, complot… »), crée-les directement avec leurs questions, sans lui demander de confirmer ni lui proposer d'options. C'est lui qui choisit les thèmes ; la règle « réutilise un id existant » de la section 4 ne sert qu'à éviter les collisions d'id.
+Quand l'utilisateur donne une liste de thèmes (« ajoute ces thèmes : nostalgie, avenir, travail… »), crée-les directement avec leurs questions, sans lui demander de confirmer ni lui proposer d'options. C'est lui qui choisit les thèmes ; la règle « réutilise un id existant » de la section 4 ne sert qu'à éviter les collisions d'id.
 
 - **L'id existe déjà** dans un `question_themes*.json` (comparaison en snake_case sans accent) : ajoute les nouvelles questions sous ce même id, avec les mêmes noms FR/EN. L'API identifie un thème par son id, donc deux thèmes avec le même id entreraient en collision.
-- **L'id n'existe pas** : crée le thème avec le mot de l'utilisateur (au singulier, en snake_case, sans accent : « entreprises » → `entreprise`), même s'il ressemble à un thème existant (avenir / futur, entreprise / boulot). Lis alors les questions du thème voisin et choisis un angle différent : par exemple futur = célébrité, Mars, prédictions ; avenir = vie d'adulte concrète (appart, mariage, enfants, impôts).
+- **L'id n'existe pas** : crée le thème avec le mot de l'utilisateur (au singulier, en snake_case, sans accent : « entreprises » → `entreprise`), même s'il ressemble à un thème existant (avenir / futur, travail / boulot). Lis alors les questions du thème voisin et choisis un angle différent : par exemple futur = célébrité, Mars, prédictions ; avenir = vie d'adulte concrète (appart, mariage, enfants, impôts).
 - **« a/b »** (« ecole/etudes ») désigne un seul thème qui couvre les deux sujets : prends l'id existant s'il y en a un, sinon le premier mot.
 - Le nom EN ne doit pas reprendre celui d'un thème existant (futur s'appelle déjà *Future*, donc avenir devient *What's Next*).
 - Volume par défaut : 40 questions par thème, sauf si l'utilisateur donne un autre chiffre.
@@ -123,7 +124,7 @@ Règles de vote, appliquées par le script : solo, scenario, trap et dynamique �
 
 ## 4. Thèmes
 
-Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Thèmes du lot `questions_1000_v2.json` : soiree, boulot, ecole, mechant, loisirs, complot, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets. Ajoutés par `questions_v3.json` : nostalgie, avenir (What's Next), entreprise (Corporate). Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
+Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Le lot de référence est `questions_v4.json` (fusion de v2 et v3, ids 1 à 1280, sans complot). Ses thèmes : soiree, boulot, ecole, mechant, loisirs, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets, nostalgie (Throwback), avenir (What's Next), travail (Jobs : tous les métiers, pas seulement le bureau), illegal (Illégal et dangereux / Living Dangerously). Le thème complot a été retiré à la demande de l'utilisateur : ne le recrée pas sans qu'il le demande. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
 
 Dans le fichier de thèmes, `checked` indique si le thème est activé par défaut ; le script le met à `false` pour `hot` et à `true` pour les autres.
 
