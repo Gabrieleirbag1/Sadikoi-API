@@ -42,7 +42,7 @@ VOTE = {
     "dynamique": (True, False, 1), "duo": (False, True, 2), "ranking": (True, True, 0),
 }
 TARGET_MIX = {"solo": .25, "duo": .20, "ranking": .10, "scenario": .15, "trap": .15, "dynamique": .15}
-THEMES_OFF_BY_DEFAULT = {"hot"}
+THEMES_OFF_BY_DEFAULT = {"hot", "trash"}  # thèmes osés : le groupe doit les activer lui-même
 
 # Calques de l'anglais repérés dans les anciens lots.
 CALQUES = [

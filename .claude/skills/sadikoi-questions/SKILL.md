@@ -17,7 +17,7 @@ Le premier lot généré avait un français « traduit de l'anglais » (« Qui e
    ```bash
    python3 .claude/skills/sadikoi-questions/scripts/build_questions.py lot.txt \
      --out src/data/questions_<nom>.json \
-     --existing src/data/questions_v6.json \
+     --existing src/data/questions_v7.json \
      --themes src/data/question_themes_<nom>.json
    ```
    - `--existing` (répétable) : fichiers déjà en place. Le script refuse les doublons et numérote à la suite (ou `--start-id N`).
@@ -96,8 +96,8 @@ r V|Classe le groupe du plus sobre au plus bourré en fin de soirée.|Rank the g
 
 - Fun, décalé, un peu gênant, révélateur de la personnalité.
 - Des scénarios concrets : un lieu, un moment, un enjeu.
-- Parfois incriminant, mais jamais méchant envers un physique, une origine, une religion ou une orientation sexuelle : le but est de rire ensemble, pas d'humilier quelqu'un.
-- Le sexe et les questions osées sont autorisés (adultes), plutôt dans le thème `hot`.
+- Parfois incriminant, mais jamais méchant envers un physique, une origine, une religion ou une orientation sexuelle : le but est de rire ensemble, pas d'humilier quelqu'un. Exception : le thème `trash` (voir plus bas), où les vannes sur le physique et la méchanceté sont voulues.
+- Le sexe et les questions osées sont autorisés (adultes), plutôt dans le thème `hot` ; le vulgaire et le cru vont dans `trash`.
 
 Exemples du bon ton : « On doit tous faire un numéro dans un spectacle de talents : qui irait le plus loin ? », « Qui serait le pire coloc du groupe ? », « Qui se ferait éliminer en premier à Koh-Lanta ? », « Qui cache un secret que personne ici ne connaît ? »
 
@@ -110,6 +110,14 @@ Un bon test : la question fait rire, ou crier « beurk », dès la lecture. Une 
 
 ### Ton par thème
 Le registre peut descendre jusqu'au familier, voire à l'enfantin, quand le thème s'y prête : vocabulaire de cour de récré (prout, crotte, morve, pipi, « beurk », « trop dégueu »), souvenirs d'enfance gênants, défis débiles, soirées pyjama. Ce registre est attendu pour `crado` et convient aussi à `absurde` et `nostalgie`. Les limites ne changent pas : rien sur le physique, l'origine, la religion ou l'orientation sexuelle. Le dégoût porte sur des situations et des habitudes, pas sur le corps de quelqu'un.
+
+### Thème `trash` : vulgaire et méchant
+L'utilisateur a validé un thème où les questions sont vulgaires et méchantes, pour des groupes qui aiment se clasher. Il est désactivé par défaut (`checked: false`), comme `hot`, et chaque groupe choisit de l'activer.
+- Autorisé, et même attendu : les gros mots (connard, bite, baiser, se branler, langue de pute, « s'en battre les couilles »), le sexe cru (pire coup, MST, simuler, plans cul), les vannes sur le physique (« Qui a la plus petite bite du groupe ? », « Qui a une haleine à tuer un pigeon ? ») et les accusations bien méchantes (« Qui est le plus gros connard de la bande ? », « Qui ferait le pire parent du monde ? »).
+- Pas de questions molles ni politiquement correctes : une question trash doit piquer. Si elle passerait aussi dans `hot` ou `amitie`, elle n'est pas assez trash.
+- Toujours interdit, même ici : les vannes sur l'origine, la religion, l'orientation sexuelle ou un handicap, parce que ce n'est plus du clash entre potes mais de l'insulte discriminatoire. Interdit aussi : ce qui banalise un crime grave contre quelqu'un (revenge porn, violences sexuelles, violences sur enfant).
+- L'anglais suit le même niveau : "dick", "asshole", "worst lay", "jerks off", "talk shit". Pas d'euphémisme.
+- Avec ce thème, l'appli doit être classée 17+ (App Store) / 18+ (Google Play) : signale-le si l'utilisateur prépare une publication.
 
 ## 3. Types de questions
 
@@ -134,9 +142,9 @@ Règles de vote, appliquées par le script : solo, scenario, trap et dynamique �
 
 ## 4. Thèmes
 
-Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Le lot de référence est `questions_v6.json` (v4 + crado, ids 1 à 1360, sans complot). Ses thèmes : soiree, boulot, ecole, mechant, loisirs, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets, nostalgie (Throwback), avenir (What's Next), travail (Jobs : tous les métiers, pas seulement le bureau), illegal (Illégal et dangereux / Living Dangerously), crado (Crado / Gross, 80 questions). Le thème complot a été retiré à la demande de l'utilisateur : ne le recrée pas sans qu'il le demande. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
+Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Le lot de référence est `questions_v7.json` (ids 1 à 1440, sans complot). Ses thèmes : soiree, boulot, ecole, mechant, loisirs, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets, nostalgie (Throwback), avenir (What's Next), travail (Jobs : tous les métiers, pas seulement le bureau), illegal (Illégal et dangereux / Living Dangerously), crado (Crado / Gross, 80 questions), trash (Trash / Savage, 80 questions, désactivé par défaut). Le thème complot a été retiré à la demande de l'utilisateur : ne le recrée pas sans qu'il le demande. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
 
-Dans le fichier de thèmes, `checked` indique si le thème est activé par défaut ; le script le met à `false` pour `hot` et à `true` pour les autres.
+Dans le fichier de thèmes, `checked` indique si le thème est activé par défaut ; le script le met à `false` pour `hot` et `trash` (`THEMES_OFF_BY_DEFAULT` dans le script) et à `true` pour les autres.
 
 ## 5. Items
 
