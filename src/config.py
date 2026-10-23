@@ -61,7 +61,12 @@ EMAIL_SENDER_NAME = 'Sadikoi'
 # The local SQLite database (the API names it 'data-local' and runs from the repo root).
 DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'instance', 'data-local.db')
 
-ALLOWED_ORIGINS = ["http://localhost:4200", "https://sadikoi.missclick.net"]
+ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+    "https://sadikoi.missclick.net",
+    "https://localhost",      # Android
+    "capacitor://localhost",  # iOS
+]
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_LANGUAGES = {'en', 'fr'}
