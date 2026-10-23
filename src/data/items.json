@@ -1,0 +1,110 @@
+{
+  "cape_leader": {
+    "id": "cape_leader",
+    "fr": "Cape du Leader",
+    "en": "Leader's Cape",
+    "description": {
+      "fr": "Pour le chef, l'organisateur, celui qui décide.",
+      "en": "For the boss, the organizer, the one who calls the shots."
+    }
+  },
+  "bonnet_honte": {
+    "id": "bonnet_honte",
+    "fr": "Bonnet de la Honte",
+    "en": "Dunce Cap",
+    "description": {
+      "fr": "Pour la gaffe, la honte, l'échec, le ridicule.",
+      "en": "For blunders, shame, failure and embarrassment."
+    }
+  },
+  "masque_traitre": {
+    "id": "masque_traitre",
+    "fr": "Masque du Traître",
+    "en": "Traitor's Mask",
+    "description": {
+      "fr": "Pour la trahison, le mensonge, la manipulation.",
+      "en": "For betrayal, lies and manipulation."
+    }
+  },
+  "bouclier_loyal": {
+    "id": "bouclier_loyal",
+    "fr": "Bouclier de la Loyauté",
+    "en": "Shield of Loyalty",
+    "description": {
+      "fr": "Pour la fidélité, le soutien, l'ami fiable.",
+      "en": "For loyalty, support and the friend you can count on."
+    }
+  },
+  "torche_chaos": {
+    "id": "torche_chaos",
+    "fr": "Torche du Chaos",
+    "en": "Torch of Chaos",
+    "description": {
+      "fr": "Pour le bordel, la folie, l'imprévisible.",
+      "en": "For mayhem, madness and unpredictability."
+    }
+  },
+  "etoile_destin": {
+    "id": "etoile_destin",
+    "fr": "Étoile du Destin",
+    "en": "Star of Destiny",
+    "description": {
+      "fr": "Pour la réussite, l'avenir, la célébrité.",
+      "en": "For success, the future and fame."
+    }
+  },
+  "lunettes_genie": {
+    "id": "lunettes_genie",
+    "fr": "Lunettes du Génie",
+    "en": "Genius Glasses",
+    "description": {
+      "fr": "Pour l'intelligence, la débrouillardise, le talent.",
+      "en": "For brains, resourcefulness and talent."
+    }
+  },
+  "cle_secrets": {
+    "id": "cle_secrets",
+    "fr": "Clé des Secrets",
+    "en": "Key of Secrets",
+    "description": {
+      "fr": "Pour les secrets, la double vie, le mystère.",
+      "en": "For secrets, double lives and mystery."
+    }
+  },
+  "coeur_passion": {
+    "id": "coeur_passion",
+    "fr": "Cœur de la Passion",
+    "en": "Heart of Passion",
+    "description": {
+      "fr": "Pour l'amour, la séduction, le sexe.",
+      "en": "For love, seduction and sex."
+    }
+  },
+  "couronne_drama": {
+    "id": "couronne_drama",
+    "fr": "Couronne du Drama",
+    "en": "Drama Queen Crown",
+    "description": {
+      "fr": "Pour le drama, l'ego, la jalousie, les réactions excessives.",
+      "en": "For drama, ego, jealousy and overreactions."
+    }
+  },
+  "trophee_vice": {
+    "id": "trophee_vice",
+    "fr": "Trophée du Vice",
+    "en": "Trophy of Vice",
+    "description": {
+      "fr": "Pour les excès, les addictions, les plaisirs coupables.",
+      "en": "For excess, addictions and guilty pleasures."
+    }
+  },
+  "micro_verite": {
+    "id": "micro_verite",
+    "fr": "Micro de la Vérité",
+    "en": "Mic of Truth",
+    "description": {
+      "fr": "Pour la franchise, le cash, le sans-filtre.",
+      "en": "For honesty, bluntness and saying it like it is."
+    }
+  }
+}

@@ -148,7 +148,7 @@ Dans le fichier de thèmes, `checked` indique si le thème est activé par défa
 
 ## 5. Items
 
-Il y a exactement 12 items et le jeu en dépend (`item_name.id` est stocké en base). N'en invente pas et ne change pas leurs id. Le sens est volontairement large pour qu'un même objet couvre beaucoup de questions. Répartis-les à peu près équitablement ; `P` est souvent sous-représenté, pense à l'utiliser pour l'amour et la drague.
+Il y a exactement 12 items et le jeu en dépend (`item_name.id` est stocké en base). La liste de référence côté backend est `src/data/items.json` (id, noms FR/EN, description) ; elle doit rester identique à `ITEMS` dans `scripts/build_questions.py`. N'en invente pas et ne change pas leurs id. Le sens est volontairement large pour qu'un même objet couvre beaucoup de questions. Répartis-les à peu près équitablement ; `P` est souvent sous-représenté, pense à l'utiliser pour l'amour et la drague.
 
 | code | id | fr | en | Pour quelles questions |
 |---|---|---|---|---|
