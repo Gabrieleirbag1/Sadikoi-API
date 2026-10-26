@@ -291,31 +291,44 @@ def get_settings() -> tuple[dict, int]:
 
 
 def update_settings(request: Request) -> tuple[dict, int]:
+    """Save everything in one go: any of the global switches, and/or `groups: [{id, muted}]`.
+
+    All or nothing: if anything is invalid, nothing is saved.
+    """
     data = request.get_json(silent=True) or {}
     changes = {name: value for name, value in data.items() if name in SETTINGS_COLUMNS}
-    if not changes or not all(isinstance(value, bool) for value in changes.values()):
-        return {"success": False, "message": f"Expected booleans among: {', '.join(SETTINGS_COLUMNS)}"}, 400
+    groups = data.get('groups')
+    if not changes and groups is None:
+        return {"success": False, "message": f"Expected booleans among: {', '.join(SETTINGS_COLUMNS)}, and/or groups"}, 400
+    if not all(isinstance(value, bool) for value in changes.values()):
+        return {"success": False, "message": f"{', '.join(SETTINGS_COLUMNS)} must be booleans"}, 400
+
+    muted_by_group = {}
+    if groups is not None:
+        valid = isinstance(groups, list) and all(
+            isinstance(item, dict) and isinstance(item.get('id'), int) and isinstance(item.get('muted'), bool)
+            for item in groups
+        )
+        if not valid:
+            return {"success": False, "message": "groups must be a list of {id: int, muted: bool}"}, 400
+        muted_by_group = {item['id']: item['muted'] for item in groups}
+
     user = _current_user()
+    memberships = {}
+    if muted_by_group:
+        memberships = {m.group_id: m for m in GroupUser.query.filter(
+            GroupUser.user_id == user.id, GroupUser.group_id.in_(muted_by_group)).all()}
+        if len(memberships) != len(muted_by_group):
+            return {"success": False, "message": "User is not a member of one of the groups"}, 403
+
     for name, value in changes.items():
         setattr(user, SETTINGS_COLUMNS[name], value)
+    for group_id, muted in muted_by_group.items():
+        memberships[group_id].notifications_muted = muted
     result = update_from_db()
     if result.get("error"):
         return result, 500
     return get_settings()
-
-
-def set_group_muted(group_id: int, request: Request) -> tuple[dict, int]:
-    muted = (request.get_json(silent=True) or {}).get('muted')
-    if not isinstance(muted, bool):
-        return {"success": False, "message": "'muted' must be a boolean"}, 400
-    membership = GroupUser.query.filter_by(user_id=int(current_user.id), group_id=group_id).first()
-    if not membership:
-        return {"success": False, "message": "User is not a member of the group"}, 403
-    membership.notifications_muted = muted
-    result = update_from_db()
-    if result.get("error"):
-        return result, 500
-    return {"success": True, "message": "Group notifications updated", "content": {"id": group_id, "muted": muted}}, 200
 
 
 def register_device(request: Request) -> tuple[dict, int]:
