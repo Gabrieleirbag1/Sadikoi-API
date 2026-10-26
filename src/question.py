@@ -9,7 +9,7 @@ from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, Que
 from db import add_to_db, update_from_db, db
 from auth import get_user_object
 from items import assign_items
-from builder import build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group
+from builder import build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start
 from config import ALLOWED_LANGUAGES
 from sockets import socketio
 from utils import question_pool
@@ -141,21 +141,13 @@ def is_today_based_on_reset(question_or_vote: QuestionModel | QuestionVote, grou
     if not question_or_vote:
         return False
 
-    now = datetime.datetime.now(datetime.timezone.utc)
-    reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
-    
     item_date = question_or_vote.date
     if item_date.tzinfo is None:
         item_date = item_date.replace(tzinfo=datetime.timezone.utc)
 
-    if now < reset_time:
-        start_time = reset_time - datetime.timedelta(days=1)
-        end_time = reset_time
-        log(f"Current time {now} is before reset time {reset_time}, checking window {start_time} - {end_time}", level="DEBUG")
-    else:
-        start_time = reset_time
-        end_time = reset_time + datetime.timedelta(days=1)
-        log(f"Current time {now} is after reset time {reset_time}, checking window {start_time} - {end_time}", level="DEBUG")
+    start_time = current_window_start(group)
+    end_time = start_time + datetime.timedelta(days=1)
+    log(f"Checking window {start_time} - {end_time}", level="DEBUG")
 
     return start_time <= item_date < end_time
     
