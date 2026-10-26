@@ -5,6 +5,7 @@ import pytest
 
 import app as app_module
 import auth
+import notifications
 from db import db
 from security import limiter
 from sockets import socketio
@@ -72,9 +73,9 @@ def pool(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def externals(monkeypatch):
-    """Neutralise email, captcha and Socket.IO; expose what was sent through `externals`."""
+    """Neutralise email, captcha, Socket.IO and push notifications; expose what was sent through `externals`."""
     ext = types.SimpleNamespace(emails=[], reset_links=[], captcha_success=True, captcha_calls=[],
-                                captcha_raises=None, events=[], real_emit=socketio.emit)
+                                captcha_raises=None, events=[], real_emit=socketio.emit, pushes=[])
 
     def fake_auth_code_email(user, device, code, language="en"):
         ext.emails.append({"to": user.email, "code": code, "device_id": device.device_id})
@@ -104,6 +105,8 @@ def externals(monkeypatch):
     monkeypatch.setattr(auth, "TURNSTILE_SECRET_KEY", "test-secret")
     monkeypatch.setattr(auth.requests, "post", fake_post)
     monkeypatch.setattr(socketio, "emit", fake_emit)
+    # Push notifications: (token, FCM message) pairs, sent synchronously and never to Firebase.
+    monkeypatch.setattr(notifications, "deliver", lambda pairs: ext.pushes.extend(pairs))
     return ext
 
 

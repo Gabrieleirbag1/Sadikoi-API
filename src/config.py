@@ -77,6 +77,9 @@ ALLOWED_ORIGINS = [
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_LANGUAGES = {'en', 'fr'}
 
+# Firebase service account key (JSON), used to send push notifications. Without it, nothing is sent.
+FIREBASE_SERVICE_ACCOUNT_PATH = os.path.join(os.path.dirname(__file__), '.firebase-service-account.json')
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

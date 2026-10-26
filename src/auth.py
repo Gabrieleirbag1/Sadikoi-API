@@ -14,6 +14,7 @@ from google.auth.transport import requests as google_requests
 
 from models import PasswordResetToken, UserModel, UserSecurity, ReportUserModel
 from config import allowed_file
+from notifications import remove_device_tokens
 from db import db, add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
 from email_sender import send_auth_code_email, send_password_reset_email, RESET_TOKEN_TTL_MINUTES
@@ -366,6 +367,10 @@ def logout() -> tuple[dict, int]:
                 return {"success": False, "message": "No user is currently logged in."}, 400
         else:
             log(f"Logging out user: {current_user.id} without forgetting device because no device ID was provided.", level="WARNING")
+    if current_user.is_authenticated:
+        # This phone stops receiving the user's push notifications.
+        remove_device_tokens(current_user.id, device_id)
+        update_from_db()
     logout_user()
     return {"success": True, "message": "Logout successful."}, 200
 
