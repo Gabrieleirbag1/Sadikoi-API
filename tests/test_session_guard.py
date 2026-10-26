@@ -114,7 +114,6 @@ def test_verify_device_is_public(anon):
     ("post", "/api/feedback/suggestions/"),
     ("get", "/api/notifications/settings/"),
     ("put", "/api/notifications/settings/"),
-    ("put", "/api/notifications/groups/1/"),
     ("post", "/api/notifications/devices/"),
     ("delete", "/api/notifications/devices/"),
 ])

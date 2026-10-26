@@ -15,8 +15,8 @@ REAL_DELIVER = notifications.deliver
 DEVICES = "/api/notifications/devices/"
 
 
-def group_url(group_id):
-    return f"/api/notifications/groups/{group_id}/"
+def mute(client, group, muted=True):
+    return client.put(SETTINGS, json={"groups": [{"id": group.id, "muted": muted}]})
 
 
 def add_token(user, token=None, device_id=None):
@@ -56,19 +56,34 @@ class TestSettings:
     def test_invalid_update(self, login_as, world, payload):
         assert login_as(world.member).put(SETTINGS, json=payload).status_code == 400
 
-    def test_mute_a_group(self, login_as, world, ctx):
-        response = login_as(world.member).put(group_url(world.group.id), json={"muted": True})
+    def test_everything_in_one_request(self, login_as, world, ctx):
+        payload = {"messages": False, "questions": False, "vote_reminder": True,
+                   "groups": [{"id": world.group.id, "muted": True}]}
+        response = login_as(world.member).put(SETTINGS, json=payload)
         assert response.status_code == 200
+        content = response.get_json()["content"]
+        assert (content["messages"], content["questions"], content["vote_reminder"]) == (False, False, True)
+        assert content["groups"] == [{"id": world.group.id, "name": "Team", "muted": True}]
         with ctx():
             assert GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one().notifications_muted
-        groups = login_as(world.member).get(SETTINGS).get_json()["content"]["groups"]
-        assert groups[0]["muted"] is True
 
-    def test_mute_a_group_requires_membership(self, login_as, world):
-        assert login_as(world.outsider).put(group_url(world.group.id), json={"muted": True}).status_code == 403
+    def test_mute_and_unmute_a_group(self, login_as, world, ctx):
+        assert mute(login_as(world.member), world.group).status_code == 200
+        assert login_as(world.member).get(SETTINGS).get_json()["content"]["groups"][0]["muted"] is True
+        mute(login_as(world.member), world.group, False)
+        assert login_as(world.member).get(SETTINGS).get_json()["content"]["groups"][0]["muted"] is False
 
-    def test_mute_requires_a_boolean(self, login_as, world):
-        assert login_as(world.member).put(group_url(world.group.id), json={"muted": "yes"}).status_code == 400
+    def test_mute_requires_membership_and_saves_nothing(self, login_as, world, ctx):
+        payload = {"messages": False, "groups": [{"id": world.group.id, "muted": True},
+                                                 {"id": world.other_group.id, "muted": True}]}
+        assert login_as(world.member).put(SETTINGS, json=payload).status_code == 403
+        with ctx():
+            assert db.session.get(UserModel, world.member.id).notify_messages is True
+            assert not GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one().notifications_muted
+
+    @pytest.mark.parametrize("groups", ["x", [{"id": 1}], [{"id": "1", "muted": True}], [{"id": 1, "muted": "yes"}], [1]])
+    def test_invalid_groups(self, login_as, world, groups):
+        assert login_as(world.member).put(SETTINGS, json={"groups": groups}).status_code == 400
 
 
 # -------------------------------------------------------------------- devices
@@ -146,9 +161,9 @@ class TestMessageNotifications:
         assert len(externals.pushes[1][1]["notification"]["body"]) == len("member: ") + 150
 
     def test_muted_group_or_setting_off(self, login_as, world, phones, externals):
-        login_as(world.admin).put(group_url(world.group.id), json={"muted": True})
+        mute(login_as(world.admin), world.group)
         self.send(login_as, world.member, world.group)
-        login_as(world.admin).put(group_url(world.group.id), json={"muted": False})
+        mute(login_as(world.admin), world.group, False)
         login_as(world.admin).put(SETTINGS, json={"messages": False})
         self.send(login_as, world.member, world.group)
         assert externals.pushes == []
@@ -182,7 +197,7 @@ class TestQuestionNotifications:
 
     def test_respects_settings(self, login_as, world, phones, externals, ctx):
         login_as(world.member).put(SETTINGS, json={"questions": False})
-        login_as(world.other).put(group_url(world.other_group.id), json={"muted": True})
+        mute(login_as(world.other), world.other_group)
         now = factories.now()
         self.run(ctx, now - H(days=1))
         self.run(ctx, now)
