@@ -340,7 +340,7 @@ if __name__ == '__main__':
     debug = os.environ.get('FLASK_DEBUG') == '1'
     socketio.run(
         app,
-        host='127.0.0.1',
+        host='0.0.0.0',
         port=8082,
         debug=debug,
         allow_unsafe_werkzeug=not debug
