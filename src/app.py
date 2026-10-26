@@ -18,6 +18,7 @@ from auth import register_user, get_user, google_login_handler, login, logout, u
 from config import SECRET_KEY, ALLOWED_ORIGINS
 from security import limiter, init_security, json_field_key, user_or_ip_key, SocketRateLimiter
 from exceptions import ValueTooLongException
+from notifications import get_settings, update_settings, set_group_muted, register_device, unregister_device, start_scheduler
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -264,6 +265,32 @@ def create_suggestion_endpoint():
 
 
 
+############## PUSH NOTIFICATIONS ENDPOINTS ##############
+
+@app.route('/api/notifications/settings/', methods=['GET'])
+def get_notification_settings_endpoint():
+    return get_settings()
+
+@app.route('/api/notifications/settings/', methods=['PUT'])
+@limiter.limit("60 per minute", key_func=user_or_ip_key)
+def update_notification_settings_endpoint():
+    return update_settings(request)
+
+@app.route('/api/notifications/groups/<int:group_id>/', methods=['PUT'])
+@limiter.limit("60 per minute", key_func=user_or_ip_key)
+def set_group_notifications_endpoint(group_id):
+    return set_group_muted(group_id, request)
+
+@app.route('/api/notifications/devices/', methods=['POST'])
+@limiter.limit("20 per minute", key_func=user_or_ip_key)
+def register_push_device_endpoint():
+    return register_device(request)
+
+@app.route('/api/notifications/devices/', methods=['DELETE'])
+@limiter.limit("20 per minute", key_func=user_or_ip_key)
+def unregister_push_device_endpoint():
+    return unregister_device(request)
+
 ############## SOCKET IO EVENTS ##############
 
 @socketio.on('connect')
@@ -309,6 +336,8 @@ def main(db_name: str = "data-local") -> None:
     with app.app_context():
         if has_pending_migrations():
             log("The database is not up to date: run `python src/manage.py migrate`.", level="ERROR")
+    # Daily question and vote reminder push notifications (checks every minute).
+    start_scheduler(app)
 
 if __name__ == '__main__':
     main()
