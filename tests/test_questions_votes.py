@@ -5,6 +5,7 @@ import pytest
 
 from db import db
 from models import ItemModel, QuestionModel, QuestionVote, QuestionVoteTarget
+from builder import get_user_items_in_group
 from tests import factories
 
 H = datetime.timedelta
@@ -124,6 +125,49 @@ class TestGetQuestion:
         login_as(world.admin).get(q_url(group.id))
         with ctx():
             assert ItemModel.query.count() == 0
+
+    def test_answer_question_never_grants_an_item(self, login_as, world, group, ctx):
+        with ctx():
+            old = factories.make_question(group, days_ago=1, question_id=2, can_write=True, item_name="cape_puissante")
+            factories.make_vote(old, world.admin, written_answer="a joke")
+            factories.make_vote(old, world.member, written_answer="another joke")
+        login_as(world.admin).get(q_url(group.id))
+        with ctx():
+            assert ItemModel.query.count() == 0
+
+    def test_answer_question_never_grants_an_item_to_a_solo_player(self, login_as, world, ctx):
+        with ctx():
+            solo = factories.make_group(world.admin, themes=["connerie"], name="Solo")
+            old = factories.make_question(solo, days_ago=1, question_id=2, can_write=True, item_name="cape_puissante")
+            factories.make_vote(old, world.admin, written_answer="a joke")
+        login_as(world.admin).get(q_url(solo.id))
+        with ctx():
+            assert ItemModel.query.filter_by(group_id=solo.id).count() == 0
+
+    def test_answer_question_keeps_the_current_holder_streak(self, login_as, world, ctx):
+        with ctx():
+            solo = factories.make_group(world.admin, themes=["connerie"], name="Solo")
+            won = factories.make_question(solo, days_ago=3, item_name="cape_puissante")
+            db.session.add(ItemModel(user_id=world.admin.id, group_id=solo.id, item_name="cape_puissante",
+                                     acquired_at=won.date))
+            db.session.commit()
+            old = factories.make_question(solo, days_ago=1, question_id=2, can_write=True, item_name="cape_puissante")
+            factories.make_vote(old, world.admin, written_answer="a joke")
+        login_as(world.admin).get(q_url(solo.id))
+        with ctx():
+            [item] = ItemModel.query.filter_by(group_id=solo.id).all()
+            assert item.inactive_since is None
+            today = QuestionModel.query.filter_by(group_id=solo.id).order_by(QuestionModel.date.desc()).first()
+            [(held, streak)] = get_user_items_in_group(world.admin.id, solo.id, today.date)
+            assert held.id == item.id and streak == 3
+
+    def test_solo_player_without_votes_gets_no_item(self, login_as, world, ctx):
+        with ctx():
+            solo = factories.make_group(world.admin, themes=["connerie"], name="Solo")
+            factories.make_question(solo, days_ago=1)
+        login_as(world.admin).get(q_url(solo.id))
+        with ctx():
+            assert ItemModel.query.filter_by(group_id=solo.id).count() == 0
 
     def test_items_are_computed_from_the_groups_own_previous_question(self, login_as, world, group, ctx):
         with ctx():

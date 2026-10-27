@@ -7,21 +7,24 @@ from builder import build_item_model, build_item_model, build_user_response
 from db import add_to_db, update_from_db
 
 def assign_items(question: QuestionModel, group: GroupModel) -> None:
-    """Assign items to the user with the most votes for the last question in the group. If there is a tie or no votes, no item will be assigned."""
+    """Assign items to the user with the most votes for the last question in the group. If there is a tie or no votes, no item will be assigned.
+
+    Written-answer questions (canWrite) never grant an item, even in a single-player group:
+    the current holders keep their items, so their streaks keep growing."""
     last_question: QuestionModel | None = (
         QuestionModel.query
         .filter(QuestionModel.group_id == group.id, QuestionModel.date < question.date)
         .order_by(QuestionModel.date.desc())
         .first()
     )
-    if not last_question:
+    if not last_question or last_question.canWrite:
         return
     most_voted_user = get_most_voted_user(last_question, group)
     if not most_voted_user:
         return
     
     if not set_item_inactive(group, last_question.item_name, question.date)[0].get("success"):
-        log(f"Error deleting item_name from user {most_voted_user.id} in group {last_question.group.id}", level="ERROR")
+        log(f"Error deleting item_name from user {most_voted_user['id']} in group {last_question.group_id}", level="ERROR")
         return
 
     new_item = build_item_model(most_voted_user, last_question)
@@ -61,7 +64,8 @@ def get_most_voted_user(question: QuestionModel, group: GroupModel) -> dict | No
     if not votes_per_user["users"]:
         return None
     max_votes = max(votes_per_user["number_of_votes"])
-    if votes_per_user["number_of_votes"].count(max_votes) > 1:
+    # Nobody can win with zero votes (e.g. a single-player group that did not vote).
+    if max_votes == 0 or votes_per_user["number_of_votes"].count(max_votes) > 1:
         return None
     max_index = votes_per_user["number_of_votes"].index(max_votes)
     return votes_per_user["users"][max_index]
