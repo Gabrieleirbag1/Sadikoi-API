@@ -54,6 +54,8 @@ def test_legacy_database_is_adopted(db_file):
                               ("users", "notify_vote_reminder"), ("group_user", "notifications_muted"),
                               ("groups", "last_question_notified_at"), ("groups", "last_vote_reminder_at")]:
             connection.execute(f"ALTER TABLE {table} DROP COLUMN {column}")
+        # Added by 0004_item_announcements.
+        connection.execute("DROP TABLE item_announcements")
         connection.execute("INSERT INTO users (id, username, email) VALUES (1, 'alice', 'alice@example.com')")
 
     manage.run(["--db", str(db_file), "migrate"])
@@ -74,7 +76,10 @@ def test_fresh_database_is_not_adopted(db_file):
 
 def test_rollback_then_migrate_again(db_file):
     manage.run(["--db", str(db_file), "migrate"])
-    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0003_push_notifications
+    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0004_item_announcements
+    assert columns(db_file, "item_announcements") == []
+    assert "notify_messages" in columns(db_file, "users")
+    manage.run(["--db", str(db_file), "rollback"])  # then 0003_push_notifications
     assert "notify_messages" not in columns(db_file, "users")
     assert "status" in columns(db_file, "bug_reports")
     manage.run(["--db", str(db_file), "rollback", manage.BASELINE_REVISION])
