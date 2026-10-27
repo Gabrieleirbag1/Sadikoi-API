@@ -9,7 +9,7 @@ from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, Que
 from db import add_to_db, update_from_db, db
 from auth import get_user_object
 from items import assign_items
-from builder import build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start
+from builder import build_announcement_response, build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start
 from config import ALLOWED_LANGUAGES
 from sockets import socketio
 from utils import question_pool
@@ -303,7 +303,8 @@ def get_question(group_id: int) -> tuple[dict, int]:
         has_user_voted_today, _ = does_exist_vote_today(group, user)
         if has_user_voted_today:
             votes = extract_votes_info(question, group)
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes)}, 200
+        announcement = build_announcement_response(question.announcement, group, question.date)
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes, announcement)}, 200
     else:
         try:
             question_data = chose_question(group)
@@ -316,7 +317,8 @@ def get_question(group_id: int) -> tuple[dict, int]:
             return result, 500
         assign_items(question, group)
         socketio.emit('new_question', {"group_id": group_id}, to=str(group_id))
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en')}, 200
+        announcement = build_announcement_response(question.announcement, group, question.date)
+        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', announcement=announcement)}, 200
     
 def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, int]:
     """Retrieve all questions for a group filtered by month and year.

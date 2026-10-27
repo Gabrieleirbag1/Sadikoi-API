@@ -1,6 +1,6 @@
 import datetime
 
-from models import ChatMessageModel, GroupModel, ItemModel, QuestionModel, UserModel, GroupUser
+from models import ChatMessageModel, GroupModel, ItemAnnouncement, ItemModel, QuestionModel, UserModel, GroupUser
 from db import db
 from flask_login import current_user
 from utils import question_pool
@@ -34,7 +34,7 @@ def build_group_response(group: GroupModel) -> dict:
     }
 
     for user in users:
-        user["items"] = [build_item_response(item, streak) for item, streak in get_user_items_in_group(user["id"], group.id, group.daily_reset_timestamp)]
+        user["items"] = [build_item_response(item, streak) for item, streak in get_user_items_in_group(user["id"], group.id, current_window_start(group))]
         user["role"] = roles.get(user["id"])
 
     from question import does_exist_vote_today
@@ -69,10 +69,12 @@ def build_chat_message_response(message: ChatMessageModel) -> dict:
         "sender": build_user_response(message.user)
     }
 
-def build_question_response(question: QuestionModel, question_pool: list, language: str, votes: dict = None) -> dict:
+def build_question_response(question: QuestionModel, question_pool: list, language: str, votes: dict = None,
+                            announcement: dict | None = None) -> dict:
     content = next((q['content'][language] for q in question_pool if q['question_id'] == question.question_id), None)
     theme = next((q['theme'][language] for q in question_pool if q['question_id'] == question.question_id), None)
     return {
+        "announcement": announcement,
         "id": question.id,
         "question_id": question.question_id,
         "content": content,
@@ -116,6 +118,16 @@ def build_item_response(item: ItemModel, streak: int) -> dict:
         "streak": streak
     }
 
+def as_utc_naive(date: datetime.datetime) -> datetime.datetime:
+    """SQLite gives back naive UTC datetimes: convert aware ones the same way so they can be compared."""
+    if date.tzinfo is None:
+        return date
+    return date.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+
+def streak_at(item: ItemModel, date: datetime.datetime) -> int:
+    """Number of days the item has been held at `date`."""
+    return (as_utc_naive(date) - as_utc_naive(item.acquired_at)).days
+
 def get_user_items_in_group(user_id: int, group_id: int, date: datetime.datetime):
     """Return the items a user held in a group as of the given date.
 
@@ -123,6 +135,7 @@ def get_user_items_in_group(user_id: int, group_id: int, date: datetime.datetime
     `date` and either hasn't gone inactive yet, or went inactive after
     `date` (i.e. the user still had it at that point in time).
     """
+    date = as_utc_naive(date)
     items: list[ItemModel] = ItemModel.query.filter(
         ItemModel.user_id == user_id,
         ItemModel.group_id == group_id,
@@ -133,4 +146,26 @@ def get_user_items_in_group(user_id: int, group_id: int, date: datetime.datetime
         )
     ).all()
 
-    return [(item, (date - item.acquired_at).days) for item in items]
+    return [(item, streak_at(item, date)) for item in items]
+
+def build_members_with_items(group: GroupModel, date: datetime.datetime) -> list[dict]:
+    """Every member of the group with the items they hold at `date`."""
+    members = []
+    for user in group.users:
+        member = build_user_response(user)
+        member["items"] = [build_item_response(item, streak) for item, streak in get_user_items_in_group(user.id, group.id, date)]
+        members.append(member)
+    return members
+
+def build_announcement_response(announcement: ItemAnnouncement | None, group: GroupModel, date: datetime.datetime) -> dict | None:
+    """The daily item announcement, with the members' items as of `date` (the day's question date)."""
+    if not announcement:
+        return None
+    return {
+        "type": announcement.kind,
+        "user": build_user_response(announcement.user),
+        "from_user": build_user_response(announcement.from_user) if announcement.from_user else None,
+        "item_name": announcement.item_name,
+        "streak": announcement.streak,
+        "members": build_members_with_items(group, date),
+    }

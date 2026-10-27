@@ -4,7 +4,8 @@ import datetime
 import pytest
 
 from db import db
-from models import ItemModel, QuestionModel, QuestionVote, QuestionVoteTarget
+from models import ItemAnnouncement, ItemModel, QuestionModel, QuestionVote, QuestionVoteTarget
+from builder import get_user_items_in_group
 from tests import factories
 
 H = datetime.timedelta
@@ -125,6 +126,49 @@ class TestGetQuestion:
         with ctx():
             assert ItemModel.query.count() == 0
 
+    def test_answer_question_never_grants_an_item(self, login_as, world, group, ctx):
+        with ctx():
+            old = factories.make_question(group, days_ago=1, question_id=2, can_write=True, item_name="cape_puissante")
+            factories.make_vote(old, world.admin, written_answer="a joke")
+            factories.make_vote(old, world.member, written_answer="another joke")
+        login_as(world.admin).get(q_url(group.id))
+        with ctx():
+            assert ItemModel.query.count() == 0
+
+    def test_answer_question_never_grants_an_item_to_a_solo_player(self, login_as, world, ctx):
+        with ctx():
+            solo = factories.make_group(world.admin, themes=["connerie"], name="Solo")
+            old = factories.make_question(solo, days_ago=1, question_id=2, can_write=True, item_name="cape_puissante")
+            factories.make_vote(old, world.admin, written_answer="a joke")
+        login_as(world.admin).get(q_url(solo.id))
+        with ctx():
+            assert ItemModel.query.filter_by(group_id=solo.id).count() == 0
+
+    def test_answer_question_keeps_the_current_holder_streak(self, login_as, world, ctx):
+        with ctx():
+            solo = factories.make_group(world.admin, themes=["connerie"], name="Solo")
+            won = factories.make_question(solo, days_ago=3, item_name="cape_puissante")
+            db.session.add(ItemModel(user_id=world.admin.id, group_id=solo.id, item_name="cape_puissante",
+                                     acquired_at=won.date))
+            db.session.commit()
+            old = factories.make_question(solo, days_ago=1, question_id=2, can_write=True, item_name="cape_puissante")
+            factories.make_vote(old, world.admin, written_answer="a joke")
+        login_as(world.admin).get(q_url(solo.id))
+        with ctx():
+            [item] = ItemModel.query.filter_by(group_id=solo.id).all()
+            assert item.inactive_since is None
+            today = QuestionModel.query.filter_by(group_id=solo.id).order_by(QuestionModel.date.desc()).first()
+            [(held, streak)] = get_user_items_in_group(world.admin.id, solo.id, today.date)
+            assert held.id == item.id and streak == 3
+
+    def test_solo_player_without_votes_gets_no_item(self, login_as, world, ctx):
+        with ctx():
+            solo = factories.make_group(world.admin, themes=["connerie"], name="Solo")
+            factories.make_question(solo, days_ago=1)
+        login_as(world.admin).get(q_url(solo.id))
+        with ctx():
+            assert ItemModel.query.filter_by(group_id=solo.id).count() == 0
+
     def test_items_are_computed_from_the_groups_own_previous_question(self, login_as, world, group, ctx):
         with ctx():
             old = factories.make_question(group, days_ago=1)
@@ -148,6 +192,106 @@ class TestGetQuestion:
 
     def test_requires_login(self, anon, world):
         assert anon.get(q_url(world.group.id)).status_code == 401
+
+
+# ------------------------------------------------------- daily item announcement
+class TestItemAnnouncement:
+    """The new day's question tells what happened to yesterday's item (new / stolen / kept)."""
+
+    @pytest.fixture
+    def group(self, world, ctx):
+        with ctx():
+            return factories.make_group(world.admin, [world.member], themes=["connerie"], name="Items")
+
+    @staticmethod
+    def give_item(group, user, days_ago, item_name="bonnet_honte"):
+        item = ItemModel(user_id=user.id, group_id=group.id, item_name=item_name,
+                         acquired_at=factories.latest_reset(group.id) - H(days=days_ago))
+        db.session.add(item)
+        db.session.commit()
+        return item.id
+
+    @staticmethod
+    def announce(question, kind, user, streak, item_name="bonnet_honte"):
+        """What assign_items would have recorded when `question` was served."""
+        db.session.add(ItemAnnouncement(question_id=question.id, kind=kind, user_id=user.id,
+                                        item_name=item_name, streak=streak))
+        db.session.commit()
+
+    @staticmethod
+    def announcement(client, group):
+        return client.get(q_url(group.id)).get_json()["content"]["announcement"]
+
+    def test_new_item(self, login_as, world, group, ctx):
+        with ctx():
+            old = factories.make_question(group, days_ago=1)
+            factories.make_vote(old, world.admin, [world.member])
+        announcement = self.announcement(login_as(world.admin), group)
+        assert announcement["type"] == "new"
+        assert announcement["user"]["id"] == world.member.id and announcement["from_user"] is None
+        assert (announcement["item_name"], announcement["streak"]) == ("bonnet_honte", 1)
+        items = {m["username"]: [(i["item_name"], i["streak"]) for i in m["items"]] for m in announcement["members"]}
+        assert items == {"admin": [], "member": [("bonnet_honte", 1)]}
+        # the other members get the same announcement once the question exists
+        assert self.announcement(login_as(world.member), group) == announcement
+
+    def test_stolen_item_reports_the_streak_the_holder_lost(self, login_as, world, group, ctx):
+        with ctx():
+            self.give_item(group, world.admin, days_ago=4)
+            old = factories.make_question(group, days_ago=1)
+            factories.make_vote(old, world.admin, [world.member])
+        announcement = self.announcement(login_as(world.admin), group)
+        assert announcement["type"] == "stolen"
+        assert announcement["user"]["id"] == world.member.id
+        assert announcement["from_user"]["id"] == world.admin.id and announcement["streak"] == 4
+        members = {m["username"]: [i["item_name"] for i in m["items"]] for m in announcement["members"]}
+        assert members == {"admin": [], "member": ["bonnet_honte"]}
+
+    def test_winning_your_own_item_keeps_it_and_its_streak(self, login_as, world, group, ctx):
+        with ctx():
+            item_id = self.give_item(group, world.member, days_ago=3)
+            old = factories.make_question(group, days_ago=1)
+            factories.make_vote(old, world.admin, [world.member])
+        announcement = self.announcement(login_as(world.admin), group)
+        assert (announcement["type"], announcement["user"]["id"], announcement["streak"]) == ("kept", world.member.id, 3)
+        with ctx():
+            [item] = ItemModel.query.filter_by(group_id=group.id).all()
+            assert item.id == item_id and item.inactive_since is None
+
+    def test_answer_question_repeats_yesterdays_announcement(self, login_as, world, group, ctx):
+        with ctx():
+            self.give_item(group, world.member, days_ago=2)
+            old = factories.make_question(group, days_ago=1, question_id=2, can_write=True, item_name="cape_puissante")
+            factories.make_vote(old, world.admin, written_answer="a joke")
+            self.announce(old, "new", world.member, 1)
+        announcement = self.announcement(login_as(world.admin), group)
+        assert (announcement["type"], announcement["user"]["id"]) == ("kept", world.member.id)
+        assert (announcement["item_name"], announcement["streak"]) == ("bonnet_honte", 2)
+
+    def test_tie_repeats_yesterdays_announcement_day_after_day(self, login_as, world, group, ctx):
+        with ctx():
+            self.give_item(group, world.member, days_ago=5)
+            old = factories.make_question(group, days_ago=1)
+            factories.make_vote(old, world.admin, [world.member])
+            factories.make_vote(old, world.member, [world.admin])
+            self.announce(old, "kept", world.member, 4)  # already a repeat of an older day
+        announcement = self.announcement(login_as(world.admin), group)
+        assert (announcement["type"], announcement["user"]["id"], announcement["streak"]) == ("kept", world.member.id, 5)
+
+    def test_no_announcement_without_a_winner_or_a_previous_announcement(self, login_as, world, group, ctx):
+        with ctx():
+            factories.make_question(group, days_ago=1)
+        assert self.announcement(login_as(world.admin), group) is None
+
+    def test_no_announcement_for_the_very_first_question(self, login_as, world, group):
+        assert self.announcement(login_as(world.admin), group) is None
+
+    def test_group_members_show_their_current_items(self, login_as, world, group, ctx):
+        with ctx():
+            self.give_item(group, world.member, days_ago=2)
+        users = login_as(world.admin).get(f"/api/groups/{group.id}/").get_json()["content"]["users"]
+        items = {u["username"]: [(i["item_name"], i["streak"]) for i in u["items"]] for u in users}
+        assert items == {"admin": [], "member": [("bonnet_honte", 2)]}
 
 
 # ------------------------------------------------------------------- history

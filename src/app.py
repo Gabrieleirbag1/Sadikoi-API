@@ -10,6 +10,7 @@ from models import UserModel, GroupUser, UserSecurity
 from group import create_group, get_group, promote_user_group_role, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, vote_question, get_questions_by_date
+from gifs import get_trending_gifs, get_recent_gifs, search_gifs, share_gif
 from feedback import create_bug_report, create_suggestion
 from db import db
 from manage import has_pending_migrations
@@ -286,6 +287,28 @@ def register_push_device_endpoint():
 def unregister_push_device_endpoint():
     return unregister_device(request)
 
+############## GIFS (Klipy proxy: the API key stays on the server) ##############
+
+@app.route('/api/gifs/trending/', methods=['GET'])
+@limiter.limit("60 per minute", key_func=user_or_ip_key)
+def get_trending_gifs_endpoint():
+    return get_trending_gifs()
+
+@app.route('/api/gifs/recent/', methods=['GET'])
+@limiter.limit("60 per minute", key_func=user_or_ip_key)
+def get_recent_gifs_endpoint():
+    return get_recent_gifs()
+
+@app.route('/api/gifs/search/', methods=['GET'])
+@limiter.limit("30 per minute", key_func=user_or_ip_key)
+def search_gifs_endpoint():
+    return search_gifs(request)
+
+@app.route('/api/gifs/share/<slug>/', methods=['POST'])
+@limiter.limit("60 per minute", key_func=user_or_ip_key)
+def share_gif_endpoint(slug):
+    return share_gif(slug)
+
 ############## SOCKET IO EVENTS ##############
 
 @socketio.on('connect')
@@ -338,4 +361,10 @@ if __name__ == '__main__':
     main()
     # Werkzeug's debugger allows remote code execution: opt-in only, never in production.
     debug = os.environ.get('FLASK_DEBUG') == '1'
-    socketio.run(app, host='127.0.0.1', port=8082, debug=debug)
+    socketio.run(
+        app,
+        host='0.0.0.0',
+        port=8082,
+        debug=debug,
+        allow_unsafe_werkzeug=not debug
+    )
