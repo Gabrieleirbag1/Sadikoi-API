@@ -305,6 +305,28 @@ class QuestionModel(db.Model):
     item_name = db.Column(db.String(100))
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
     votes = db.relationship('QuestionVote', back_populates='question', lazy='dynamic')
+    announcement = db.relationship('ItemAnnouncement', back_populates='question', uselist=False)
+
+class ItemAnnouncement(db.Model):
+    """What happened to the previous question's item, announced with the question it led to.
+
+    - new: `user` got an item nobody held.
+    - stolen: `user` took the item from `from_user`, who had `streak` days on it.
+    - kept: `user` still holds the item, with `streak` days on it.
+    """
+    __tablename__ = 'item_announcements'
+
+    id = db.Column(db.Integer, primary_key=True)
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False, unique=True)
+    kind = db.Column(db.String(10), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    item_name = db.Column(db.String(100), nullable=False)
+    from_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    streak = db.Column(db.Integer, nullable=False)
+
+    question = db.relationship('QuestionModel', back_populates='announcement')
+    user = db.relationship('UserModel', foreign_keys=[user_id])
+    from_user = db.relationship('UserModel', foreign_keys=[from_user_id])
 
 class QuestionVoteTarget(db.Model):
     """Association table for votes and the users who were voted for."""
