@@ -59,6 +59,13 @@ BREVO_API_KEY = load_secret_var('BREVO_API_KEY', brevo_secrets_path)
 if not BREVO_API_KEY:
     log("BREVO_API_KEY not found in .brevo.secrets file.", level="ERROR")
 
+# Load KLIPY_API_KEY (GIF search, called by the API only so the key never reaches the browser)
+klipy_secrets_path = os.path.join(os.path.dirname(__file__), '.klipy.secrets')
+KLIPY_API_KEY = load_secret_var('KLIPY_API_KEY', klipy_secrets_path)
+
+if not KLIPY_API_KEY:
+    log("KLIPY_API_KEY not found in .klipy.secrets file.", level="ERROR")
+
 # Sender of every email (must be a verified sender in Brevo)
 EMAIL_SENDER_ADDRESS = 'missclick@missclick.net'
 EMAIL_SENDER_NAME = 'Sadikoi'
