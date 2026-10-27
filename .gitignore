@@ -212,3 +212,4 @@ credentials.json
 token.json
 *.secrets
 uploads/
+.firebase-service-account.json

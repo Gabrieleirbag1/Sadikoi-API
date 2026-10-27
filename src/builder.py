@@ -5,6 +5,16 @@ from db import db
 from flask_login import current_user
 from utils import question_pool
 
+
+def current_window_start(group: GroupModel, now: datetime.datetime | None = None) -> datetime.datetime:
+    """Start of the group's current daily window: the last reset time (UTC) that has passed.
+
+    A question belongs to the window it was created in, and is dated at its start.
+    """
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
+    return reset_time if now >= reset_time else reset_time - datetime.timedelta(days=1)
+
 def build_user_response(user: UserModel) -> dict:
     return {
         "id": user.id,
@@ -77,9 +87,7 @@ def build_question_response(question: QuestionModel, question_pool: list, langua
     }
 
 def build_question_model(question_data: dict, group: GroupModel) -> QuestionModel:
-    now = datetime.datetime.now(datetime.timezone.utc)
-    reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
-    date = reset_time if now >= reset_time else reset_time - datetime.timedelta(days=1)
+    date = current_window_start(group)
     return QuestionModel(
         question_id=question_data['question_id'],
         theme=question_data['theme']['id'],

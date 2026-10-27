@@ -8,6 +8,7 @@ from db import add_to_db
 from auth import get_user_object
 from builder import build_chat_message_response
 from sockets import socketio
+from notifications import notify_new_message
 
 def _as_utc(value: datetime.datetime) -> datetime.datetime:
     """Return `value` as an aware UTC datetime (SQLite hands back naive datetimes)."""
@@ -106,5 +107,6 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
 
     response_data = build_chat_message_response(message)
     socketio.emit('new_message', response_data, to=str(group_id))
+    notify_new_message(message)
 
     return {"success": True, "message": "Message sent successfully", "content": response_data}, 201

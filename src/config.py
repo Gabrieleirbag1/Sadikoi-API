@@ -28,12 +28,18 @@ if not SECRET_KEY:
     with open(auth_secrets_path, 'w') as f:
         f.write(f'SECRET_KEY={SECRET_KEY}')
 
-# Load GOOGLE_CLIENT_ID
+# Load GOOGLE_CLIENT_BROWSER_ID
 google_secrets_path = os.path.join(os.path.dirname(__file__), '.google.secrets')
-GOOGLE_CLIENT_ID = load_secret_var('GOOGLE_CLIENT_ID', google_secrets_path)
+GOOGLE_CLIENT_BROWSER_ID = load_secret_var('GOOGLE_CLIENT_BROWSER_ID', google_secrets_path)
 
-if not GOOGLE_CLIENT_ID:
-    log("GOOGLE_CLIENT_ID not found in .google.secrets file.", level="ERROR")
+if not GOOGLE_CLIENT_BROWSER_ID:
+    log("GOOGLE_CLIENT_BROWSER_ID not found in .google.secrets file.", level="ERROR")
+
+# Load GOOGLE_CLIENT_MOBILE_ID
+GOOGLE_CLIENT_MOBILE_ID = load_secret_var('GOOGLE_CLIENT_MOBILE_ID', google_secrets_path)
+
+if not GOOGLE_CLIENT_MOBILE_ID:
+    log("GOOGLE_CLIENT_MOBILE_ID not found in .google.secrets file.", level="ERROR")
 
 # Load FRONTEND_URL (used to build links sent by email)
 frontend_secrets_path = os.path.join(os.path.dirname(__file__), '.frontend.secrets')
@@ -61,10 +67,18 @@ EMAIL_SENDER_NAME = 'Sadikoi'
 # The local SQLite database (the API names it 'data-local' and runs from the repo root).
 DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'instance', 'data-local.db')
 
-ALLOWED_ORIGINS = ["http://localhost:4200", "https://sadikoi.missclick.net"]
+ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+    "https://sadikoi.missclick.net",
+    "https://localhost",      # Android
+    "capacitor://localhost",  # iOS
+]
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_LANGUAGES = {'en', 'fr'}
+
+# Firebase service account key (JSON), used to send push notifications. Without it, nothing is sent.
+FIREBASE_SERVICE_ACCOUNT_PATH = os.path.join(os.path.dirname(__file__), '.firebase-service-account.json')
 
 def allowed_file(filename):
     return '.' in filename and \

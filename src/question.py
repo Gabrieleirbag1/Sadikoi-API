@@ -9,13 +9,27 @@ from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, Que
 from db import add_to_db, update_from_db, db
 from auth import get_user_object
 from items import assign_items
-from builder import build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group
+from builder import build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start
 from config import ALLOWED_LANGUAGES
 from sockets import socketio
 from utils import question_pool
 
 
 MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
+
+# =============================================================================
+# TEMPORARY: RANKING questions are not implemented yet (no ranking vote UI or
+# scoring), so they must never be given to a group.
+# Remove this block, and the two `is_question_type_disabled` calls below
+# (in chose_random_question and chose_question), once RANKING is supported.
+# Questions without a `type` field are allowed.
+# =============================================================================
+DISABLED_QUESTION_TYPES = {"ranking"}
+
+def is_question_type_disabled(question: dict) -> bool:
+    """TEMPORARY: whether this question's type can't be given yet (see DISABLED_QUESTION_TYPES)."""
+    return str(question.get("type", "")).lower() in DISABLED_QUESTION_TYPES
+# ============================ END TEMPORARY ==================================
 
 def chose_random_question(themes: list) -> dict:
     """Choose a random question from the question pool that matches the given themes.
@@ -25,6 +39,7 @@ def chose_random_question(themes: list) -> dict:
     matching_questions = [
         question for question in question_pool
         if question['theme']['id'] in themes
+        and not is_question_type_disabled(question)  # TEMPORARY: no RANKING questions yet
     ]
     if not matching_questions:
         raise StopIteration("No questions match the group's selected themes")
@@ -103,6 +118,10 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict:
         if not is_question_already_asked(current_count, mean_iteration + offset):
             return question_data
     # If no question found, pick the one with the least occurrences so far
+    # TEMPORARY: skip RANKING questions already asked in the past (before this filter existed)
+    allowed_ids = {q['question_id'] for q in question_pool if not is_question_type_disabled(q)}
+    counts_by_id = {qid: count for qid, count in counts_by_id.items() if qid in allowed_ids}
+    # END TEMPORARY
     if counts_by_id:
         min_question_id = min(counts_by_id, key=lambda qid: counts_by_id[qid])
         question_data = next(q for q in question_pool if q['question_id'] == min_question_id)
@@ -122,21 +141,13 @@ def is_today_based_on_reset(question_or_vote: QuestionModel | QuestionVote, grou
     if not question_or_vote:
         return False
 
-    now = datetime.datetime.now(datetime.timezone.utc)
-    reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
-    
     item_date = question_or_vote.date
     if item_date.tzinfo is None:
         item_date = item_date.replace(tzinfo=datetime.timezone.utc)
 
-    if now < reset_time:
-        start_time = reset_time - datetime.timedelta(days=1)
-        end_time = reset_time
-        log(f"Current time {now} is before reset time {reset_time}, checking window {start_time} - {end_time}", level="DEBUG")
-    else:
-        start_time = reset_time
-        end_time = reset_time + datetime.timedelta(days=1)
-        log(f"Current time {now} is after reset time {reset_time}, checking window {start_time} - {end_time}", level="DEBUG")
+    start_time = current_window_start(group)
+    end_time = start_time + datetime.timedelta(days=1)
+    log(f"Checking window {start_time} - {end_time}", level="DEBUG")
 
     return start_time <= item_date < end_time
     

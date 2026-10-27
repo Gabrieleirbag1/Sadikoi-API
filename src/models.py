@@ -15,6 +15,8 @@ class GroupUser(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)
     role = db.Column(db.String(50), default='member')
     joined_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    # Push notifications: the user turned off every notification from this group.
+    notifications_muted = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
     
 class ItemModel(db.Model):
     """Tracks items per user, scoped to a group membership"""
@@ -106,6 +108,10 @@ class UserModel(UserMixin, db.Model):
     language = db.Column(db.String(10), default='en')
     session_version = db.Column(db.Integer, default=0)
     deleted = db.Column(db.Boolean, default=False)
+    # Push notification preferences (per group: GroupUser.notifications_muted).
+    notify_messages = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
+    notify_questions = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
+    notify_vote_reminder = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
                                 
     question_votes_cast = db.relationship(
         'QuestionVote',
@@ -205,6 +211,9 @@ class GroupModel(db.Model):
     date_created = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     daily_reset_timestamp = db.Column(db.Time, server_default=db.text("'15:00:00'"))
     themes = db.Column(db.JSON, nullable=False, server_default=db.text("'[]'"))
+    # Start of the last daily window whose push notification was sent (so each one is sent once).
+    last_question_notified_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    last_vote_reminder_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     users = db.relationship('UserModel', secondary='group_user', backref=db.backref('groups', lazy='dynamic'))
     questions = db.relationship('QuestionModel', backref='group', lazy='dynamic')
@@ -404,3 +413,18 @@ class SuggestionModel(db.Model):
         :rtype: str
         """
         return f'Suggestion: {self.description} at {self.timestamp}'
+
+
+class PushTokenModel(db.Model):
+    """A phone that receives push notifications (Firebase Cloud Messaging registration token)."""
+    __tablename__ = 'push_tokens'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    token = db.Column(db.String(255), unique=True, nullable=False)
+    device_id = db.Column(db.String(64), nullable=True)
+    platform = db.Column(db.String(20), nullable=False, default='android')
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), onupdate=db.func.now())
+
+    user = db.relationship('UserModel', backref=db.backref('push_tokens', lazy='dynamic'))

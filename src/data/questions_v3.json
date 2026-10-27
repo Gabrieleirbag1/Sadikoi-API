@@ -1,0 +1,4402 @@
+[
+  {
+    "question_id": 1001,
+    "content": {
+      "fr": "Qui avait le Skyblog le plus gênant ?",
+      "en": "Who had the most cringe MySpace page?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1002,
+    "content": {
+      "fr": "Qui passait ses nuits sur Dofus au lieu de dormir ?",
+      "en": "Who spent whole nights playing World of Warcraft instead of sleeping?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1003,
+    "content": {
+      "fr": "Qui avait le pseudo MSN le plus dramatique ?",
+      "en": "Who had the most dramatic AIM screen name?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1004,
+    "content": {
+      "fr": "Qui a eu une coupe de cheveux dont il ne veut plus jamais entendre parler ?",
+      "en": "Who had a haircut they never want to hear about again?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1005,
+    "content": {
+      "fr": "Qui était déjà en couple en CM2 ?",
+      "en": "Who already had a girlfriend or boyfriend in fifth grade?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1006,
+    "content": {
+      "fr": "Qui faisait les pires bêtises en colo ?",
+      "en": "Who got up to the worst stuff at summer camp?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1007,
+    "content": {
+      "fr": "Qui connaît encore les 151 premiers Pokémon par cœur ?",
+      "en": "Who can still name all 151 original Pokémon?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1008,
+    "content": {
+      "fr": "Qui aurait gagné la Star Academy ?",
+      "en": "Who would've won American Idol?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1009,
+    "content": {
+      "fr": "Qui a dansé la tecktonik en public sans aucune honte ?",
+      "en": "Who did the Soulja Boy dance in public with zero shame?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1010,
+    "content": {
+      "fr": "Qui dort encore avec son doudou ?",
+      "en": "Who still sleeps with their childhood stuffed animal?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1011,
+    "content": {
+      "fr": "Qui refourguait des fausses cartes Pokémon à la récré ?",
+      "en": "Who used to trade fake Pokémon cards at recess?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1012,
+    "content": {
+      "fr": "Quel duo aurait mis le feu à une boum de 5e ?",
+      "en": "Which two would've been the wildest at a middle school dance?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1013,
+    "content": {
+      "fr": "Quel duo se serait fait un slow à la boum de fin d'année ?",
+      "en": "Which two would've slow-danced together at the end-of-year school dance?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1014,
+    "content": {
+      "fr": "Quels deux membres auraient fini Pokémon Rouge en une nuit ?",
+      "en": "Which two would've beaten Pokémon Red in one night?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1015,
+    "content": {
+      "fr": "Quel binôme se serait passé des mots codés en classe ?",
+      "en": "Which two would've passed coded notes in class?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1016,
+    "content": {
+      "fr": "Quel duo aurait monté un fan club de Tokio Hotel ?",
+      "en": "Which two would've started a Jonas Brothers fan club?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1017,
+    "content": {
+      "fr": "Quels deux membres auraient eu les pires tenues sur la photo de classe ?",
+      "en": "Which two would've had the worst outfits on school picture day?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1018,
+    "content": {
+      "fr": "Quel duo serait resté correspondants pendant dix ans ?",
+      "en": "Which two would've stayed pen pals for ten years?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1019,
+    "content": {
+      "fr": "Quel tandem aurait dévalisé le placard à bonbons en cachette ?",
+      "en": "Which two would've raided the candy stash behind their parents' backs?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1020,
+    "content": {
+      "fr": "Quelle paire aurait construit la meilleure cabane de la colo ?",
+      "en": "Which two would've built the best fort at summer camp?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1021,
+    "content": {
+      "fr": "On ressort tous nos vieux statuts Facebook : qui se tape la pire honte ?",
+      "en": "We dig up everyone's old Facebook statuses: who's the most embarrassed?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1022,
+    "content": {
+      "fr": "Le groupe repart en colo pour une semaine : qui se fait renvoyer chez ses parents ?",
+      "en": "The group goes back to summer camp for a week: who gets sent home?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1023,
+    "content": {
+      "fr": "On retrouve les SMS de notre premier portable : qui a envoyé les messages les plus compromettants ?",
+      "en": "We find the texts on our very first phones: who sent the most incriminating messages?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1024,
+    "content": {
+      "fr": "Partie de cache-cache géante comme quand on avait dix ans : qui fixe les règles ?",
+      "en": "A giant game of hide-and-seek like when we were ten: who sets the rules?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1025,
+    "content": {
+      "fr": "On ressort la vieille Wii : qui bat tout le monde à Wii Sports ?",
+      "en": "We dust off the old Wii: who beats everyone at Wii Sports?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1026,
+    "content": {
+      "fr": "On regarde les vidéos de nos spectacles de maternelle : qui fond en larmes ?",
+      "en": "We watch videos of our kindergarten shows: who bursts into tears?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1027,
+    "content": {
+      "fr": "On relit nos vieilles conversations MSN : qui draguait le plus lourdement ?",
+      "en": "We reread our old AIM chats: who was flirting the hardest?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1028,
+    "content": {
+      "fr": "Qui oserait remettre sa tenue préférée du collège pour une soirée ?",
+      "en": "Who'd dare wear their favorite middle school outfit to a party?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1029,
+    "content": {
+      "fr": "Qui serait prêt à montrer ses photos de profil de 2010 ?",
+      "en": "Who'd be willing to show their profile pics from 2010?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1030,
+    "content": {
+      "fr": "Qui oserait chanter en entier le générique de son dessin animé préféré au karaoké ?",
+      "en": "Who'd dare sing their favorite cartoon theme song all the way through at karaoke?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1031,
+    "content": {
+      "fr": "Qui pourrait claquer 500 € pour racheter ses jouets d'enfance sur Leboncoin ?",
+      "en": "Who could blow $500 buying back their childhood toys on Facebook Marketplace?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1032,
+    "content": {
+      "fr": "Qui serait capable de ressortir une vieille photo de nous pour nous faire chanter ?",
+      "en": "Who'd be capable of digging up an old photo of us to blackmail us?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1033,
+    "content": {
+      "fr": "Qui n'hésiterait pas à relancer son crush du collège en DM ?",
+      "en": "Who wouldn't hesitate to DM their middle school crush?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1034,
+    "content": {
+      "fr": "Qui serait partant pour reformer son groupe de musique du lycée et partir en tournée ?",
+      "en": "Who'd be up for getting their high school band back together and going on tour?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1035,
+    "content": {
+      "fr": "Qui est le gardien des vieux souvenirs de la bande ?",
+      "en": "Who's the keeper of the group's old memories?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1036,
+    "content": {
+      "fr": "Dans le groupe, c'est qui qui dit « c'était mieux avant » toutes les deux minutes ?",
+      "en": "Who in the group says \"things were better back then\" every two minutes?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1037,
+    "content": {
+      "fr": "Qui se souvient encore de la date de tout ce qu'on a vécu ensemble ?",
+      "en": "Who still remembers the exact date of everything we've done together?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1038,
+    "content": {
+      "fr": "Qui ressort les photos gênantes de tout le monde aux anniversaires ?",
+      "en": "Who brings out everyone's embarrassing photos at birthdays?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1039,
+    "content": {
+      "fr": "Qui organise toujours les soirées « comme au bon vieux temps » ?",
+      "en": "Who's always organizing the \"just like old times\" nights?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1040,
+    "content": {
+      "fr": "Qui est resté un gamin de douze ans dans sa tête ?",
+      "en": "Who's still a twelve-year-old at heart?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "nostalgie",
+      "fr": "Nostalgie",
+      "en": "Throwback"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1041,
+    "content": {
+      "fr": "Qui achètera son appart en premier ?",
+      "en": "Who'll be the first to buy a place?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1042,
+    "content": {
+      "fr": "Qui fera la demande en mariage la plus gênante ?",
+      "en": "Who'll make the most embarrassing marriage proposal?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1043,
+    "content": {
+      "fr": "Qui loupera son propre mariage à cause d'une gueule de bois ?",
+      "en": "Who'll miss their own wedding because of a hangover?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1044,
+    "content": {
+      "fr": "Qui partira faire le tour du monde en camping-car avec ses gosses ?",
+      "en": "Who'll take their kids around the world in an RV?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1045,
+    "content": {
+      "fr": "Qui s'achètera une Porsche pour fêter ses 40 ans ?",
+      "en": "Who'll buy themselves a Porsche for their 40th birthday?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1046,
+    "content": {
+      "fr": "Qui organisera encore nos week-ends entre potes à 60 ans ?",
+      "en": "Who'll still be organizing our friends' weekends at 60?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1047,
+    "content": {
+      "fr": "Qui fera le mariage le plus démesuré ?",
+      "en": "Who'll throw the most over-the-top wedding?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1048,
+    "content": {
+      "fr": "Qui aura déjà préparé sa retraite à 30 ans ?",
+      "en": "Who'll have their retirement all planned out by 30?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1049,
+    "content": {
+      "fr": "Qui zappera tous nos anniversaires dès qu'il aura des enfants ?",
+      "en": "Who'll forget all our birthdays the moment they have kids?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1050,
+    "content": {
+      "fr": "Qui racontera tout à ses enfants, même ce qu'il ne faudrait pas ?",
+      "en": "Who'll tell their kids everything, even the stuff they really shouldn't?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1051,
+    "content": {
+      "fr": "Qui sera encore là pour aider tout le monde à déménager à 50 ans ?",
+      "en": "Who'll still be helping everyone move at 50?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1052,
+    "content": {
+      "fr": "Quel duo se mariera le même été ?",
+      "en": "Which two will get married the same summer?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1053,
+    "content": {
+      "fr": "Quels deux membres organiseront les vacances de toutes les familles du groupe ?",
+      "en": "Which two will plan the vacations for every family in the group?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1054,
+    "content": {
+      "fr": "Quel duo aura les enfants les plus intenables ?",
+      "en": "Which two will have the most out-of-control kids?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1055,
+    "content": {
+      "fr": "Quel binôme achètera une maison de campagne à partager ?",
+      "en": "Which two will buy a country house together?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1056,
+    "content": {
+      "fr": "Quel duo saura monter un meuble IKEA sans s'engueuler ?",
+      "en": "Which two could put together IKEA furniture without fighting?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1057,
+    "content": {
+      "fr": "Quel tandem s'engueulera pour savoir qui reçoit pour Noël ?",
+      "en": "Which two will fight over who hosts Christmas?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1058,
+    "content": {
+      "fr": "Quelle paire se fera convoquer par la maîtresse de ses enfants ?",
+      "en": "Which two will get called in by their kids' teacher?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1059,
+    "content": {
+      "fr": "Quels deux membres seront assez riches pour prendre leur retraite à 50 ans ?",
+      "en": "Which two will be rich enough to retire at 50?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1060,
+    "content": {
+      "fr": "Quel duo cachera des dettes à son futur conjoint ?",
+      "en": "Which two will hide debts from their future spouse?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1061,
+    "content": {
+      "fr": "L'un de nous se marie : qui est le témoin idéal ?",
+      "en": "One of us is getting married: who's the perfect best man or maid of honor?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1062,
+    "content": {
+      "fr": "Enterrement de vie de célibataire : qui finit au poste ?",
+      "en": "Bachelor or bachelorette party: who ends up at the police station?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1063,
+    "content": {
+      "fr": "Crémaillère du premier qui achète : qui casse un truc dans la nouvelle maison ?",
+      "en": "Housewarming party for the first of us to buy a place: who breaks something in the new house?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1064,
+    "content": {
+      "fr": "Le groupe achète un immeuble pour y vivre ensemble : qui écrit le règlement intérieur ?",
+      "en": "The group buys a building to live in together: who writes the house rules?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1065,
+    "content": {
+      "fr": "Premier Noël avec les enfants de toute la bande : qui craque en premier ?",
+      "en": "First Christmas with everyone's kids: who loses it first?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1066,
+    "content": {
+      "fr": "Un chasseur de têtes appelle chacun de nous : qui décroche le poste de rêve ?",
+      "en": "A headhunter calls each of us: who lands the dream job?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1067,
+    "content": {
+      "fr": "Mariés au premier regard nous recrute tous : qui reste avec son match ?",
+      "en": "Married at First Sight casts all of us: who stays with their match?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1068,
+    "content": {
+      "fr": "Qui pourrait ne pas inviter quelqu'un du groupe à son mariage ?",
+      "en": "Who could leave someone from the group off their wedding guest list?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1069,
+    "content": {
+      "fr": "Qui oserait boire en douce pendant la kermesse de l'école de ses enfants ?",
+      "en": "Who'd dare sneak drinks at their kids' school fair?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1070,
+    "content": {
+      "fr": "Qui pourrait acheter une maison sans rien dire au groupe ?",
+      "en": "Who could buy a house without telling the group?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1071,
+    "content": {
+      "fr": "Qui oserait donner un prénom complètement improbable à son enfant ?",
+      "en": "Who'd dare give their kid a totally ridiculous name?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1072,
+    "content": {
+      "fr": "Qui oserait dire au marié qu'il fait une erreur, en plein mariage ?",
+      "en": "Who'd dare tell the groom he's making a mistake, in the middle of the wedding?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1073,
+    "content": {
+      "fr": "Qui serait capable de se reconvertir trois fois et de réussir à chaque fois ?",
+      "en": "Who could switch careers three times and nail it every time?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1074,
+    "content": {
+      "fr": "Qui serait prêt à emménager avec quelqu'un après trois dates ?",
+      "en": "Who'd be willing to move in with someone after three dates?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1075,
+    "content": {
+      "fr": "Qui est le futur parent modèle de la bande ?",
+      "en": "Who's the group's future model parent?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1076,
+    "content": {
+      "fr": "Qui joue le conseiller financier du groupe dès qu'on parle d'acheter ?",
+      "en": "Who plays the group's financial advisor whenever buying a place comes up?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1077,
+    "content": {
+      "fr": "Qui panique dès qu'on parle d'enfants ou de mariage ?",
+      "en": "Who freaks out whenever kids or marriage come up?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1078,
+    "content": {
+      "fr": "Dans le groupe, c'est qui qui n'a toujours pas fait sa déclaration d'impôts ?",
+      "en": "Who in the group still hasn't filed their taxes?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1079,
+    "content": {
+      "fr": "Qui a la vie d'adulte la mieux rangée de la bande ?",
+      "en": "Who's got the most put-together grown-up life in the group?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1080,
+    "content": {
+      "fr": "Qui donne les avis les plus cash sur les projets de vie des autres ?",
+      "en": "Who gives the bluntest opinions on everyone else's life plans?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "avenir",
+      "fr": "Avenir",
+      "en": "What's Next"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1081,
+    "content": {
+      "fr": "Qui est persuadé que les Simpson ont prédit tout ce qui arrive ?",
+      "en": "Who's convinced The Simpsons predicted everything that happens?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1082,
+    "content": {
+      "fr": "Qui jure que Michael Jackson est encore vivant quelque part ?",
+      "en": "Who swears Michael Jackson is still alive somewhere?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1083,
+    "content": {
+      "fr": "Qui a déjà créé un groupe WhatsApp parallèle sans quelqu'un de la bande ?",
+      "en": "Who's made a side group chat that leaves someone from the gang out?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1084,
+    "content": {
+      "fr": "Qui a un dossier sur chacun de nous, au cas où ?",
+      "en": "Who's got a file on each of us, just in case?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1085,
+    "content": {
+      "fr": "Qui est sûr d'avoir vu un OVNI en rentrant de soirée ?",
+      "en": "Who's sure they saw a UFO on the way home from a party?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1086,
+    "content": {
+      "fr": "Qui pense que personne n'a jamais marché sur la Lune ?",
+      "en": "Who thinks the moon landing was faked?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1087,
+    "content": {
+      "fr": "Qui manipule le groupe sans que personne ne s'en rende compte ?",
+      "en": "Who's pulling the group's strings without anyone noticing?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1088,
+    "content": {
+      "fr": "Qui serait le premier à percer le mystère du triangle des Bermudes ?",
+      "en": "Who'd be the first to crack the Bermuda Triangle mystery?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1089,
+    "content": {
+      "fr": "Qui organiserait le meilleur anniversaire surprise sans que personne ne se doute de rien ?",
+      "en": "Who'd throw the best surprise party without anyone suspecting a thing?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1090,
+    "content": {
+      "fr": "Qui pense que son crush lui envoie des messages codés dans ses stories ?",
+      "en": "Who thinks their crush is sending them coded messages through their stories?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1091,
+    "content": {
+      "fr": "Qui est persuadé que la machine à glaces de McDo est en panne exprès ?",
+      "en": "Who's convinced the McDonald's ice cream machine is broken on purpose?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1092,
+    "content": {
+      "fr": "Quel duo ferait semblant de ne pas se connaître pour mieux nous piéger ?",
+      "en": "Which two would pretend not to know each other just to set us up?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1093,
+    "content": {
+      "fr": "Quels deux membres décrypteraient les messages cachés dans les clips de Beyoncé ?",
+      "en": "Which two would decode the hidden messages in Beyoncé's music videos?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1094,
+    "content": {
+      "fr": "Quel duo partirait chasser le monstre du Loch Ness avec un Opinel et une lampe torche ?",
+      "en": "Which two would go hunting the Loch Ness Monster with a pocketknife and a flashlight?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1095,
+    "content": {
+      "fr": "Quel duo cache une relation secrète au reste du groupe ?",
+      "en": "Which two are hiding a secret relationship from the rest of the group?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1096,
+    "content": {
+      "fr": "Quel binôme achèterait un détecteur de fantômes sur internet ?",
+      "en": "Which two would buy a ghost detector online?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1097,
+    "content": {
+      "fr": "Quel tandem ferait le meilleur duo de détectives privés ?",
+      "en": "Which two would make the best private investigator team?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1098,
+    "content": {
+      "fr": "Quels deux membres lanceraient un podcast pour démonter toutes les fake news ?",
+      "en": "Which two would start a podcast debunking every piece of fake news?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1099,
+    "content": {
+      "fr": "Quel duo passerait une nuit blanche à regarder des vidéos d'OVNI en mangeant des chips ?",
+      "en": "Which two would pull an all-nighter watching UFO videos and eating chips?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1100,
+    "content": {
+      "fr": "Quel duo se disputerait pour savoir si les oiseaux existent vraiment ?",
+      "en": "Which two would argue over whether birds are real?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1101,
+    "content": {
+      "fr": "On découvre une porte secrète dans l'appart de l'un de nous : chez qui ?",
+      "en": "We find a secret door in one of our apartments: whose place is it?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1102,
+    "content": {
+      "fr": "Le groupe passe une nuit dans une maison hantée : qui veut absolument parler aux esprits ?",
+      "en": "The group spends a night in a haunted house: who insists on talking to the spirits?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1103,
+    "content": {
+      "fr": "La Terre est envahie par des extraterrestres : qui négocie avec eux ?",
+      "en": "Aliens invade Earth: who negotiates with them?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1104,
+    "content": {
+      "fr": "500 € disparaissent de la cagnotte du groupe : qui a fait le coup ?",
+      "en": "$500 vanishes from the group's shared kitty: who did it?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1105,
+    "content": {
+      "fr": "On passe tous au JT comme témoins d'un OVNI : qui se ridiculise en direct ?",
+      "en": "We're all on the evening news as UFO witnesses: who makes a fool of themselves live?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1106,
+    "content": {
+      "fr": "Le groupe découvre la vérité sur l'Atlantide : qui devient célèbre grâce à ça ?",
+      "en": "The group uncovers the truth about Atlantis: who gets famous off it?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1107,
+    "content": {
+      "fr": "On se retrouve tous dans Matrix : qui avale la pilule rouge sans hésiter ?",
+      "en": "We're all stuck in the Matrix: who takes the red pill without hesitating?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1108,
+    "content": {
+      "fr": "Qui pourrait faire croire au groupe qu'il a un jumeau caché ?",
+      "en": "Who could convince the group they have a secret twin?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1109,
+    "content": {
+      "fr": "Qui serait prêt à camper une semaine dans le désert pour voir un OVNI ?",
+      "en": "Who'd be willing to camp in the desert for a week to see a UFO?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1110,
+    "content": {
+      "fr": "Qui pourrait vider son compte en banque pour une crypto conseillée par un inconnu sur Telegram ?",
+      "en": "Who could drain their bank account on a crypto some stranger recommended on Telegram?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1111,
+    "content": {
+      "fr": "Qui serait capable de lire nos messages pendant qu'on dort ?",
+      "en": "Who'd be capable of reading our texts while we sleep?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1112,
+    "content": {
+      "fr": "Qui n'hésiterait pas à séduire un agent du FBI pour lui soutirer des infos ?",
+      "en": "Who wouldn't hesitate to seduce an FBI agent for intel?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1113,
+    "content": {
+      "fr": "Qui pourrait faire une crise parce qu'il est persuadé qu'on prépare un truc dans son dos ?",
+      "en": "Who could throw a fit convinced we're all plotting behind their back?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1114,
+    "content": {
+      "fr": "Qui serait prêt à apprendre le morse pour échapper à la surveillance ?",
+      "en": "Who'd be willing to learn Morse code to dodge surveillance?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1115,
+    "content": {
+      "fr": "Qui est le détective de la bande ?",
+      "en": "Who's the detective of the group?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1116,
+    "content": {
+      "fr": "Dans le groupe, c'est qui qui découvre toujours les secrets en premier ?",
+      "en": "Who in the group always uncovers secrets first?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1117,
+    "content": {
+      "fr": "Qui est le cerveau des plans foireux de la bande ?",
+      "en": "Who's the mastermind behind the group's sketchy plans?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1118,
+    "content": {
+      "fr": "Qui se fait toujours avoir par les poissons d'avril ?",
+      "en": "Who always falls for April Fools' pranks?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1119,
+    "content": {
+      "fr": "Qui joue les innocents alors qu'il est toujours à l'origine des embrouilles ?",
+      "en": "Who plays innocent when they're always behind the drama?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1120,
+    "content": {
+      "fr": "Qui pose toujours la question qui fâche quand quelqu'un ment ?",
+      "en": "Who always asks the awkward question when someone's lying?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "complot",
+      "fr": "Complot",
+      "en": "Conspiracy"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1121,
+    "content": {
+      "fr": "Qui est allé aux rattrapages dans presque toutes les matières ?",
+      "en": "Who had to take makeup exams in almost every subject?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1122,
+    "content": {
+      "fr": "Qui a changé de filière au moins trois fois ?",
+      "en": "Who switched majors at least three times?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1123,
+    "content": {
+      "fr": "Qui a déjà débarqué en partiel encore bourré de la veille ?",
+      "en": "Who's shown up to a final still drunk from the night before?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1124,
+    "content": {
+      "fr": "Qui a fait faire tous ses devoirs par ChatGPT sans jamais se faire griller ?",
+      "en": "Who had ChatGPT do all their homework without ever getting caught?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1125,
+    "content": {
+      "fr": "Qui ferait un doctorat juste pour qu'on l'appelle « docteur » ?",
+      "en": "Who'd get a PhD just so people have to call them \"Doctor\"?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1126,
+    "content": {
+      "fr": "Qui a été accepté partout sur Parcoursup ?",
+      "en": "Who got into every college they applied to?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1127,
+    "content": {
+      "fr": "Qui a fini en couple avec son binôme de TP ?",
+      "en": "Who ended up dating their lab partner?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1128,
+    "content": {
+      "fr": "Qui avait un faux mot d'excuse tout prêt pour chaque cours de sport ?",
+      "en": "Who always had a fake note ready to get out of gym class?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1129,
+    "content": {
+      "fr": "Qui faisait la loi dans la cour de récré ?",
+      "en": "Who ran the playground?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1130,
+    "content": {
+      "fr": "Qui a déjà dit à un prof que son cours ne servait à rien ?",
+      "en": "Who's told a teacher their class was pointless?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1131,
+    "content": {
+      "fr": "Qui faisait semblant d'être malade les jours de contrôle ?",
+      "en": "Who used to fake being sick on test days?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1132,
+    "content": {
+      "fr": "Quel duo aurait la coloc étudiante la plus crade ?",
+      "en": "Which two would have the grossest college apartment?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1133,
+    "content": {
+      "fr": "Quel duo se serait embrassé entre deux rayons de la BU ?",
+      "en": "Which two would've made out between the library shelves?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1134,
+    "content": {
+      "fr": "Quels deux membres auraient survécu à la première année de médecine ?",
+      "en": "Which two would've survived the first year of med school?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1135,
+    "content": {
+      "fr": "Quel binôme aurait raté son oral d'anglais en beauté ?",
+      "en": "Which two would've totally bombed their Spanish oral exam?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1136,
+    "content": {
+      "fr": "Quel tandem aurait fini à l'infirmerie après la soirée d'intégration ?",
+      "en": "Which two would've ended up in the nurse's office after the freshman welcome party?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1137,
+    "content": {
+      "fr": "Quel duo aurait partagé une chambre en résidence universitaire sans jamais s'engueuler ?",
+      "en": "Which two could've shared a dorm room without ever fighting?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1138,
+    "content": {
+      "fr": "Quels deux membres auraient organisé le meilleur gala de fin d'année ?",
+      "en": "Which two would've planned the best prom?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1139,
+    "content": {
+      "fr": "Quel duo aurait copié sur la même personne sans se le dire ?",
+      "en": "Which two would've cheated off the same person without telling each other?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1140,
+    "content": {
+      "fr": "Quelle paire aurait fait pleurer un prof remplaçant ?",
+      "en": "Which two would've made a substitute teacher cry?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1141,
+    "content": {
+      "fr": "Soutenance de mémoire dans dix minutes et rien n'est prêt : qui s'en sort quand même ?",
+      "en": "Thesis defense in ten minutes and nothing's ready: who pulls it off anyway?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1142,
+    "content": {
+      "fr": "Contrôle surprise le lundi à 8 h : qui rend copie blanche ?",
+      "en": "Pop quiz at 8 a.m. on a Monday: who turns in a blank sheet?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1143,
+    "content": {
+      "fr": "Sortie scolaire au zoo : qui se fait courser par un animal ?",
+      "en": "School field trip to the zoo: who gets chased by an animal?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1144,
+    "content": {
+      "fr": "Semestre Erasmus à Barcelone : qui revient avec un nouveau crush ?",
+      "en": "Semester abroad in Barcelona: who comes back with a new crush?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1145,
+    "content": {
+      "fr": "Projet de groupe qui compte pour la moitié de la note : qui prend tout en main ?",
+      "en": "Group project worth half the grade: who takes charge?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1146,
+    "content": {
+      "fr": "Les résultats du bac sont affichés devant le lycée : qui fait la scène la plus dramatique ?",
+      "en": "Final grades get posted outside the school: who makes the biggest scene?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1147,
+    "content": {
+      "fr": "On fouille nos anciens casiers : qui y cachait le truc le plus louche ?",
+      "en": "We go through our old lockers: who was hiding the sketchiest stuff?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1148,
+    "content": {
+      "fr": "Qui serait prêt à saboter les notes d'un camarade pour finir major de promo ?",
+      "en": "Who'd be willing to sabotage a classmate's grades to finish top of the class?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1149,
+    "content": {
+      "fr": "Qui oserait débarquer en cours avec un costume de dinosaure ?",
+      "en": "Who'd dare show up to class in a dinosaur costume?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1150,
+    "content": {
+      "fr": "Qui pourrait dire à un jury de soutenance que leurs questions sont nulles ?",
+      "en": "Who could tell a thesis committee their questions are dumb?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1151,
+    "content": {
+      "fr": "Qui n'hésiterait pas à sécher une semaine de partiels pour un festival ?",
+      "en": "Who wouldn't hesitate to skip a week of finals for a music festival?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1152,
+    "content": {
+      "fr": "Qui serait capable de sortir avec quelqu'un juste pour avoir ses fiches de révision ?",
+      "en": "Who'd be capable of dating someone just to get their study notes?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1153,
+    "content": {
+      "fr": "Qui pourrait faire huit ans d'études et finir influenceur ?",
+      "en": "Who could do eight years of college and end up an influencer?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1154,
+    "content": {
+      "fr": "Qui pourrait réussir un exam en apprenant tout le cours sur YouTube la veille ?",
+      "en": "Who could ace an exam after learning the whole course on YouTube the night before?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1155,
+    "content": {
+      "fr": "Qui fait toujours réviser les autres avant les exams ?",
+      "en": "Who always quizzes everyone before exams?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1156,
+    "content": {
+      "fr": "Dans le groupe, c'est qui qui se trompe encore de salle d'exam ?",
+      "en": "Who in the group still shows up to the wrong exam room?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1157,
+    "content": {
+      "fr": "Qui est l'éternel étudiant de la bande ?",
+      "en": "Who's the group's eternal student?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1158,
+    "content": {
+      "fr": "Qui stresse pour chaque contrôle alors qu'il a toujours 18 ?",
+      "en": "Who freaks out about every test even though they always get an A?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1159,
+    "content": {
+      "fr": "Qui est le porte-parole de la bande quand il faut négocier avec un prof ?",
+      "en": "Who's the group's spokesperson when it's time to bargain with a teacher?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1160,
+    "content": {
+      "fr": "Qui balance la réponse à voix haute avant que le prof ait fini sa question ?",
+      "en": "Who blurts out the answer before the teacher has even finished the question?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "ecole",
+      "fr": "École",
+      "en": "School"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1161,
+    "content": {
+      "fr": "Qui poste des pavés inspirants sur LinkedIn après chaque réunion ?",
+      "en": "Who posts inspirational essays on LinkedIn after every meeting?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1162,
+    "content": {
+      "fr": "Qui a déjà oublié de couper son micro en pleine visio pour dire du mal du boss ?",
+      "en": "Who's forgotten to mute on a video call while trashing the boss?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1163,
+    "content": {
+      "fr": "Qui se jette sur chaque buffet gratuit des réunions ?",
+      "en": "Who goes all in on every free meeting buffet?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1164,
+    "content": {
+      "fr": "Qui pique les yaourts des autres dans le frigo commun ?",
+      "en": "Who steals other people's yogurt from the office fridge?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1165,
+    "content": {
+      "fr": "Qui maîtrise Excel mieux que tout le service réuni ?",
+      "en": "Who knows Excel better than the whole department combined?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1166,
+    "content": {
+      "fr": "Qui finit toujours par animer la réunion alors que ce n'est pas la sienne ?",
+      "en": "Who always ends up running the meeting even when it's not theirs?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1167,
+    "content": {
+      "fr": "Qui a déjà dragué quelqu'un pendant un salon professionnel ?",
+      "en": "Who's hit on someone at a trade show?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1168,
+    "content": {
+      "fr": "Qui transformerait l'afterwork du jeudi en soirée jusqu'à 6 h du mat ?",
+      "en": "Who'd turn Thursday after-work drinks into a party that lasts until 6 a.m.?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1169,
+    "content": {
+      "fr": "Qui gagne bien plus qu'il ne veut l'avouer ?",
+      "en": "Who makes way more money than they'll admit?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1170,
+    "content": {
+      "fr": "Qui laisserait l'avis le plus cash sur son ancienne boîte sur Glassdoor ?",
+      "en": "Who'd leave the most brutal review of their old company on Glassdoor?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1171,
+    "content": {
+      "fr": "Qui a toujours son pitch prêt au cas où il croise le PDG dans l'ascenseur ?",
+      "en": "Who always has an elevator pitch ready in case they run into the CEO?"
+    },
+    "type": "solo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1172,
+    "content": {
+      "fr": "Quel duo ferait un bad buzz en gérant le compte Twitter de la boîte ?",
+      "en": "Which two would cause a PR disaster running the company's Twitter account?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1173,
+    "content": {
+      "fr": "Quels deux membres inventeraient un poste qui ne sert à rien et se feraient payer une fortune ?",
+      "en": "Which two would make up a pointless job and get paid a fortune for it?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1174,
+    "content": {
+      "fr": "Quel duo se rapprocherait un peu trop pendant un déplacement pro ?",
+      "en": "Which two would get a little too close on a business trip?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1175,
+    "content": {
+      "fr": "Quel binôme ferait de l'espionnage industriel pour la concurrence ?",
+      "en": "Which two would do corporate espionage for a competitor?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1176,
+    "content": {
+      "fr": "Quel duo enchaînerait les fautes d'orthographe dans une présentation au comité de direction ?",
+      "en": "Which two would fill a board presentation with typos?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1177,
+    "content": {
+      "fr": "Quel tandem dirigerait la meilleure équipe commerciale du pays ?",
+      "en": "Which two would run the best sales team in the country?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1178,
+    "content": {
+      "fr": "Quelle paire viderait la machine à café avant 10 h ?",
+      "en": "Which two would empty the coffee machine before 10 a.m.?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1179,
+    "content": {
+      "fr": "Quels deux membres se battraient pour le titre d'employé du mois ?",
+      "en": "Which two would fight over Employee of the Month?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1180,
+    "content": {
+      "fr": "Quel duo resterait solidaire jusqu'au bout en plein plan social ?",
+      "en": "Which two would have each other's backs to the end during mass layoffs?"
+    },
+    "type": "duo",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": false,
+    "enableMultipleVoting": true,
+    "voteNumberLimit": 2,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1181,
+    "content": {
+      "fr": "Le PDG tombe malade la veille de la fusion : qui prend sa place ?",
+      "en": "The CEO gets sick the night before the merger: who takes over?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1182,
+    "content": {
+      "fr": "Visio avec un gros client et la caméra s'allume par erreur : qui est en caleçon ?",
+      "en": "Video call with a big client and the camera turns on by accident: who's in their underwear?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bonnet_honte",
+      "fr": "Bonnet de la Honte",
+      "en": "Dunce Cap"
+    }
+  },
+  {
+    "question_id": 1183,
+    "content": {
+      "fr": "La boîte se fait racheter par un concurrent : qui change de camp en premier ?",
+      "en": "The company gets bought out by a competitor: who switches sides first?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1184,
+    "content": {
+      "fr": "Les primes de fin d'année tombent : qui fait un scandale pour la sienne ?",
+      "en": "Year-end bonuses come out: who throws a fit over theirs?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1185,
+    "content": {
+      "fr": "Entretien d'embauche avec un recruteur impossible : qui décroche le poste quand même ?",
+      "en": "Job interview with an impossible recruiter: who lands the job anyway?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1186,
+    "content": {
+      "fr": "Voyage d'affaires à Las Vegas tous frais payés : qui claque tout au casino ?",
+      "en": "All-expenses-paid business trip to Vegas: who blows it all at the casino?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1187,
+    "content": {
+      "fr": "La DRH demande des retours anonymes sur le manager : qui signe le sien ?",
+      "en": "HR asks for anonymous feedback on the manager: who signs theirs?"
+    },
+    "type": "scenario",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1188,
+    "content": {
+      "fr": "Qui pourrait bosser pour deux boîtes en même temps sans que personne ne le sache ?",
+      "en": "Who could secretly work two full-time jobs at once?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1189,
+    "content": {
+      "fr": "Qui serait prêt à partir chez le concurrent avec tout le fichier clients ?",
+      "en": "Who'd be willing to jump to a competitor with the whole client list?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "masque_traitre",
+      "fr": "Masque du Traître",
+      "en": "Traitor's Mask"
+    }
+  },
+  {
+    "question_id": 1190,
+    "content": {
+      "fr": "Qui oserait présenter un PowerPoint entièrement fait de mèmes au comité de direction ?",
+      "en": "Who'd dare give a PowerPoint made entirely of memes to the board?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "torche_chaos",
+      "fr": "Torche du Chaos",
+      "en": "Torch of Chaos"
+    }
+  },
+  {
+    "question_id": 1191,
+    "content": {
+      "fr": "Qui oserait dire non au PDG devant toute l'entreprise ?",
+      "en": "Who'd dare say no to the CEO in front of the whole company?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "micro_verite",
+      "fr": "Micro de la Vérité",
+      "en": "Mic of Truth"
+    }
+  },
+  {
+    "question_id": 1192,
+    "content": {
+      "fr": "Qui n'hésiterait pas à flirter avec un client pour signer un contrat ?",
+      "en": "Who wouldn't hesitate to flirt with a client to close a deal?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "coeur_passion",
+      "fr": "Cœur de la Passion",
+      "en": "Heart of Passion"
+    }
+  },
+  {
+    "question_id": 1193,
+    "content": {
+      "fr": "Qui serait capable de commander des sushis tous les midis avec la carte de la boîte ?",
+      "en": "Who'd be capable of ordering sushi every day on the company card?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "trophee_vice",
+      "fr": "Trophée du Vice",
+      "en": "Trophy of Vice"
+    }
+  },
+  {
+    "question_id": 1194,
+    "content": {
+      "fr": "Qui pourrait passer de stagiaire à directeur en cinq ans ?",
+      "en": "Who could go from intern to director in five years?"
+    },
+    "type": "trap",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  },
+  {
+    "question_id": 1195,
+    "content": {
+      "fr": "Dans le groupe, c'est qui qui parle en jargon corporate même à l'apéro ?",
+      "en": "Who in the group talks in corporate jargon even at happy hour?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "couronne_drama",
+      "fr": "Couronne du Drama",
+      "en": "Drama Queen Crown"
+    }
+  },
+  {
+    "question_id": 1196,
+    "content": {
+      "fr": "Qui organise nos plans entre potes comme un comité de pilotage ?",
+      "en": "Who runs our hangouts like a steering committee?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cape_leader",
+      "fr": "Cape du Leader",
+      "en": "Leader's Cape"
+    }
+  },
+  {
+    "question_id": 1197,
+    "content": {
+      "fr": "Qui est le seul à savoir combien chacun gagne ?",
+      "en": "Who's the only one who knows how much everyone makes?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "cle_secrets",
+      "fr": "Clé des Secrets",
+      "en": "Key of Secrets"
+    }
+  },
+  {
+    "question_id": 1198,
+    "content": {
+      "fr": "Qui relit toujours les CV et les lettres de motivation de tout le monde ?",
+      "en": "Who always proofreads everyone's résumés and cover letters?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "bouclier_loyal",
+      "fr": "Bouclier de la Loyauté",
+      "en": "Shield of Loyalty"
+    }
+  },
+  {
+    "question_id": 1199,
+    "content": {
+      "fr": "Qui a toujours une stratégie pour négocier une meilleure offre ?",
+      "en": "Who always has a strategy to negotiate a better offer?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "lunettes_genie",
+      "fr": "Lunettes du Génie",
+      "en": "Genius Glasses"
+    }
+  },
+  {
+    "question_id": 1200,
+    "content": {
+      "fr": "Qui deviendra le business angel de la bande ?",
+      "en": "Who'll become the group's angel investor?"
+    },
+    "type": "dynamique",
+    "theme": {
+      "id": "entreprise",
+      "fr": "Entreprise",
+      "en": "Corporate"
+    },
+    "enableSelfVote": true,
+    "enableMultipleVoting": false,
+    "voteNumberLimit": 1,
+    "canWrite": false,
+    "item_name": {
+      "id": "etoile_destin",
+      "fr": "Étoile du Destin",
+      "en": "Star of Destiny"
+    }
+  }
+]

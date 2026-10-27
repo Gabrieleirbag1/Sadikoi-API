@@ -112,6 +112,10 @@ def test_verify_device_is_public(anon):
     ("post", "/api/questions/1/vote/"),
     ("post", "/api/feedback/bug-reports/"),
     ("post", "/api/feedback/suggestions/"),
+    ("get", "/api/notifications/settings/"),
+    ("put", "/api/notifications/settings/"),
+    ("post", "/api/notifications/devices/"),
+    ("delete", "/api/notifications/devices/"),
 ])
 def test_every_other_route_requires_a_session(anon, method, path):
     response = getattr(anon, method)(path, json={})

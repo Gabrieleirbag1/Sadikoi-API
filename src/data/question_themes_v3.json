@@ -1,0 +1,32 @@
+{
+  "nostalgie": {
+    "id": "nostalgie",
+    "fr": "Nostalgie",
+    "en": "Throwback",
+    "checked": true
+  },
+  "avenir": {
+    "id": "avenir",
+    "fr": "Avenir",
+    "en": "What's Next",
+    "checked": true
+  },
+  "complot": {
+    "id": "complot",
+    "fr": "Complot",
+    "en": "Conspiracy",
+    "checked": true
+  },
+  "ecole": {
+    "id": "ecole",
+    "fr": "École",
+    "en": "School",
+    "checked": true
+  },
+  "entreprise": {
+    "id": "entreprise",
+    "fr": "Entreprise",
+    "en": "Corporate",
+    "checked": true
+  }
+}

@@ -249,19 +249,25 @@ class TestLogin:
 class TestGoogle:
     @pytest.fixture(autouse=True)
     def google_config(self, monkeypatch):
-        monkeypatch.setattr(auth, "GOOGLE_CLIENT_ID", "client-id")
+        monkeypatch.setattr(auth, "GOOGLE_CLIENT_BROWSER_ID", "client-id")
+        monkeypatch.setattr(auth, "GOOGLE_CLIENT_MOBILE_ID", None)
 
-    def fake_verify(self, monkeypatch, info=None, error=None):
-        def verify(token, request, client_id):
+    def fake_verify(self, monkeypatch, info=None, error=None, expected_audiences=("client-id",)):
+        def verify(token, request, audiences):
             if error:
                 raise error
-            assert client_id == "client-id"
+            assert list(audiences) == list(expected_audiences)
             return info
         monkeypatch.setattr(auth.id_token, "verify_oauth2_token", verify)
 
     def test_missing_server_config(self, anon, monkeypatch):
-        monkeypatch.setattr(auth, "GOOGLE_CLIENT_ID", None)
+        monkeypatch.setattr(auth, "GOOGLE_CLIENT_BROWSER_ID", None)
         assert anon.post(GOOGLE, json={"token": "t"}).status_code == 500
+
+    def test_mobile_client_id_is_also_accepted(self, anon, monkeypatch):
+        monkeypatch.setattr(auth, "GOOGLE_CLIENT_MOBILE_ID", "mobile-id")
+        self.fake_verify(monkeypatch, {"email": "gina@gmail.com", "name": "Gina"}, expected_audiences=("client-id", "mobile-id"))
+        assert anon.post(GOOGLE, json={"token": "t", "device_id": "g-dev"}).status_code == 200
 
     def test_missing_token(self, anon):
         assert anon.post(GOOGLE, json={}).status_code == 400

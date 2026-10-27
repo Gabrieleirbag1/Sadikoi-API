@@ -14,10 +14,11 @@ from google.auth.transport import requests as google_requests
 
 from models import PasswordResetToken, UserModel, UserSecurity, ReportUserModel
 from config import allowed_file
+from notifications import remove_device_tokens
 from db import db, add_to_db, delete_from_db, update_from_db
 from builder import build_user_response
 from email_sender import send_auth_code_email, send_password_reset_email, RESET_TOKEN_TTL_MINUTES
-from config import GOOGLE_CLIENT_ID, FRONTEND_URL, TURNSTILE_SECRET_KEY
+from config import GOOGLE_CLIENT_BROWSER_ID, GOOGLE_CLIENT_MOBILE_ID, FRONTEND_URL, TURNSTILE_SECRET_KEY
 
 MAX_LOGIN_ATTEMPTS = 5
 AUTH_CODE_TTL_MINUTES = 10
@@ -234,8 +235,8 @@ def delete_user(user_info: str) -> tuple[dict, int]:
     return {"success": True, "message": "User deleted successfully", "content": build_user_response(user)}, 200
 
 def google_login_handler(request: Request) -> tuple[dict, int]:
-    if not GOOGLE_CLIENT_ID:
-        log("GOOGLE_CLIENT_ID not found in .google.secrets file.", level="ERROR")
+    if not GOOGLE_CLIENT_BROWSER_ID:
+        log("GOOGLE_CLIENT_BROWSER_ID not found in .google.secrets file.", level="ERROR")
         return {"success": False, "message": "Server configuration error."}, 500
                 
     token = request.json.get('token')
@@ -243,7 +244,10 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         return {"success": False, "message": "Token is required"}, 400
 
     try:
-        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+        # The mobile app's native login normally issues tokens for the web client ID too;
+        # the mobile client ID is accepted as well in case a token is issued for it.
+        audiences = [client_id for client_id in (GOOGLE_CLIENT_BROWSER_ID, GOOGLE_CLIENT_MOBILE_ID) if client_id]
+        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), audiences)
         
         email = idinfo['email']
         username = idinfo.get('name', email.split('@')[0])
@@ -363,6 +367,10 @@ def logout() -> tuple[dict, int]:
                 return {"success": False, "message": "No user is currently logged in."}, 400
         else:
             log(f"Logging out user: {current_user.id} without forgetting device because no device ID was provided.", level="WARNING")
+    if current_user.is_authenticated:
+        # This phone stops receiving the user's push notifications.
+        remove_device_tokens(current_user.id, device_id)
+        update_from_db()
     logout_user()
     return {"success": True, "message": "Logout successful."}, 200
 
