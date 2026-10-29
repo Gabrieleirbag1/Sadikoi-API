@@ -9,6 +9,7 @@ from auth import get_user_object
 from builder import build_chat_message_response
 from sockets import socketio
 from notifications import notify_new_message
+from lite_logging.lite_logging import log
 
 def _as_utc(value: datetime.datetime) -> datetime.datetime:
     """Return `value` as an aware UTC datetime (SQLite hands back naive datetimes)."""
@@ -105,6 +106,7 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
 
+    log(f"User {user.id} sent message {message.id} in group {group_id}", level="INFO")
     response_data = build_chat_message_response(message)
     socketio.emit('new_message', response_data, to=str(group_id))
     notify_new_message(message)

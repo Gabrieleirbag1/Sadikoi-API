@@ -161,7 +161,6 @@ def list_devices_endpoint():
 
 @app.route('/api/auth/security/logout-devices/', methods=['GET'])
 def logout_devices_endpoint():
-    print("Logging out all devices for the current user.")
     return logout_sessions()
 
 @app.route('/api/auth/security/devices/', methods=['DELETE'])
@@ -365,6 +364,7 @@ def main(db_name: str = "data-local") -> None:
             log("The database is not up to date: run `python src/manage.py migrate`.", level="ERROR")
     # Daily question and vote reminder push notifications (checks every minute).
     start_scheduler(app)
+    log(f"Sadikoi API ready (database: {db_name})", level="INFO")
 
 if __name__ == '__main__':
     main()

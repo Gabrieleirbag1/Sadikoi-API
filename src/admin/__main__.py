@@ -7,6 +7,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from admin import DEFAULT_DB_PATH, create_admin_app  # noqa: E402
+from lite_logging.lite_logging import log  # noqa: E402
 
 LOCAL_HOSTS = {'127.0.0.1', 'localhost', '::1'}
 
@@ -25,7 +26,7 @@ def main() -> None:
         parser.error(f"database not found: {db_path} (start the API once to create it)")
 
     app = create_admin_app({'SQLALCHEMY_DATABASE_URI': f'sqlite:///{db_path}'})
-    print(f"Sadikoi admin on http://{args.host}:{args.port}/admin/ (secret in src/.admin.secrets)")
+    log(f"Sadikoi admin on http://{args.host}:{args.port}/admin/ (secret in src/.admin.secrets)", level="INFO")
     app.run(host=args.host, port=args.port, debug=os.environ.get('FLASK_DEBUG') == '1')
 
 

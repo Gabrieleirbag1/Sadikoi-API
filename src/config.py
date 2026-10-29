@@ -1,5 +1,20 @@
 import os
+from lite_logging.config import LOG_LEVEL
 from lite_logging.lite_logging import log
+
+
+def env_flag(name: str, default: bool) -> bool:
+    """True for 1/true/yes/on (any case), False for anything else; `default` when the variable is not set."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+# Which log levels are printed: DEBUG and INFO environment variables (set in the Dockerfile at build time).
+# WARNING, ERROR and CRITICAL are always printed.
+LOG_LEVEL['DEBUG']['enabled'] = env_flag('DEBUG', False)
+LOG_LEVEL['INFO']['enabled'] = env_flag('INFO', True)
 
 def load_secret_var(var_name: str, secrets_path: str, default: str = None) -> str:
     """Load a secret variable from the appropriate secrets file.

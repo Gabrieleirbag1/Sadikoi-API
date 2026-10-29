@@ -148,6 +148,7 @@ def _send_all(app, pairs: list[tuple[str, dict]]) -> None:
                 stale.append(token)
         except Exception as error:  # a network error must not stop the other notifications
             log(f"Push notification failed: {error}", level="ERROR")
+    log(f"Push notifications sent: {len(pairs)} device(s), {len(stale)} unregistered", level="INFO")
     if stale:
         with app.app_context():
             PushTokenModel.query.filter(PushTokenModel.token.in_(stale)).delete(synchronize_session=False)
@@ -279,7 +280,9 @@ def notify_vote_reminders(now: datetime.datetime | None = None) -> None:
             return build_message(group.name, _texts(user)['reminder'], f'/group/{group.id}',
                                  CHANNEL_REMINDERS, tag=f'question-{group.id}')
 
-        pairs += _pairs_for(users, build)
+        group_pairs = _pairs_for(users, build)
+        log(f"Vote reminder for group {group.id}: {len(group_pairs)} device(s)", level="INFO")
+        pairs += group_pairs
     db.session.commit()
     deliver(pairs)
 
@@ -302,6 +305,7 @@ def run_scheduler(app) -> None:
 def start_scheduler(app) -> None:
     """Needs a single process (like Flask-Limiter's memory storage and Socket.IO rooms)."""
     socketio.start_background_task(run_scheduler, app)
+    log(f"Notification scheduler started (every {SCHEDULER_INTERVAL_SECONDS} s)", level="INFO")
 
 
 ############## SETTINGS AND DEVICES (API) ##############
@@ -340,6 +344,7 @@ def update_settings(request: Request) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
+    log(f"User {user.id} changed their notification settings: {changes}", level="INFO")
     return get_settings()
 
 
@@ -369,6 +374,7 @@ def update_group_settings(group_id: int, request: Request) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
+    log(f"User {membership.user_id} changed their notification settings for group {group_id}: {changes}", level="INFO")
     return get_group_settings(group_id)
 
 
@@ -399,6 +405,7 @@ def register_device(request: Request) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
+    log(f"User {user_id} registered a {platform} device for push notifications", level="INFO")
     return {"success": True, "message": "Device registered for push notifications"}, 201
 
 
@@ -410,6 +417,7 @@ def unregister_device(request: Request) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
+    log(f"User {current_user.id} unregistered a device from push notifications", level="INFO")
     return {"success": True, "message": "Device unregistered from push notifications"}, 200
 
 

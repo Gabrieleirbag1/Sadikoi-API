@@ -4,6 +4,7 @@ from flask_login import current_user
 from auth import get_user_object
 from models import UserModel, BugReportModel, SuggestionModel
 from db import add_to_db
+from lite_logging.lite_logging import log
 
 def is_user_spamming(user: UserModel, feedback: BugReportModel | SuggestionModel, time_threshold: int = 60) -> bool:
     """Check if the user is submitting bug reports or suggestions too frequently."""
@@ -44,6 +45,7 @@ def create_bug_report(request):
     if result.get("error"):
         return result, 500
     
+    log(f"User {user.id} submitted bug report {bug_report.id}", level="INFO")
     return {"success": True, "message": "Bug report created successfully"}, 201
 
 def create_suggestion(request):
@@ -66,4 +68,5 @@ def create_suggestion(request):
     if result.get("error"):
         return result, 500
     
+    log(f"User {user.id} suggested a question ({theme})", level="INFO")
     return {"success": True, "message": "Suggestion created successfully"}, 201

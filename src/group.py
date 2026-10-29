@@ -10,6 +10,7 @@ from db import add_to_db, delete_from_db, update_from_db
 from auth import get_user_object
 from builder import build_group_response, build_groups_response
 from notifications import init_notification_markers
+from lite_logging.lite_logging import log
 from utils import question_themes
 
 def is_theme_valid(theme: str) -> bool:
@@ -54,6 +55,7 @@ def create_group(request: Request) -> tuple[dict, int]:
     init_notification_markers(group)
     group_user = GroupUser(user_id=user.id, group_id=group.id, role='admin')
     add_to_db(group_user)
+    log(f"User {user.id} created group {group.id} ({group.name})", level="INFO")
     
     return {"success": True, "message": "Group created successfully", "content": build_group_response(group)}, 201
 
@@ -117,6 +119,7 @@ def update_group(group_id: int) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
 
+    log(f"User {user.id} updated group {group_id}", level="INFO")
     response_data = build_group_response(group)
     socketio.emit('group_updated', response_data, to=str(group_id))
 
@@ -143,6 +146,7 @@ def delete_group(group_id: int) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
 
+    log(f"User {user.id} deleted group {group_id}", level="INFO")
     socketio.emit('group_deleted', {"group_id": group_id}, to=str(group_id))
 
     return {"success": True, "message": "Group deleted successfully", "content": response_data}, 200
@@ -173,6 +177,7 @@ def add_user_to_group(group_id: int, user_info: str) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
 
+    log(f"User {user.id} joined group {group_id}", level="INFO")
     response_data = build_group_response(group)
     socketio.emit('member_joined', response_data, to=str(group_id))
 
@@ -216,6 +221,10 @@ def remove_user_from_group(group_id: int, user_to_remove_info: str) -> tuple[dic
 
     update_from_db()
 
+    if user_to_remove.id == current_user.id:
+        log(f"User {user_to_remove.id} left group {group_id}", level="INFO")
+    else:
+        log(f"User {current_user.id} removed user {user_to_remove.id} from group {group_id}", level="INFO")
     response_data = build_group_response(group)
     socketio.emit('member_left', response_data, to=str(group_id))
 
@@ -261,6 +270,7 @@ def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
 
+    log(f"User {user.id} made user {user_to_update_role.id} admin of group {group_id}", level="INFO")
     response_data = build_group_response(group)
     socketio.emit('role_updated', response_data, to=str(group_id))
 
@@ -291,6 +301,7 @@ def create_invitation(group: GroupModel) -> tuple[dict, int]:
     result = add_to_db(invitation)
     if result.get("error"):
         return result, 500
+    log(f"Invitation created for group {group.id}", level="INFO")
     return {"success": True, "message": "Invitation created successfully", "content": invitation.token}, 201
 
 def get_group_invitation(group_id: int) -> tuple[dict, int]:
