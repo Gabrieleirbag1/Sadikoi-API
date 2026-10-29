@@ -1,2 +1,22 @@
 # Not part of the image
+
+# Secrets: mounted read-only at run time by server_sadikoi.sh, never baked into the image.
+**/*.secrets
+**/.firebase-service-account.json
+
+# Data: mounted as volumes by server_sadikoi.sh.
+instance
+src/uploads
 sadikoi-logs
+
+# Development files
+.git
+.github
+.claude
+.kilo
+.vscode
+venv
+tests
+**/__pycache__
+.pytest_cache
+.coverage
