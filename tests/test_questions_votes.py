@@ -4,7 +4,7 @@ import datetime
 import pytest
 
 from db import db
-from models import ItemAnnouncement, ItemModel, QuestionModel, QuestionVote, QuestionVoteTarget
+from models import GroupUser, ItemAnnouncement, ItemModel, QuestionModel, QuestionVote, QuestionVoteTarget
 from builder import get_user_items_in_group
 from tests import factories
 
@@ -431,6 +431,23 @@ class TestVote:
             factories.make_question(world.group, limit=0, multiple=True)
         response = self.vote(login_as(world.member), world.group, votedUsers=[world.admin.id, world.admin.id])
         assert response.status_code == 400
+
+    def test_duo_requires_two_targets(self, login_as, world, ctx):
+        with ctx():
+            third = factories.make_user("third")
+            db.session.add(GroupUser(user_id=third.id, group_id=world.group.id, role="member"))
+            db.session.commit()
+            factories.make_question(world.group, self_vote=False, multiple=True, limit=2)
+        client = login_as(world.member)
+        assert self.vote(client, world.group, votedUsers=[world.admin.id]).status_code == 400
+        assert self.vote(client, world.group, votedUsers=[world.admin.id, world.admin.id]).status_code == 400
+        assert self.vote(client, world.group, votedUsers=[world.admin.id, third.id]).status_code == 200
+
+    def test_duo_with_too_few_members_accepts_a_single_target(self, login_as, world, ctx):
+        # A member left after the DUO question was given: only 1 candidate remains.
+        with ctx():
+            factories.make_question(world.group, self_vote=False, multiple=True, limit=2)
+        assert self.vote(login_as(world.member), world.group, votedUsers=[world.admin.id]).status_code == 200
 
     def test_written_answer(self, login_as, world, ctx):
         with ctx():

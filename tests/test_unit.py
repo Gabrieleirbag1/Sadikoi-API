@@ -153,23 +153,46 @@ class TestChooseQuestion:
             assert question_module.get_mean_iterations_question(db.session.get(GroupModel, world.group.id)) == 1
 
     def test_theme_filter(self):
-        assert question_module.chose_random_question(["style"])["question_id"] == 2
+        assert question_module.chose_random_question(["style"], 2)["question_id"] == 2
 
     def test_no_matching_theme(self):
         with pytest.raises(StopIteration):
-            question_module.chose_random_question(["nothing"])
+            question_module.chose_random_question(["nothing"], 2)
+
+    def test_duo_questions_need_three_members(self, pool):
+        # DUO: 2 picks and no self vote, so a voter in a 2-member group has only 1 candidate.
+        pool.append({**pool[0], "question_id": 3, "theme": pool[1]["theme"], "type": "duo",
+                     "enableSelfVote": False, "enableMultipleVoting": True, "voteNumberLimit": 2})
+        assert {question_module.chose_random_question(["style"], 2)["question_id"] for _ in range(30)} == {2}
+        assert {question_module.chose_random_question(["style"], 3)["question_id"] for _ in range(60)} == {2, 3}
+
+    def test_no_self_vote_question_needs_two_members(self, pool):
+        pool[:] = [{**pool[0], "enableSelfVote": False}]
+        with pytest.raises(StopIteration):
+            question_module.chose_random_question(["connerie"], 1)
+        assert question_module.chose_random_question(["connerie"], 2)["question_id"] == 1
+
+    def test_fallback_skips_questions_the_group_cannot_play(self, world, ctx, pool):
+        # Every playable question was asked more than the mean: the fallback must not
+        # bring back an already-asked DUO question in a 2-member group.
+        pool.append({**pool[0], "question_id": 3, "type": "duo",
+                     "enableSelfVote": False, "enableMultipleVoting": True, "voteNumberLimit": 2})
+        with ctx():
+            factories.make_question(world.group, days_ago=1, question_id=3)
+            group = db.session.get(GroupModel, world.group.id)
+            assert {question_module.chose_question(group, offset=-10)["question_id"] for _ in range(20)} <= {1, 2}
 
     # TEMPORARY: remove with the RANKING filter in question.py.
     def test_ranking_questions_are_never_given(self, pool):
         pool.append({**pool[1], "question_id": 3, "type": "ranking"})
         pool.append({**pool[1], "question_id": 4, "type": "RANKING"})
-        assert {question_module.chose_random_question(["style"])["question_id"] for _ in range(30)} == {2}
+        assert {question_module.chose_random_question(["style"], 2)["question_id"] for _ in range(30)} == {2}
 
     # TEMPORARY: remove with the RANKING filter in question.py.
     def test_only_ranking_questions_left_raises(self, pool):
         pool[:] = [{**pool[1], "type": "ranking"}]
         with pytest.raises(StopIteration):
-            question_module.chose_random_question(["style"])
+            question_module.chose_random_question(["style"], 2)
 
 
 # -------------------------------------------------------------------- items
