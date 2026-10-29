@@ -1,4 +1,4 @@
-"""Push notifications: settings, devices, and who receives the message / new question / vote reminder."""
+"""Push notifications: settings, devices, and who receives the message / new question / vote reminder / answer."""
 import datetime
 
 import pytest
@@ -10,13 +10,19 @@ from tests import factories
 
 H = datetime.timedelta
 SETTINGS = "/api/notifications/settings/"
+ALL_ON = {"messages": True, "questions": True, "vote_reminder": True, "answers": True}
 # Saved before the `externals` fixture replaces it with a recorder.
 REAL_DELIVER = notifications.deliver
 DEVICES = "/api/notifications/devices/"
 
 
+def group_settings_url(group):
+    return f"{SETTINGS}groups/{group.id}/"
+
+
 def mute(client, group, muted=True):
-    return client.put(SETTINGS, json={"groups": [{"id": group.id, "muted": muted}]})
+    """Every type off (or on) for this group."""
+    return client.put(group_settings_url(group), json={name: not muted for name in ALL_ON})
 
 
 def add_token(user, token=None, device_id=None):
@@ -40,50 +46,45 @@ def phones(world, ctx):
 # ------------------------------------------------------------------- settings
 class TestSettings:
     def test_defaults(self, login_as, world):
-        content = login_as(world.member).get(SETTINGS).get_json()["content"]
-        assert content == {"messages": True, "questions": True, "vote_reminder": True,
-                           "groups": [{"id": world.group.id, "name": "Team", "muted": False}]}
+        assert login_as(world.member).get(SETTINGS).get_json()["content"] == ALL_ON
 
     def test_update(self, login_as, world, ctx):
         response = login_as(world.member).put(SETTINGS, json={"messages": False, "vote_reminder": False})
         assert response.status_code == 200
-        assert response.get_json()["content"]["messages"] is False
+        assert response.get_json()["content"] == {**ALL_ON, "messages": False, "vote_reminder": False}
         with ctx():
             user = db.session.get(UserModel, world.member.id)
-            assert (user.notify_messages, user.notify_questions, user.notify_vote_reminder) == (False, True, False)
+            assert (user.notify_messages, user.notify_questions, user.notify_vote_reminder, user.notify_answers) == \
+                (False, True, False, True)
 
-    @pytest.mark.parametrize("payload", [{}, {"messages": "no"}, {"unknown": True}])
+    @pytest.mark.parametrize("payload", [{}, {"messages": "no"}, {"unknown": True}, {"groups": []}])
     def test_invalid_update(self, login_as, world, payload):
         assert login_as(world.member).put(SETTINGS, json=payload).status_code == 400
 
-    def test_everything_in_one_request(self, login_as, world, ctx):
-        payload = {"messages": False, "questions": False, "vote_reminder": True,
-                   "groups": [{"id": world.group.id, "muted": True}]}
-        response = login_as(world.member).put(SETTINGS, json=payload)
+
+class TestGroupSettings:
+    def test_defaults_with_the_global_switches(self, login_as, world):
+        login_as(world.member).put(SETTINGS, json={"answers": False})
+        content = login_as(world.member).get(group_settings_url(world.group)).get_json()["content"]
+        assert content == {"group": ALL_ON, "global": {**ALL_ON, "answers": False}}
+
+    def test_partial_update_of_one_group(self, login_as, world, ctx):
+        response = login_as(world.member).put(group_settings_url(world.group), json={"messages": False})
         assert response.status_code == 200
-        content = response.get_json()["content"]
-        assert (content["messages"], content["questions"], content["vote_reminder"]) == (False, False, True)
-        assert content["groups"] == [{"id": world.group.id, "name": "Team", "muted": True}]
+        assert response.get_json()["content"]["group"] == {**ALL_ON, "messages": False}
         with ctx():
-            assert GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one().notifications_muted
+            membership = GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one()
+            assert (membership.notify_messages, membership.notify_questions) == (False, True)
+            assert db.session.get(UserModel, world.member.id).notify_messages is True   # global switch untouched
 
-    def test_mute_and_unmute_a_group(self, login_as, world, ctx):
-        assert mute(login_as(world.member), world.group).status_code == 200
-        assert login_as(world.member).get(SETTINGS).get_json()["content"]["groups"][0]["muted"] is True
-        mute(login_as(world.member), world.group, False)
-        assert login_as(world.member).get(SETTINGS).get_json()["content"]["groups"][0]["muted"] is False
+    def test_requires_membership(self, login_as, world):
+        client = login_as(world.member)
+        assert client.get(group_settings_url(world.other_group)).status_code == 403
+        assert client.put(group_settings_url(world.other_group), json={"messages": False}).status_code == 403
 
-    def test_mute_requires_membership_and_saves_nothing(self, login_as, world, ctx):
-        payload = {"messages": False, "groups": [{"id": world.group.id, "muted": True},
-                                                 {"id": world.other_group.id, "muted": True}]}
-        assert login_as(world.member).put(SETTINGS, json=payload).status_code == 403
-        with ctx():
-            assert db.session.get(UserModel, world.member.id).notify_messages is True
-            assert not GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one().notifications_muted
-
-    @pytest.mark.parametrize("groups", ["x", [{"id": 1}], [{"id": "1", "muted": True}], [{"id": 1, "muted": "yes"}], [1]])
-    def test_invalid_groups(self, login_as, world, groups):
-        assert login_as(world.member).put(SETTINGS, json={"groups": groups}).status_code == 400
+    @pytest.mark.parametrize("payload", [{}, {"messages": "no"}, {"muted": True}])
+    def test_invalid_update(self, login_as, world, payload):
+        assert login_as(world.member).put(group_settings_url(world.group), json=payload).status_code == 400
 
 
 # -------------------------------------------------------------------- devices
@@ -144,7 +145,8 @@ class TestMessageNotifications:
         assert tokens_of(externals.pushes) == ["token-admin"]
         message = externals.pushes[0][1]
         assert message["notification"] == {"title": "Team", "body": "member: hello"}
-        assert message["data"] == {"route": f"/group/{world.group.id}"}
+        assert message["data"] == {"route": f"/group/{world.group.id}", "channel": "messages",
+                                   "tag": f"chat-{world.group.id}"}
         assert message["android"]["notification"] == {"channel_id": "messages", "tag": f"chat-{world.group.id}"}
 
     def test_in_the_recipient_language(self, login_as, world, phones, externals, ctx):
@@ -160,13 +162,18 @@ class TestMessageNotifications:
         assert externals.pushes[0][1]["notification"]["body"] == "member sent a GIF"
         assert len(externals.pushes[1][1]["notification"]["body"]) == len("member: ") + 150
 
-    def test_muted_group_or_setting_off(self, login_as, world, phones, externals):
-        mute(login_as(world.admin), world.group)
+    def test_group_switch_or_global_switch_off(self, login_as, world, phones, externals):
+        login_as(world.admin).put(group_settings_url(world.group), json={"messages": False})
         self.send(login_as, world.member, world.group)
         mute(login_as(world.admin), world.group, False)
         login_as(world.admin).put(SETTINGS, json={"messages": False})
         self.send(login_as, world.member, world.group)
         assert externals.pushes == []
+
+    def test_other_types_off_for_the_group_do_not_matter(self, login_as, world, phones, externals):
+        login_as(world.admin).put(group_settings_url(world.group), json={"questions": False, "answers": False})
+        self.send(login_as, world.member, world.group)
+        assert tokens_of(externals.pushes) == ["token-admin"]
 
     def test_every_phone_of_a_recipient(self, login_as, world, phones, externals, ctx):
         with ctx():
@@ -197,11 +204,74 @@ class TestQuestionNotifications:
 
     def test_respects_settings(self, login_as, world, phones, externals, ctx):
         login_as(world.member).put(SETTINGS, json={"questions": False})
-        mute(login_as(world.other), world.other_group)
+        login_as(world.other).put(group_settings_url(world.other_group), json={"questions": False})
         now = factories.now()
         self.run(ctx, now - H(days=1))
         self.run(ctx, now)
         assert tokens_of(externals.pushes) == ["token-admin"]
+
+    def reset_in(self, now, minutes):
+        return (now + H(minutes=minutes)).strftime("%H:%M")
+
+    def test_group_created_just_before_its_reset(self, login_as, world, externals, ctx):
+        """The bug: the scheduler first saw the group after its reset, and skipped that day."""
+        now = factories.now().replace(second=0, microsecond=0)
+        response = login_as(world.admin).post("/api/groups/", json={
+            "name": "Quick", "themes": ["connerie"], "daily_reset_timestamp": self.reset_in(now, 1)})
+        assert response.status_code == 201
+        with ctx():
+            add_token(world.admin)
+        self.run(ctx, now + H(minutes=1, seconds=30))     # first scheduler run, after the reset
+        assert [m["notification"]["title"] for _, m in externals.pushes] == ["Quick"]
+
+    def test_reset_time_moved_to_one_minute_later(self, login_as, world, phones, externals, ctx):
+        now = factories.now().replace(second=0, microsecond=0)
+        self.run(ctx, now)                                 # the scheduler already knows the group
+        response = login_as(world.admin).put(f"/api/groups/{world.group.id}/", json={
+            "themes": ["connerie"], "daily_reset_timestamp": self.reset_in(now, 1)})
+        assert response.status_code == 200
+        self.run(ctx, now + H(seconds=30))                 # not yet
+        assert externals.pushes == []
+        self.run(ctx, now + H(minutes=1, seconds=30))
+        assert tokens_of(externals.pushes) == ["token-admin", "token-member"]
+
+
+# -------------------------------------------------------------------- answers
+class TestAnswerNotifications:
+    @pytest.fixture(autouse=True)
+    def today(self, world, ctx):
+        with ctx():
+            factories.make_question(world.group)
+
+    def test_the_other_members_are_notified(self, login_as, world, phones, externals):
+        response = login_as(world.member).post(f"/api/questions/{world.group.id}/vote/",
+                                               json={"votedUsers": [world.admin.id]})
+        assert response.status_code == 200
+        assert tokens_of(externals.pushes) == ["token-admin"]          # not the member who answered
+        message = externals.pushes[0][1]
+        assert message["notification"] == {"title": "Team", "body": "member answered the question of the day!"}
+        assert message["data"]["channel"] == "answers"
+        assert message["android"]["notification"] == {"channel_id": "answers", "tag": f"answers-{world.group.id}"}
+
+    def test_in_french(self, login_as, world, phones, externals, ctx):
+        with ctx():
+            db.session.get(UserModel, world.admin.id).language = "fr"
+            db.session.commit()
+        login_as(world.member).post(f"/api/questions/{world.group.id}/vote/", json={"votedUsers": [world.admin.id]})
+        assert externals.pushes[0][1]["notification"]["body"] == "member a répondu à la question du jour !"
+
+    @pytest.mark.parametrize("url", [SETTINGS, "group"])
+    def test_switch_off(self, login_as, world, phones, externals, url):
+        client = login_as(world.admin)
+        client.put(group_settings_url(world.group) if url == "group" else url, json={"answers": False})
+        login_as(world.member).post(f"/api/questions/{world.group.id}/vote/", json={"votedUsers": [world.admin.id]})
+        assert externals.pushes == []
+
+    def test_no_notification_for_a_refused_vote(self, login_as, world, phones, externals):
+        client = login_as(world.member)
+        client.post(f"/api/questions/{world.group.id}/vote/", json={"votedUsers": [world.admin.id]})
+        client.post(f"/api/questions/{world.group.id}/vote/", json={"votedUsers": [world.admin.id]})  # already voted
+        assert len(externals.pushes) == 1
 
 
 # -------------------------------------------------------------- vote reminder
