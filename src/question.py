@@ -21,8 +21,8 @@ MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
 # =============================================================================
 # TEMPORARY: RANKING questions are not implemented yet (no ranking vote UI or
 # scoring), so they must never be given to a group.
-# Remove this block, and the two `is_question_type_disabled` calls below
-# (in chose_random_question and chose_question), once RANKING is supported.
+# Remove this block, and the `is_question_type_disabled` call in
+# is_question_allowed, once RANKING is supported.
 # Questions without a `type` field are allowed.
 # =============================================================================
 DISABLED_QUESTION_TYPES = {"ranking"}
@@ -32,15 +32,63 @@ def is_question_type_disabled(question: dict) -> bool:
     return str(question.get("type", "")).lower() in DISABLED_QUESTION_TYPES
 # ============================ END TEMPORARY ==================================
 
-def chose_random_question(themes: list) -> dict:
-    """Choose a random question from the question pool that matches the given themes.
+def count_vote_candidates(enable_self_vote: bool, member_count: int) -> int:
+    """How many members a voter can pick from: everyone, minus themselves when self-voting is off.
+
+    :param bool enable_self_vote: Whether the voter can vote for themselves.
+    :param int member_count: Number of members in the group.
+
+    :return: The number of members the voter can vote for.
+    :rtype: int"""
+    return member_count if enable_self_vote else member_count - 1
+
+def required_vote_count(question: QuestionModel, member_count: int) -> int:
+    """How many members a vote must target: `voteNumberLimit` for multi-target questions
+    with a limit (e.g. DUO = 2), 1 otherwise. Capped by the number of candidates, in case
+    members left the group after the question was given.
+
+    :param QuestionModel question: The question being voted on.
+    :param int member_count: Number of members in the group.
+
+    :return: The number of members the vote must target.
+    :rtype: int"""
+    if question.enableMultipleVoting and question.voteNumberLimit > 0:
+        return min(question.voteNumberLimit, count_vote_candidates(question.enableSelfVote, member_count))
+    return 1
+
+def is_question_playable(question: dict, member_count: int) -> bool:
+    """Whether the group has enough members for this question to be voted on.
+
+    A voter must be able to pick `voteNumberLimit` members other than themselves when
+    self-voting is off: a DUO question (2 picks, no self vote) needs at least 3 members.
+
+    :param dict question: The question data from the question pool.
+    :param int member_count: Number of members in the group.
+
+    :return: True if the question can be given to the group, False otherwise.
+    :rtype: bool"""
+    if question.get('canWrite'):
+        return True
+    needed = question['voteNumberLimit'] if question['enableMultipleVoting'] and question['voteNumberLimit'] > 0 else 1
+    return count_vote_candidates(question['enableSelfVote'], member_count) >= needed
+
+def is_question_allowed(question: dict, member_count: int) -> bool:
+    """Whether this question can be given to a group of `member_count` members."""
+    return not is_question_type_disabled(question) and is_question_playable(question, member_count)
+
+def chose_random_question(themes: list, member_count: int) -> dict:
+    """Choose a random question from the question pool that matches the given themes
+    and can be played with the group's number of members.
     
+    :param list themes: The group's selected theme ids.
+    :param int member_count: Number of members in the group.
+
     :return: A dictionary containing the chosen question data.
     :rtype: dict"""
     matching_questions = [
         question for question in question_pool
         if question['theme']['id'] in themes
-        and not is_question_type_disabled(question)  # TEMPORARY: no RANKING questions yet
+        and is_question_allowed(question, member_count)
     ]
     if not matching_questions:
         raise StopIteration("No questions match the group's selected themes")
@@ -111,25 +159,28 @@ def chose_question(group: GroupModel, offset: int = 0) -> dict:
     
     :return: A dictionary containing the chosen question data.
     :rtype: dict"""
+    member_count = len(group.users)
     counts_by_id = get_question_counts_by_id(group)
     mean_iteration = get_mean_iterations_question(group, counts_by_id)
     for _ in range(len(question_pool)):
-        question_data = chose_random_question(group.themes)
+        question_data = chose_random_question(group.themes, member_count)
         current_count = counts_by_id.get(question_data['question_id'], 0)
         if not is_question_already_asked(current_count, mean_iteration + offset):
             return question_data
-    # If no question found, pick the one with the least occurrences so far
-    # TEMPORARY: skip RANKING questions already asked in the past (before this filter existed)
-    allowed_ids = {q['question_id'] for q in question_pool if not is_question_type_disabled(q)}
+    # If no question found, pick the one with the least occurrences so far, among those
+    # the group can still play (themes and member count may have changed since)
+    allowed_ids = {
+        q['question_id'] for q in question_pool
+        if q['theme']['id'] in group.themes and is_question_allowed(q, member_count)
+    }
     counts_by_id = {qid: count for qid, count in counts_by_id.items() if qid in allowed_ids}
-    # END TEMPORARY
     if counts_by_id:
         min_question_id = min(counts_by_id, key=lambda qid: counts_by_id[qid])
         question_data = next(q for q in question_pool if q['question_id'] == min_question_id)
         return question_data
     else:
         # Fallback, shouldn't happen
-        return chose_random_question(group.themes)
+        return chose_random_question(group.themes, member_count)
     
 def is_today_based_on_reset(question_or_vote: QuestionModel | QuestionVote, group: GroupModel) -> bool:
     """Check if the question or vote is from today based on the group's daily reset time.
@@ -418,6 +469,10 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
 
         if question.voteNumberLimit != 0 and len(votedUser_ids) > question.voteNumberLimit:
             return {"success": False, "message": f"User cannot vote more than {question.voteNumberLimit} times"}, 400
+
+        required_votes = required_vote_count(question, len(group.users))
+        if len(set(votedUser_ids)) < required_votes:
+            return {"success": False, "message": f"User must vote for {required_votes} different members"}, 400
 
         vote = QuestionVote(
             voterUser_id=user.id,
