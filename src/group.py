@@ -9,6 +9,7 @@ from flask import Request, request
 from db import add_to_db, delete_from_db, update_from_db
 from auth import get_user_object
 from builder import build_group_response, build_groups_response
+from notifications import init_notification_markers
 from utils import question_themes
 
 def is_theme_valid(theme: str) -> bool:
@@ -49,6 +50,8 @@ def create_group(request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
     
+    # After the save, so the default reset time is loaded.
+    init_notification_markers(group)
     group_user = GroupUser(user_id=user.id, group_id=group.id, role='admin')
     add_to_db(group_user)
     
@@ -102,9 +105,13 @@ def update_group(group_id: int) -> tuple[dict, int]:
     daily_reset_timestamp_str = data.get('daily_reset_timestamp')
     if daily_reset_timestamp_str:
         try:
-            group.daily_reset_timestamp = datetime.datetime.strptime(daily_reset_timestamp_str, "%H:%M").time()
+            daily_reset_timestamp = datetime.datetime.strptime(daily_reset_timestamp_str, "%H:%M").time()
         except ValueError:
             return {"success": False, "message": "Invalid time format. Please use HH:MM format."}, 400
+        if daily_reset_timestamp != group.daily_reset_timestamp:
+            group.daily_reset_timestamp = daily_reset_timestamp
+            # The push notifications start again from the next reset at the new time.
+            init_notification_markers(group)
 
     result = update_from_db()
     if result.get("error"):

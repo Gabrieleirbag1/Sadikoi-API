@@ -12,6 +12,7 @@ from items import assign_items
 from builder import build_announcement_response, build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start
 from config import ALLOWED_LANGUAGES
 from sockets import socketio
+from notifications import notify_new_answer
 from utils import question_pool
 
 
@@ -433,5 +434,6 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
 
     votes = extract_votes_info(question, group)
     socketio.emit('new_vote', {"question_id": question.id, "votes": votes}, to=str(group_id))
+    notify_new_answer(group, user)
 
     return {"success": True, "message": "Vote recorded successfully", "content": votes}, 200

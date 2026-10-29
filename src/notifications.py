@@ -24,6 +24,7 @@ MESSAGE_PREVIEW_LENGTH = 150
 CHANNEL_MESSAGES = 'messages'
 CHANNEL_QUESTIONS = 'questions'
 CHANNEL_REMINDERS = 'reminders'
+CHANNEL_ANSWERS = 'answers'
 
 TEXTS = {
     'en': {
@@ -31,20 +32,23 @@ TEXTS = {
         'gif': '{user} sent a GIF',
         'question': 'New question of the day!',
         'reminder': '1 hour left to vote!',
+        'answer': '{user} answered the question of the day!',
     },
     'fr': {
         'message': '{user} : {content}',
         'gif': '{user} a envoyé un GIF',
         'question': 'Nouvelle question du jour !',
         'reminder': "Plus qu'1 h pour voter !",
+        'answer': '{user} a répondu à la question du jour !',
     },
 }
 
-# API setting name -> UserModel column.
+# API setting name -> column, the same on UserModel (global switch) and GroupUser (this group's switch).
 SETTINGS_COLUMNS = {
     'messages': 'notify_messages',
     'questions': 'notify_questions',
     'vote_reminder': 'notify_vote_reminder',
+    'answers': 'notify_answers',
 }
 PLATFORMS = {'android', 'ios'}
 
@@ -111,14 +115,20 @@ fcm = FcmClient(FIREBASE_SERVICE_ACCOUNT_PATH)
 
 
 def build_message(title: str, body: str, route: str, channel: str, tag: str | None = None) -> dict:
-    """FCM message: `route` is the page the app opens when the notification is tapped."""
+    """FCM message: `route` is the page the app opens when the notification is tapped.
+
+    `channel` and `tag` are also in `data`: when the app is open it shows the notification itself
+    (unless that page is on screen), with the same channel and tag.
+    """
     android_notification = {'channel_id': channel}
+    data = {'route': route, 'channel': channel}
     if tag:
         # A new notification with the same tag replaces the previous one in the tray.
         android_notification['tag'] = tag
+        data['tag'] = tag
     return {
         'notification': {'title': title, 'body': body},
-        'data': {'route': route},
+        'data': data,
         'android': {'priority': 'high', 'notification': android_notification},
     }
 
@@ -147,13 +157,13 @@ def _send_all(app, pairs: list[tuple[str, dict]]) -> None:
 ############## RECIPIENTS ##############
 
 def recipients(group_id: int, setting: str, exclude_user_id: int | None = None) -> list[UserModel]:
-    """Members of the group with this setting on, the group not muted, and an active account."""
-    column = getattr(UserModel, SETTINGS_COLUMNS[setting])
+    """Members of the group with this setting on, both globally and for this group, and an active account."""
+    column = SETTINGS_COLUMNS[setting]
     query = (
         UserModel.query
         .join(GroupUser, GroupUser.user_id == UserModel.id)
-        .filter(GroupUser.group_id == group_id, GroupUser.notifications_muted.is_(False),
-                column.is_(True), UserModel.deleted.isnot(True))
+        .filter(GroupUser.group_id == group_id, getattr(GroupUser, column).is_(True),
+                getattr(UserModel, column).is_(True), UserModel.deleted.isnot(True))
     )
     if exclude_user_id is not None:
         query = query.filter(UserModel.id != exclude_user_id)
@@ -176,7 +186,7 @@ def _pairs_for(users: list[UserModel], build) -> list[tuple[str, dict]]:
     return pairs
 
 
-############## THE THREE NOTIFICATIONS ##############
+############## THE NOTIFICATIONS ##############
 
 def notify_new_message(message: ChatMessageModel) -> None:
     group = message.group
@@ -195,6 +205,28 @@ def notify_new_message(message: ChatMessageModel) -> None:
     deliver(_pairs_for(recipients(group.id, 'messages', exclude_user_id=sender.id), build))
 
 
+def notify_new_answer(group: GroupModel, voter: UserModel) -> None:
+    """A member answered the question of the day: tell the other members."""
+    def build(user: UserModel) -> dict:
+        return build_message(group.name, _texts(user)['answer'].format(user=voter.username), f'/group/{group.id}',
+                             CHANNEL_ANSWERS, tag=f'answers-{group.id}')
+
+    deliver(_pairs_for(recipients(group.id, 'answers', exclude_user_id=voter.id), build))
+
+
+def init_notification_markers(group: GroupModel, now: datetime.datetime | None = None) -> None:
+    """Mark the current day as already handled, so the scheduler notifies from the next reset on.
+
+    Called when a group is created or its reset time changes (the caller commits): without it, a group
+    whose reset comes before the scheduler first sees it would miss that day's notification.
+    """
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    start = current_window_start(group, now)
+    group.last_question_notified_at = start
+    # No reminder for a day already in its last hour.
+    group.last_vote_reminder_at = start if now >= start + DAY - REMINDER_BEFORE_END else start - DAY
+
+
 def notify_new_questions(now: datetime.datetime | None = None) -> None:
     """At each group's reset time: one notification per new daily window."""
     pairs = []
@@ -202,7 +234,7 @@ def notify_new_questions(now: datetime.datetime | None = None) -> None:
         start = current_window_start(group, now)
         last = _as_utc(group.last_question_notified_at)
         group.last_question_notified_at = start
-        # First time this group is seen (deploy, new group): start from the next window.
+        # Group created before init_notification_markers existed: start from the next window.
         if last is None or last >= start:
             continue
 
@@ -210,7 +242,9 @@ def notify_new_questions(now: datetime.datetime | None = None) -> None:
             return build_message(group.name, _texts(user)['question'], f'/group/{group.id}',
                                  CHANNEL_QUESTIONS, tag=f'question-{group.id}')
 
-        pairs += _pairs_for(recipients(group.id, 'questions'), build)
+        group_pairs = _pairs_for(recipients(group.id, 'questions'), build)
+        log(f"New question notification for group {group.id}: {len(group_pairs)} device(s)", level="INFO")
+        pairs += group_pairs
     db.session.commit()
     deliver(pairs)
 
@@ -232,7 +266,7 @@ def notify_vote_reminders(now: datetime.datetime | None = None) -> None:
         in_last_hour = now >= start + DAY - REMINDER_BEFORE_END
         last = _as_utc(group.last_vote_reminder_at)
         if last is None:
-            # First time this group is seen: no reminder for a day already in its last hour.
+            # Group created before init_notification_markers existed: no reminder for a day already in its last hour.
             group.last_vote_reminder_at = start if in_last_hour else start - DAY
             continue
         if not in_last_hour or last >= start:
@@ -276,59 +310,66 @@ def _current_user() -> UserModel:
     return db.session.get(UserModel, int(current_user.id))
 
 
+def _switches(row: UserModel | GroupUser) -> dict:
+    return {name: bool(getattr(row, column)) for name, column in SETTINGS_COLUMNS.items()}
+
+
+def _switch_changes(request: Request) -> tuple[dict | None, tuple[dict, int] | None]:
+    """The switches sent in the body (any of them), or a 400 response."""
+    data = request.get_json(silent=True) or {}
+    changes = {name: value for name, value in data.items() if name in SETTINGS_COLUMNS}
+    if not changes or not all(isinstance(value, bool) for value in changes.values()):
+        return None, ({"success": False, "message": f"Expected booleans among: {', '.join(SETTINGS_COLUMNS)}"}, 400)
+    return changes, None
+
+
 def get_settings() -> tuple[dict, int]:
-    user = _current_user()
-    groups = (
-        db.session.query(GroupModel, GroupUser.notifications_muted)
-        .join(GroupUser, GroupUser.group_id == GroupModel.id)
-        .filter(GroupUser.user_id == user.id)
-        .order_by(GroupModel.name)
-        .all()
-    )
-    content = {name: bool(getattr(user, column)) for name, column in SETTINGS_COLUMNS.items()}
-    content['groups'] = [{'id': group.id, 'name': group.name, 'muted': bool(muted)} for group, muted in groups]
+    """The user's global switches."""
+    content = _switches(_current_user())
     return {"success": True, "message": "Notification settings retrieved", "content": content}, 200
 
 
 def update_settings(request: Request) -> tuple[dict, int]:
-    """Save everything in one go: any of the global switches, and/or `groups: [{id, muted}]`.
-
-    All or nothing: if anything is invalid, nothing is saved.
-    """
-    data = request.get_json(silent=True) or {}
-    changes = {name: value for name, value in data.items() if name in SETTINGS_COLUMNS}
-    groups = data.get('groups')
-    if not changes and groups is None:
-        return {"success": False, "message": f"Expected booleans among: {', '.join(SETTINGS_COLUMNS)}, and/or groups"}, 400
-    if not all(isinstance(value, bool) for value in changes.values()):
-        return {"success": False, "message": f"{', '.join(SETTINGS_COLUMNS)} must be booleans"}, 400
-
-    muted_by_group = {}
-    if groups is not None:
-        valid = isinstance(groups, list) and all(
-            isinstance(item, dict) and isinstance(item.get('id'), int) and isinstance(item.get('muted'), bool)
-            for item in groups
-        )
-        if not valid:
-            return {"success": False, "message": "groups must be a list of {id: int, muted: bool}"}, 400
-        muted_by_group = {item['id']: item['muted'] for item in groups}
-
+    """Save any of the global switches."""
+    changes, error = _switch_changes(request)
+    if error:
+        return error
     user = _current_user()
-    memberships = {}
-    if muted_by_group:
-        memberships = {m.group_id: m for m in GroupUser.query.filter(
-            GroupUser.user_id == user.id, GroupUser.group_id.in_(muted_by_group)).all()}
-        if len(memberships) != len(muted_by_group):
-            return {"success": False, "message": "User is not a member of one of the groups"}, 403
-
     for name, value in changes.items():
         setattr(user, SETTINGS_COLUMNS[name], value)
-    for group_id, muted in muted_by_group.items():
-        memberships[group_id].notifications_muted = muted
     result = update_from_db()
     if result.get("error"):
         return result, 500
     return get_settings()
+
+
+def _membership(group_id: int) -> GroupUser | None:
+    return GroupUser.query.filter_by(user_id=int(current_user.id), group_id=group_id).first()
+
+
+def get_group_settings(group_id: int) -> tuple[dict, int]:
+    """This group's switches, with the global ones (a type off globally is off for every group)."""
+    membership = _membership(group_id)
+    if not membership:
+        return {"success": False, "message": "User is not a member of the group"}, 403
+    content = {'group': _switches(membership), 'global': _switches(_current_user())}
+    return {"success": True, "message": "Group notification settings retrieved", "content": content}, 200
+
+
+def update_group_settings(group_id: int, request: Request) -> tuple[dict, int]:
+    """Save any of this group's switches."""
+    changes, error = _switch_changes(request)
+    if error:
+        return error
+    membership = _membership(group_id)
+    if not membership:
+        return {"success": False, "message": "User is not a member of the group"}, 403
+    for name, value in changes.items():
+        setattr(membership, SETTINGS_COLUMNS[name], value)
+    result = update_from_db()
+    if result.get("error"):
+        return result, 500
+    return get_group_settings(group_id)
 
 
 def register_device(request: Request) -> tuple[dict, int]:
