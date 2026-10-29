@@ -181,7 +181,7 @@ Log levels are set at build time:
 sudo docker build --build-arg DEBUG=true --build-arg INFO=true -t sadikoi-api .
 ```
 
-Secret files in `src/` are copied into the image, so create them before building.
+The image contains only the code. Secrets, the database and uploads are excluded by `.dockerignore` and mounted at run time, so the image can be shared without leaking anything.
 
 `server_sadikoi.sh` wraps the usual commands:
 
@@ -194,14 +194,19 @@ Secret files in `src/` are copied into the image, so create them before building
 ./server_sadikoi.sh -m showmigrations   # Any manage.py command
 ```
 
-The container exposes port `8082`. Two host folders are mounted so data survives restarts:
+The container exposes port `8082`. These host paths are mounted:
 
 | Host | Container | Content |
 |---|---|---|
 | `instance/` | `/app/instance` | SQLite database |
 | `src/uploads/` | `/app/src/uploads` | Profile pictures |
+| `src/.*.secrets`, `src/.firebase-service-account.json` | `/app/src/` (read-only) | Secrets (see [Configuration](#configuration)) |
 
-They can be moved with the `HOST_INSTANCE_DIR` and `HOST_UPLOADS_DIR` environment variables. Container output is appended to `sadikoi-logs` next to the script (override with `LOG_FILE`).
+- Only the secret files that exist on the host are mounted. `.admin.secrets` is not, since the admin interface never runs in the container.
+- If `src/.auth.secrets` is missing, the script generates it on the host. Otherwise the API would create a new `SECRET_KEY` inside each container and log everyone out on every restart.
+- Secrets are read when the API starts: restart the container (`-r`) after changing one. No rebuild is needed.
+
+The paths can be changed with the `HOST_INSTANCE_DIR`, `HOST_UPLOADS_DIR` and `HOST_SECRETS_DIR` environment variables. Container output is appended to `sadikoi-logs` next to the script (override with `LOG_FILE`).
 
 ## Deployment
 
