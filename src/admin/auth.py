@@ -98,6 +98,7 @@ class LoginView(BaseView):
             elif form.validate() and hmac.compare_digest(form.secret.data.encode(), current_app.config['ADMIN_SECRET'].encode()):
                 reset_session()
                 session['admin_fp'] = secret_fingerprint(current_app.config['ADMIN_SECRET'])
+                log(f"Admin logged in from {request.remote_addr}", level="INFO")
                 return redirect(safe_next_url(request.args.get('next')))
             else:
                 log(f"Failed admin login from {request.remote_addr}", level="WARNING")
@@ -108,6 +109,7 @@ class LoginView(BaseView):
     @expose('/logout/')
     def logout(self):
         reset_session()
+        log("Admin logged out", level="INFO")
         return redirect(url_for('login.index'))
 
     @expose('/language/<language>/')

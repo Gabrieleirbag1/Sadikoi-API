@@ -48,10 +48,12 @@ def test_legacy_database_is_adopted(db_file):
             id INTEGER PRIMARY KEY, reporter_id INTEGER NOT NULL REFERENCES users (id),
             reported_id INTEGER NOT NULL REFERENCES users (id), reason VARCHAR(200) NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL)""")
-        # Added by 0003_push_notifications.
+        # Added by 0003_push_notifications (and 0005_group_notification_settings).
         connection.execute("DROP TABLE push_tokens")
         for table, column in [("users", "notify_messages"), ("users", "notify_questions"),
-                              ("users", "notify_vote_reminder"), ("group_user", "notifications_muted"),
+                              ("users", "notify_vote_reminder"), ("users", "notify_answers"),
+                              ("group_user", "notify_messages"), ("group_user", "notify_questions"),
+                              ("group_user", "notify_vote_reminder"), ("group_user", "notify_answers"),
                               ("groups", "last_question_notified_at"), ("groups", "last_vote_reminder_at")]:
             connection.execute(f"ALTER TABLE {table} DROP COLUMN {column}")
         # Added by 0004_item_announcements.
@@ -76,7 +78,10 @@ def test_fresh_database_is_not_adopted(db_file):
 
 def test_rollback_then_migrate_again(db_file):
     manage.run(["--db", str(db_file), "migrate"])
-    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0004_item_announcements
+    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0005_group_notification_settings
+    assert "notifications_muted" in columns(db_file, "group_user")
+    assert "notify_answers" not in columns(db_file, "users")
+    manage.run(["--db", str(db_file), "rollback"])  # then 0004_item_announcements
     assert columns(db_file, "item_announcements") == []
     assert "notify_messages" in columns(db_file, "users")
     manage.run(["--db", str(db_file), "rollback"])  # then 0003_push_notifications
@@ -109,3 +114,21 @@ def test_makemigrations_check_and_showmigrations(db_file):
     manage.run(["--db", str(db_file), "showmigrations"])
     with migration_app(db_file).app_context():
         assert manage.current_revision() == manage.head_revision()
+
+
+def test_muted_groups_keep_every_notification_off(db_file):
+    """0005_group_notification_settings: notifications_muted becomes one switch per type, and back."""
+    manage.run(["--db", str(db_file), "migrate", "0004_item_announcements"])
+    with sqlite3.connect(db_file) as connection:
+        connection.execute("INSERT INTO users (id, username, email) VALUES (1, 'alice', 'a@example.com')")
+        connection.execute("INSERT INTO groups (id, name) VALUES (1, 'muted'), (2, 'loud')")
+        connection.execute("INSERT INTO group_user (user_id, group_id, notifications_muted) VALUES (1, 1, 1), (1, 2, 0)")
+    manage.run(["--db", str(db_file), "migrate"])
+    switches = "notify_messages, notify_questions, notify_vote_reminder, notify_answers"
+    with sqlite3.connect(db_file) as connection:
+        rows = connection.execute(f"SELECT group_id, {switches} FROM group_user ORDER BY group_id").fetchall()
+    assert rows == [(1, 0, 0, 0, 0), (2, 1, 1, 1, 1)]
+    manage.run(["--db", str(db_file), "rollback"])
+    with sqlite3.connect(db_file) as connection:
+        rows = connection.execute("SELECT group_id, notifications_muted FROM group_user ORDER BY group_id").fetchall()
+    assert rows == [(1, 1), (2, 0)]

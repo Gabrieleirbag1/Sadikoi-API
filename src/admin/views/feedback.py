@@ -6,6 +6,7 @@ from admin.i18n import lazy, tr
 from admin.views.base import ProtectedModelView, cell, user_cell
 from db import db
 from models import BUG_STATUSES, BugReportModel, UserModel
+from lite_logging.lite_logging import log
 
 BUG_STATUS_LABELS = {"open": lazy("Open"), "in_progress": lazy("In progress"), "resolved": lazy("Resolved")}
 BUG_STATUS_CHOICES = [(status, BUG_STATUS_LABELS[status]) for status in BUG_STATUSES]
@@ -61,6 +62,7 @@ class BugReportAdminView(ProtectedModelView):
         for report in reports:
             report.status = status
         db.session.commit()
+        log(f"Admin marked {len(reports)} bug report(s) as {status}", level="INFO")
         flash(tr("{count} report(s) → {status}.", count=len(reports), status=BUG_STATUS_LABELS[status]), 'success')
 
     @action('mark_open', lazy('Mark as open'))

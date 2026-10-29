@@ -33,6 +33,7 @@ def assign_items(question: QuestionModel, group: GroupModel) -> None:
     holder = get_active_item(group, last_question.item_name)
     if holder and holder.user_id == most_voted_user["id"]:
         save_announcement(question, "kept", holder.user_id, holder.item_name, streak_at(holder, question.date))
+        log(f"User {holder.user_id} kept item {holder.item_name} in group {group.id}", level="INFO")
         return
 
     from_user_id, lost_streak = (holder.user_id, streak_at(holder, question.date)) if holder else (None, 0)
@@ -48,8 +49,10 @@ def assign_items(question: QuestionModel, group: GroupModel) -> None:
 
     if holder:
         save_announcement(question, "stolen", new_item.user_id, new_item.item_name, lost_streak, from_user_id)
+        log(f"User {new_item.user_id} took item {new_item.item_name} from user {from_user_id} in group {group.id}", level="INFO")
     else:
         save_announcement(question, "new", new_item.user_id, new_item.item_name, streak_at(new_item, question.date))
+        log(f"User {new_item.user_id} won item {new_item.item_name} in group {group.id}", level="INFO")
 
 def repeat_previous_announcement(last_question: QuestionModel, question: QuestionModel, group: GroupModel) -> None:
     """Nobody won yesterday's item: announce again that yesterday's subject keeps their item."""

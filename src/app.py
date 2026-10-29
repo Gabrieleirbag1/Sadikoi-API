@@ -19,7 +19,7 @@ from auth import register_user, get_user, google_login_handler, login, logout, u
 from config import SECRET_KEY, ALLOWED_ORIGINS
 from security import limiter, init_security, json_field_key, user_or_ip_key, SocketRateLimiter
 from exceptions import ValueTooLongException
-from notifications import get_settings, update_settings, register_device, unregister_device, start_scheduler
+from notifications import get_settings, update_settings, get_group_settings, update_group_settings, register_device, unregister_device, start_scheduler
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -161,7 +161,6 @@ def list_devices_endpoint():
 
 @app.route('/api/auth/security/logout-devices/', methods=['GET'])
 def logout_devices_endpoint():
-    print("Logging out all devices for the current user.")
     return logout_sessions()
 
 @app.route('/api/auth/security/devices/', methods=['DELETE'])
@@ -277,6 +276,15 @@ def get_notification_settings_endpoint():
 def update_notification_settings_endpoint():
     return update_settings(request)
 
+@app.route('/api/notifications/settings/groups/<int:group_id>/', methods=['GET'])
+def get_group_notification_settings_endpoint(group_id: int):
+    return get_group_settings(group_id)
+
+@app.route('/api/notifications/settings/groups/<int:group_id>/', methods=['PUT'])
+@limiter.limit("60 per minute", key_func=user_or_ip_key)
+def update_group_notification_settings_endpoint(group_id: int):
+    return update_group_settings(group_id, request)
+
 @app.route('/api/notifications/devices/', methods=['POST'])
 @limiter.limit("20 per minute", key_func=user_or_ip_key)
 def register_push_device_endpoint():
@@ -356,6 +364,7 @@ def main(db_name: str = "data-local") -> None:
             log("The database is not up to date: run `python src/manage.py migrate`.", level="ERROR")
     # Daily question and vote reminder push notifications (checks every minute).
     start_scheduler(app)
+    log(f"Sadikoi API ready (database: {db_name})", level="INFO")
 
 if __name__ == '__main__':
     main()

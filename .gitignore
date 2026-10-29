@@ -213,3 +213,6 @@ token.json
 *.secrets
 uploads/
 .firebase-service-account.json
+
+# Container output (server_sadikoi.sh)
+sadikoi-logs

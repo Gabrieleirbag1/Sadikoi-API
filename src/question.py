@@ -12,6 +12,7 @@ from items import assign_items
 from builder import build_announcement_response, build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start
 from config import ALLOWED_LANGUAGES
 from sockets import socketio
+from notifications import notify_new_answer
 from utils import question_pool
 
 
@@ -310,11 +311,11 @@ def get_question(group_id: int) -> tuple[dict, int]:
             question_data = chose_question(group)
         except StopIteration:
             return {"success": False, "message": "No questions available or not found in the original list"}, 404
-        print("Chosen question:", question_data)
         question = build_question_model(question_data, group)
         result = add_to_db(question)
         if result.get("error"):
             return result, 500
+        log(f"New question {question_data['question_id']} of the day for group {group_id}", level="INFO")
         assign_items(question, group)
         socketio.emit('new_question', {"group_id": group_id}, to=str(group_id))
         announcement = build_announcement_response(question.announcement, group, question.date)
@@ -431,7 +432,9 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     if result.get("error"):
         return result, 500
 
+    log(f"User {user.id} voted on question {question.id} in group {group_id}", level="INFO")
     votes = extract_votes_info(question, group)
     socketio.emit('new_vote', {"question_id": question.id, "votes": votes}, to=str(group_id))
+    notify_new_answer(group, user)
 
     return {"success": True, "message": "Vote recorded successfully", "content": votes}, 200

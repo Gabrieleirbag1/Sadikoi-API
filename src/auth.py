@@ -164,6 +164,7 @@ def create_user(email: str, username: str, password: str, profile_picture: str |
     if result.get("error"):
         return result, 500
     
+    log(f"User {user.id} ({user.username}) created", level="INFO")
     return {"success": True, "message": "User created successfully", "content": user}, 201
 
 def make_unique_username(base: str) -> str:
@@ -212,6 +213,7 @@ def update_user(request: Request) -> tuple[dict, int]:
         if not status == 200:
             log(f"Failed to prohibit devices: {result}", level="ERROR")
 
+    log(f"User {user.id} ({user.username}) updated their profile" + (" and password" if update_password else ""), level="INFO")
     return {"success": True, "message": "User updated successfully", "content": build_user_response(user)}, 200
 
 def delete_user(user_info: str) -> tuple[dict, int]:
@@ -231,6 +233,8 @@ def delete_user(user_info: str) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
+
+    log(f"User {user.id} ({user.username}) deleted their account", level="INFO")
 
     return {"success": True, "message": "User deleted successfully", "content": build_user_response(user)}, 200
 
@@ -285,6 +289,7 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         login_result = login_user_with_session(user_to_login, remember=True, device_id=device_id)
         if not login_result[0].get("success"):
             return login_result
+        log(f"User {user_to_login.id} logged in with Google", level="INFO")
         return {"success": True, "message": "Login with Google successful", "content": login_result[0].get("content")}, 200
 
     except ValueError:
@@ -312,6 +317,7 @@ def login(request: Request) -> tuple[dict, int]:
 
     user: UserModel = get_user_object(username_or_email)
     if not (user and check_password_hash(user.password, password)):
+        log(f"Failed login attempt for {username_or_email!r}", level="WARNING")
         return {'success': False, 'message': 'Invalid username / email or password.'}, 401
 
     if not device_id:
@@ -348,6 +354,7 @@ def login_user_with_session(user: UserModel, remember: bool = False, device_id: 
     if device_id:
         session['device_id'] = device_id
     
+    log(f"User {user.id} ({user.username}) logged in on device {device_id}", level="INFO")
     return {'success': True, 'message': 'Login successful.', 'content': build_user_response(user)}, 200
 
 def logout() -> tuple[dict, int]:
@@ -371,6 +378,7 @@ def logout() -> tuple[dict, int]:
         # This phone stops receiving the user's push notifications.
         remove_device_tokens(current_user.id, device_id)
         update_from_db()
+        log(f"User {current_user.id} logged out from device {device_id}", level="INFO")
     logout_user()
     return {"success": True, "message": "Logout successful."}, 200
 
@@ -474,6 +482,8 @@ def send_auth_code(user: UserModel, device: UserSecurity) -> tuple[dict, int]:
         log(f"Failed to send auth code email: {e}", level="ERROR")
         return {"success": False, "message": "Could not send authorization email"}, 500
 
+    log(f"Authorization code sent to user {user.id} for device {device.device_id}", level="INFO")
+
     return {"success": True, "message": "Authorization code sent to your email"}, 203
 
 def verify_device(request: Request) -> tuple[dict, int]:
@@ -576,6 +586,8 @@ def revoke_device(request: Request) -> tuple[dict, int]:
         logout_user()
         session.clear()
 
+    log(f"User {user.id} revoked device {device_id}", level="INFO")
+
     return {"success": True, "message": "Device revoked successfully"}, 200
 
 def prohibit_devices(user: UserModel) -> tuple[dict, int]:
@@ -589,6 +601,8 @@ def prohibit_devices(user: UserModel) -> tuple[dict, int]:
     result = update_from_db()
     if result.get("error"):
         return result, 500
+
+    log(f"All {len(devices)} device(s) of user {user.id} marked as unauthorized", level="INFO")
 
     return {"success": True, "message": "All devices marked as unauthorized"}, 200
 

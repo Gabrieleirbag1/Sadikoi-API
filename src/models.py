@@ -15,8 +15,11 @@ class GroupUser(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)
     role = db.Column(db.String(50), default='member')
     joined_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
-    # Push notifications: the user turned off every notification from this group.
-    notifications_muted = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    # Push notifications from this group, one switch per type (also needs the user's global switch).
+    notify_messages = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
+    notify_questions = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
+    notify_vote_reminder = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
+    notify_answers = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
     
 class ItemModel(db.Model):
     """Tracks items per user, scoped to a group membership"""
@@ -108,10 +111,11 @@ class UserModel(UserMixin, db.Model):
     language = db.Column(db.String(10), default='en')
     session_version = db.Column(db.Integer, default=0)
     deleted = db.Column(db.Boolean, default=False)
-    # Push notification preferences (per group: GroupUser.notifications_muted).
+    # Global push notification preferences (each group also has its own: GroupUser.notify_*).
     notify_messages = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
     notify_questions = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
     notify_vote_reminder = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
+    notify_answers = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
                                 
     question_votes_cast = db.relationship(
         'QuestionVote',
