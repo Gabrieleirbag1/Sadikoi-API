@@ -272,7 +272,8 @@ def get_notification_settings_endpoint():
     return get_settings()
 
 @app.route('/api/notifications/settings/', methods=['PUT'])
-@limiter.limit("60 per minute", key_func=user_or_ip_key)
+# The app saves all the switches in one request (save button): a few per minute is plenty.
+@limiter.limit("10 per minute", key_func=user_or_ip_key)
 def update_notification_settings_endpoint():
     return update_settings(request)
 
@@ -281,7 +282,8 @@ def get_group_notification_settings_endpoint(group_id: int):
     return get_group_settings(group_id)
 
 @app.route('/api/notifications/settings/groups/<int:group_id>/', methods=['PUT'])
-@limiter.limit("60 per minute", key_func=user_or_ip_key)
+# The app saves all the switches in one request (save button): a few per minute is plenty.
+@limiter.limit("10 per minute", key_func=user_or_ip_key)
 def update_group_notification_settings_endpoint(group_id: int):
     return update_group_settings(group_id, request)
 

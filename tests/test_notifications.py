@@ -62,6 +62,21 @@ class TestSettings:
         assert login_as(world.member).put(SETTINGS, json=payload).status_code == 400
 
 
+    def test_unchanged_switches_write_nothing(self, login_as, world, monkeypatch):
+        writes = []
+        monkeypatch.setattr(notifications, "update_from_db", lambda: writes.append(1) or {})
+        response = login_as(world.member).put(SETTINGS, json=ALL_ON)
+        assert response.status_code == 200
+        assert response.get_json()["content"] == ALL_ON
+        assert writes == []
+
+    @pytest.mark.ratelimit
+    def test_rate_limited(self, login_as, world):
+        client = login_as(world.member)
+        assert all(client.put(SETTINGS, json=ALL_ON).status_code == 200 for _ in range(10))
+        assert client.put(SETTINGS, json=ALL_ON).status_code == 429
+
+
 class TestGroupSettings:
     def test_defaults_with_the_global_switches(self, login_as, world):
         login_as(world.member).put(SETTINGS, json={"answers": False})
@@ -76,6 +91,32 @@ class TestGroupSettings:
             membership = GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one()
             assert (membership.notify_messages, membership.notify_questions) == (False, True)
             assert db.session.get(UserModel, world.member.id).notify_messages is True   # global switch untouched
+
+    def test_all_switches_in_one_request(self, login_as, world, ctx):
+        # What the save button sends.
+        draft = {"messages": False, "questions": True, "vote_reminder": False, "answers": False}
+        response = login_as(world.member).put(group_settings_url(world.group), json=draft)
+        assert response.status_code == 200
+        assert response.get_json()["content"]["group"] == draft
+        with ctx():
+            membership = GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one()
+            assert (membership.notify_messages, membership.notify_questions, membership.notify_vote_reminder,
+                    membership.notify_answers) == (False, True, False, False)
+
+    def test_unchanged_switches_write_nothing(self, login_as, world, monkeypatch):
+        writes = []
+        monkeypatch.setattr(notifications, "update_from_db", lambda: writes.append(1) or {})
+        response = login_as(world.member).put(group_settings_url(world.group), json=ALL_ON)
+        assert response.status_code == 200
+        assert response.get_json()["content"]["group"] == ALL_ON
+        assert writes == []
+
+    @pytest.mark.ratelimit
+    def test_rate_limited(self, login_as, world):
+        client = login_as(world.member)
+        url = group_settings_url(world.group)
+        assert all(client.put(url, json=ALL_ON).status_code == 200 for _ in range(10))
+        assert client.put(url, json=ALL_ON).status_code == 429
 
     def test_requires_membership(self, login_as, world):
         client = login_as(world.member)

@@ -9,7 +9,7 @@ import notifications
 from db import db
 from security import limiter
 from sockets import socketio
-from utils import question_pool
+from utils import json_path, question_pool, question_themes
 
 from tests import factories
 
@@ -69,6 +69,21 @@ def pool(monkeypatch):
     question_pool[:] = json.loads(json.dumps(TEST_POOL))
     yield question_pool
     question_pool[:] = original
+
+
+# Themes matching TEST_POOL, whatever data/question_themes.json currently holds.
+with open(f"{json_path}/question_themes-test.json") as f:
+    TEST_THEMES = json.load(f)
+
+
+@pytest.fixture(autouse=True)
+def themes():
+    original = dict(question_themes)
+    question_themes.clear()
+    question_themes.update(json.loads(json.dumps(TEST_THEMES)))
+    yield question_themes
+    question_themes.clear()
+    question_themes.update(original)
 
 
 @pytest.fixture(autouse=True)

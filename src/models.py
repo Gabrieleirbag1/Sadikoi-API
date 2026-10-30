@@ -116,7 +116,10 @@ class UserModel(UserMixin, db.Model):
     notify_questions = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
     notify_vote_reminder = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
     notify_answers = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
-                                
+    # Store review account (Google Play): new devices are authorized without the emailed code.
+    # Only set by `manage.py create-review-account`, never through the API.
+    skip_device_verification = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+
     question_votes_cast = db.relationship(
         'QuestionVote',
         back_populates='voterUser',
