@@ -140,6 +140,7 @@ The database is stored in `instance/data-local.db`.
 | `python src/manage.py rollback` | Undo the last migration |
 | `python src/manage.py showmigrations` | Show the migration history and the current revision |
 | `python src/manage.py makemigrations --check` | Fail if `models.py` changed without a migration |
+| `python src/manage.py create-review-account` | Create the store review account (Google Play), or change its password. It logs in without the emailed device code. Options: `--email`, `--username` |
 
 All commands accept `--db path/to/file.db`.
 
