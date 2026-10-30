@@ -217,6 +217,21 @@ class TestLogin:
                                           "device_id": "dev-bob", "captcha_token": "ok"})
         assert response.status_code == 203
 
+    def test_review_account_new_device_logs_in_without_code(self, anon, ctx, externals):
+        with ctx():
+            factories.make_user("reviewer", device_authorized=False)
+            UserModel.query.filter_by(username="reviewer").one().skip_device_verification = True
+            from db import db
+            db.session.commit()
+        response = self.login(anon, username="reviewer", device_id="play-device", captcha_token="ok")
+        assert response.status_code == 200
+        assert externals.emails == []
+        with ctx():
+            assert UserSecurity.query.filter_by(device_id="play-device").one().authorized is True
+        # Still needs the right password and the captcha.
+        assert self.login(anon, username="reviewer", password="nope", device_id="other", captcha_token="ok").status_code == 401
+        assert self.login(anon, username="reviewer", device_id="other").status_code == 400
+
     def test_wrong_password_does_not_leak_through_captcha_exemption(self, anon):
         # Known authorized device + wrong password: still a plain 401.
         assert self.login(anon, password="nope").status_code == 401
