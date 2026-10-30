@@ -533,6 +533,13 @@ def check_device_authorization(user: UserModel, device_id: str, device_name: str
     if not device and not created:
         return {"success": False, "message": "Could not retrieve or create device record"}, 500
 
+    if user.skip_device_verification and device.needs_reauthorization(max_days=REAUTH_AFTER_DAYS):
+        # Store reviewers can't receive the emailed code: the password (and captcha) are enough.
+        device.ip_address = get_client_ip(request)
+        update_device(device)
+        log(f"Device {device.device_id} authorized without code for review account {user.id}", level="WARNING")
+        return None
+
     if device.needs_reauthorization(max_days=REAUTH_AFTER_DAYS):
         result, status = send_auth_code(user, device)
         result["requires_verification"] = True
