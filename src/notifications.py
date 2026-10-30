@@ -327,6 +327,14 @@ def _switch_changes(request: Request) -> tuple[dict | None, tuple[dict, int] | N
     return changes, None
 
 
+def _apply_switches(row, changes: dict) -> dict:
+    """Set the switches that differ on `row` (user or membership); returns only those."""
+    changed = {name: value for name, value in changes.items() if getattr(row, SETTINGS_COLUMNS[name]) != value}
+    for name, value in changed.items():
+        setattr(row, SETTINGS_COLUMNS[name], value)
+    return changed
+
+
 def get_settings() -> tuple[dict, int]:
     """The user's global switches."""
     content = _switches(_current_user())
@@ -339,12 +347,13 @@ def update_settings(request: Request) -> tuple[dict, int]:
     if error:
         return error
     user = _current_user()
-    for name, value in changes.items():
-        setattr(user, SETTINGS_COLUMNS[name], value)
+    changed = _apply_switches(user, changes)
+    if not changed:
+        return get_settings()  # nothing to write
     result = update_from_db()
     if result.get("error"):
         return result, 500
-    log(f"User {user.id} changed their notification settings: {changes}", level="INFO")
+    log(f"User {user.id} changed their notification settings: {changed}", level="INFO")
     return get_settings()
 
 
@@ -369,12 +378,13 @@ def update_group_settings(group_id: int, request: Request) -> tuple[dict, int]:
     membership = _membership(group_id)
     if not membership:
         return {"success": False, "message": "User is not a member of the group"}, 403
-    for name, value in changes.items():
-        setattr(membership, SETTINGS_COLUMNS[name], value)
+    changed = _apply_switches(membership, changes)
+    if not changed:
+        return get_group_settings(group_id)  # nothing to write
     result = update_from_db()
     if result.get("error"):
         return result, 500
-    log(f"User {membership.user_id} changed their notification settings for group {group_id}: {changes}", level="INFO")
+    log(f"User {membership.user_id} changed their notification settings for group {group_id}: {changed}", level="INFO")
     return get_group_settings(group_id)
 
 
