@@ -178,8 +178,33 @@ class TestDevices:
 
 # ------------------------------------------------------------------- messages
 class TestMessageNotifications:
+    @pytest.fixture(autouse=True)
+    def admin_voted(self, world, ctx):
+        """Only members who answered today's question get chat notifications: the admin has."""
+        with ctx():
+            question = factories.make_question(world.group)
+            factories.make_vote(question, world.admin, [world.member])
+
     def send(self, login_as, user, group, content="hello"):
         return login_as(user).post(f"/api/groups/{group.id}/messages/", json={"content": content})
+
+    def test_members_who_have_not_voted_are_not_notified(self, login_as, world, phones, externals):
+        # The admin (who voted) writes: the member hasn't answered today's question yet.
+        assert self.send(login_as, world.admin, world.group).status_code == 201
+        assert externals.pushes == []
+
+    def test_a_vote_on_yesterdays_question_does_not_count(self, login_as, world, phones, externals, ctx):
+        with ctx():
+            old = factories.make_question(world.group, days_ago=1)
+            factories.make_vote(old, world.member, [world.admin])
+        self.send(login_as, world.admin, world.group)
+        assert externals.pushes == []
+
+    def test_notified_once_voted(self, login_as, world, phones, externals):
+        login_as(world.member).post(f"/api/questions/{world.group.id}/vote/", json={"votedUsers": [world.admin.id]})
+        externals.pushes.clear()  # the "answered" notification
+        self.send(login_as, world.admin, world.group)
+        assert tokens_of(externals.pushes) == ["token-member"]
 
     def test_other_members_are_notified(self, login_as, world, phones, externals):
         assert self.send(login_as, world.member, world.group).status_code == 201

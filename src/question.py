@@ -1,5 +1,6 @@
 import random
 import datetime
+import threading
 
 from flask import Request
 from flask_login import current_user
@@ -17,6 +18,9 @@ from utils import question_pool
 
 
 MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
+# The app asks for the new question as soon as its countdown ends, so every open phone of a group calls
+# get_question at the same second: only one of them may create it (the API runs in a single process).
+_question_creation_lock = threading.Lock()
 
 # =============================================================================
 # TEMPORARY: RANKING questions are not implemented yet (no ranking vote UI or
@@ -279,6 +283,23 @@ def does_exist_vote_today(group: GroupModel, user: UserModel) -> tuple[bool, Que
     ).first()
     return vote is not None, question
 
+def next_question_time(group: GroupModel, question: QuestionModel) -> datetime.datetime:
+    """When get_question will create the question after `question` (same rules as does_exist_question_today).
+
+    Usually the group's next reset; later if the reset time was moved and the 24 h interval isn't over then.
+    """
+    question_date = question.date
+    if question_date.tzinfo is None:
+        question_date = question_date.replace(tzinfo=datetime.timezone.utc)
+    # The question no longer belongs to the current window...
+    first_reset_after = current_window_start(group, question_date) + datetime.timedelta(days=1)
+    # ...and the required interval since it was set has passed.
+    old_reset_time = datetime.datetime.combine(
+        question_date.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc
+    )
+    required_interval = MIN_QUESTION_INTERVAL + max(datetime.timedelta(0), old_reset_time - question_date)
+    return max(first_reset_after, question_date + required_interval)
+
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     """Check if a user is a member of a group.
     
@@ -349,28 +370,37 @@ def get_question(group_id: int) -> tuple[dict, int]:
     if error:
         return error
     db.session.add(group)  # Ensure group is in session
-    if does_exist_question_today(group):
-        question = group.questions.order_by(QuestionModel.date.desc()).first()
-        votes = None
+    language = user.language if user.language in ALLOWED_LANGUAGES else 'en'
+    created = False
+    if not does_exist_question_today(group):
+        with _question_creation_lock:
+            # Checked again: another request may have created it while this one waited.
+            if not does_exist_question_today(group):
+                try:
+                    question_data = chose_question(group)
+                except StopIteration:
+                    return {"success": False, "message": "No questions available or not found in the original list"}, 404
+                question = build_question_model(question_data, group)
+                result = add_to_db(question)
+                if result.get("error"):
+                    return result, 500
+                log(f"New question {question_data['question_id']} of the day for group {group_id}", level="INFO")
+                assign_items(question, group)
+                created = True
+
+    question = group.questions.order_by(QuestionModel.date.desc()).first()
+    votes = None
+    if not created:
         has_user_voted_today, _ = does_exist_vote_today(group, user)
         if has_user_voted_today:
             votes = extract_votes_info(question, group)
-        announcement = build_announcement_response(question.announcement, group, question.date)
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes, announcement)}, 200
     else:
-        try:
-            question_data = chose_question(group)
-        except StopIteration:
-            return {"success": False, "message": "No questions available or not found in the original list"}, 404
-        question = build_question_model(question_data, group)
-        result = add_to_db(question)
-        if result.get("error"):
-            return result, 500
-        log(f"New question {question_data['question_id']} of the day for group {group_id}", level="INFO")
-        assign_items(question, group)
         socketio.emit('new_question', {"group_id": group_id}, to=str(group_id))
-        announcement = build_announcement_response(question.announcement, group, question.date)
-        return {"success": True, "message": "Question retrieved successfully", "content": build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', announcement=announcement)}, 200
+    announcement = build_announcement_response(question.announcement, group, question.date)
+    content = build_question_response(question, question_pool, language, votes, announcement)
+    # The app counts down to it, then asks for the new question.
+    content["next_question_at"] = next_question_time(group, question).isoformat()
+    return {"success": True, "message": "Question retrieved successfully", "content": content}, 200
     
 def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, int]:
     """Retrieve all questions for a group filtered by month and year.

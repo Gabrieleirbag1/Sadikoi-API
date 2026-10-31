@@ -203,7 +203,10 @@ def notify_new_message(message: ChatMessageModel) -> None:
         return build_message(group.name, body.format(user=sender.username, content=content),
                              f'/group/{group.id}', CHANNEL_MESSAGES, tag=f'chat-{group.id}')
 
-    deliver(_pairs_for(recipients(group.id, 'messages', exclude_user_id=sender.id), build))
+    # The chat only shows once the question of the day is answered: no message notifications before voting.
+    voters = _voters_of_window(group, current_window_start(group))
+    users = [user for user in recipients(group.id, 'messages', exclude_user_id=sender.id) if user.id in voters]
+    deliver(_pairs_for(users, build))
 
 
 def notify_new_answer(group: GroupModel, voter: UserModel) -> None:

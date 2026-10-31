@@ -4,7 +4,7 @@ import datetime
 import pytest
 
 from db import db
-from models import GroupUser, ItemAnnouncement, ItemModel, QuestionModel, QuestionVote, QuestionVoteTarget
+from models import GroupModel, GroupUser, ItemAnnouncement, ItemModel, QuestionModel, QuestionVote, QuestionVoteTarget
 from builder import get_user_items_in_group
 from tests import factories
 
@@ -181,6 +181,35 @@ class TestGetQuestion:
         login_as(world.admin).get(q_url(group.id))
         with ctx():
             assert ItemModel.query.filter_by(group_id=group.id, user_id=world.member.id).count() == 1
+
+    def test_next_question_time_is_the_next_reset(self, login_as, world, group, ctx):
+        content = login_as(world.admin).get(q_url(group.id)).get_json()["content"]
+        with ctx():
+            next_reset = factories.latest_reset(group.id) + H(days=1)
+        assert datetime.datetime.fromisoformat(content["next_question_at"]) == next_reset
+
+    def test_next_question_waits_24_hours_after_a_reset_time_change(self, world, group, ctx):
+        from question import next_question_time
+        with ctx():
+            g = db.session.get(GroupModel, group.id)
+            question = QuestionModel(question_id=1, date=datetime.datetime(2026, 1, 1, 15, tzinfo=datetime.timezone.utc),
+                                     theme="connerie", item_name="bonnet_honte", group_id=g.id)
+            # reset moved earlier (10:00): the next 10:00 is only 19 h later, the question stays 24 h
+            g.daily_reset_timestamp = datetime.time(10)
+            assert next_question_time(g, question) == datetime.datetime(2026, 1, 2, 15, tzinfo=datetime.timezone.utc)
+            # reset moved later (20:00): the 24 h are counted from the new reset time of that day
+            g.daily_reset_timestamp = datetime.time(20)
+            assert next_question_time(g, question) == datetime.datetime(2026, 1, 2, 20, tzinfo=datetime.timezone.utc)
+            db.session.rollback()
+
+    def test_simultaneous_calls_create_a_single_question(self, login_as, world, group, ctx):
+        # Every open phone asks for the new question when its countdown ends.
+        from concurrent.futures import ThreadPoolExecutor
+        clients = [login_as(world.admin), login_as(world.member)] * 3
+        with ThreadPoolExecutor(len(clients)) as pool:
+            ids = set(pool.map(lambda c: c.get(q_url(group.id)).get_json()["content"]["id"], clients))
+        assert len(ids) == 1
+        assert question_count(ctx, group) == 1
 
     def test_non_member_forbidden_and_nothing_generated(self, login_as, world, group, externals, ctx):
         assert login_as(world.outsider).get(q_url(group.id)).status_code == 403
