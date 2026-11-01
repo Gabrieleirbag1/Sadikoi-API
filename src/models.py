@@ -270,12 +270,16 @@ class GroupModel(db.Model):
 class ChatMessageModel(db.Model):
     """Chat message model for the database."""
     __tablename__ = 'chat_messages'
+    # A message sent twice (double tap, or a request replayed after a network error) is stored once.
+    __table_args__ = (db.UniqueConstraint('user_id', 'client_id', name='uq_chat_messages_user_client_id'),)
 
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(500), nullable=False)
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=False)
+    # Id the app picks for each message it sends (optional): the same id again is the same message.
+    client_id = db.Column(db.String(64), nullable=True)
 
     user = db.relationship('UserModel', backref=db.backref('messages', lazy='dynamic'))
     group = db.relationship('GroupModel', backref=db.backref('messages', lazy='dynamic'))
