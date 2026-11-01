@@ -365,6 +365,21 @@ class QuestionVote(db.Model):
     question = db.relationship('QuestionModel', back_populates='votes')
     targets = db.relationship('QuestionVoteTarget', back_populates='vote', lazy='dynamic')
 
+class QuestionFeedbackModel(db.Model):
+    """A like or dislike given to a question served to a group, once its votes are shown."""
+    __tablename__ = 'question_feedback'
+    # One opinion per person and per served question.
+    __table_args__ = (db.UniqueConstraint('user_id', 'question_id', name='uq_question_feedback_user_question'),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
+    liked = db.Column(db.Boolean, nullable=False)
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+
+    user = db.relationship('UserModel', backref=db.backref('question_feedbacks', lazy='dynamic'))
+    question = db.relationship('QuestionModel', backref=db.backref('feedbacks', lazy='dynamic'))
+
 BUG_STATUSES = ("open", "in_progress", "resolved")
 
 class BugReportModel(db.Model):
