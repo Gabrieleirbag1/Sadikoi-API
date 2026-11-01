@@ -60,6 +60,8 @@ def test_legacy_database_is_adopted(db_file):
         connection.execute("DROP TABLE item_announcements")
         # Added by 0006_review_account.
         connection.execute("ALTER TABLE users DROP COLUMN skip_device_verification")
+        # Added by 0008_question_feedback.
+        connection.execute("DROP TABLE question_feedback")
         connection.execute("INSERT INTO users (id, username, email) VALUES (1, 'alice', 'alice@example.com')")
 
     manage.run(["--db", str(db_file), "migrate"])
@@ -80,7 +82,9 @@ def test_fresh_database_is_not_adopted(db_file):
 
 def test_rollback_then_migrate_again(db_file):
     manage.run(["--db", str(db_file), "migrate"])
-    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0007_chat_message_client_id
+    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0008_question_feedback
+    assert columns(db_file, "question_feedback") == []
+    manage.run(["--db", str(db_file), "rollback"])  # then 0007_chat_message_client_id
     assert "client_id" not in columns(db_file, "chat_messages")
     manage.run(["--db", str(db_file), "rollback"])  # then 0006_review_account
     assert "skip_device_verification" not in columns(db_file, "users")

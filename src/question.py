@@ -6,7 +6,7 @@ from flask import Request
 from flask_login import current_user
 from lite_logging.lite_logging import log
 
-from models import GroupModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote
+from models import GroupModel, QuestionFeedbackModel, QuestionModel, QuestionVoteTarget, UserModel, QuestionVote
 from db import add_to_db, update_from_db, db
 from auth import get_user_object
 from items import assign_items
@@ -397,7 +397,7 @@ def get_question(group_id: int) -> tuple[dict, int]:
     else:
         socketio.emit('new_question', {"group_id": group_id}, to=str(group_id))
     announcement = build_announcement_response(question.announcement, group, question.date)
-    content = build_question_response(question, question_pool, language, votes, announcement)
+    content = build_question_response(question, question_pool, language, votes, announcement, user.id)
     # The app counts down to it, then asks for the new question.
     content["next_question_at"] = next_question_time(group, question).isoformat()
     return {"success": True, "message": "Question retrieved successfully", "content": content}, 200
@@ -423,7 +423,7 @@ def get_questions_by_date(group_id: int, month: int, year: int) -> tuple[dict, i
         has_user_voted_to_this_question = any(vote['voterUser']['id'] == user.id for vote in votes)
         if not has_user_voted_to_this_question and is_today_based_on_reset(question, group):
             votes = []
-        questions_data.append(build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes))
+        questions_data.append(build_question_response(question, question_pool, user.language if user.language in ALLOWED_LANGUAGES else 'en', votes, user_id=user.id))
 
     return {"success": True, "message": f"Questions for month {month} and year {year} retrieved successfully", "content": questions_data}, 200
 
@@ -523,3 +523,43 @@ def vote_question(group_id: int, request: Request) -> tuple[dict, int]:
     notify_new_answer(group, user)
 
     return {"success": True, "message": "Vote recorded successfully", "content": votes}, 200
+
+def rate_question(group_id: int, question_id: int, request: Request) -> tuple[dict, int]:
+    """Like or dislike a question served to the group, once its votes are shown.
+
+    The current question can only be rated by members who voted on it (they see the results);
+    past questions are over, so they can always be rated. One opinion per member and question.
+
+    :param int group_id: The ID of the group.
+    :param int question_id: The ID of the served question (questions.id).
+    :param Request request: The Flask request, with `liked` (bool) in its JSON body.
+
+    :return: A tuple containing a dictionary with the result and the HTTP status code.
+    :rtype: tuple[dict, int]"""
+    group, user, error = get_group_for_member(group_id)
+    if error:
+        return error
+
+    question = QuestionModel.query.filter_by(id=question_id, group_id=group.id).first()
+    if not question:
+        return {"success": False, "message": "Question not found"}, 404
+
+    liked = (request.get_json(silent=True) or {}).get("liked")
+    if not isinstance(liked, bool):
+        return {"success": False, "message": "liked must be true or false"}, 400
+
+    current = group.questions.order_by(QuestionModel.date.desc()).first()
+    if current.id == question.id and does_exist_question_today(group):
+        has_voted = QuestionVote.query.filter_by(question_id=question.id, voterUser_id=user.id).first() is not None
+        if not has_voted:
+            return {"success": False, "message": "Vote on the question before rating it"}, 400
+
+    if QuestionFeedbackModel.query.filter_by(user_id=user.id, question_id=question.id).first():
+        return {"success": False, "message": "Question already rated"}, 409
+
+    result = add_to_db(QuestionFeedbackModel(user_id=user.id, question_id=question.id, liked=liked))
+    if result.get("error"):
+        return result, 500
+
+    log(f"User {user.id} {'liked' if liked else 'disliked'} question {question.id} in group {group_id}", level="INFO")
+    return {"success": True, "message": "Feedback recorded successfully"}, 201

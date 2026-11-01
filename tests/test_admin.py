@@ -9,7 +9,7 @@ from admin import __main__ as admin_main
 from admin.auth import load_admin_secret
 from admin.views.database import DATABASE_MODELS
 from db import db
-from models import BugReportModel, SuggestionModel, UserModel
+from models import BugReportModel, GroupModel, SuggestionModel, UserModel
 from tests import factories
 
 SECRET = "admin-test-secret"
@@ -124,6 +124,57 @@ class TestDashboard:
 
     def test_empty_database(self, admin):
         assert admin.get("/admin/").status_code == 200
+
+    def test_theme_counts(self, admin, world, ctx, admin_app):
+        # world: two groups on ["connerie", "style"]; plus one on "style" only and one on a removed theme.
+        with ctx():
+            factories.make_group(world.member, themes=["style"], name="Stylish")
+            factories.make_group(world.member, themes=["gone_theme", "style"], name="Old")
+        with admin_app.test_request_context(headers={"Accept-Language": "en"}):
+            counts = [(row["id"], row["label"], row["count"]) for row in stats.theme_counts()]
+        assert counts == [("style", "style", 4), ("connerie", "stupidity", 2), ("gone_theme", "gone_theme", 1)]
+
+        page = admin.get("/admin/").text
+        # The admin is in French by default.
+        assert "Thèmes les plus sélectionnés" in page and "4 groupe(s)" in page
+
+    def test_unselected_theme_is_listed(self, world, ctx, admin_app):
+        with ctx():
+            group = db.session.get(GroupModel, world.other_group.id)
+            group.themes = ["style"]
+            db.session.commit()
+        with admin_app.test_request_context(headers={"Accept-Language": "fr"}):
+            counts = {row["id"]: row["count"] for row in stats.theme_counts()}
+        assert counts == {"style": 2, "connerie": 1}
+
+    def test_question_ratings(self, admin, world, ctx, admin_app):
+        with ctx():
+            funny_today = factories.make_question(world.group, question_id=1)
+            funny_before = factories.make_question(world.other_group, question_id=1, days_ago=3)
+            joke = factories.make_question(world.group, question_id=2, days_ago=1)
+            factories.make_question_feedback(funny_today, world.admin, liked=True)
+            factories.make_question_feedback(funny_today, world.member, liked=True)
+            factories.make_question_feedback(funny_before, world.other, liked=False)
+            factories.make_question_feedback(joke, world.admin, liked=False)
+            factories.make_question_feedback(joke, world.member, liked=False)
+            kpis = stats.get_kpis()
+        with admin_app.test_request_context(headers={"Accept-Language": "en"}):
+            most_liked, most_disliked = stats.question_ratings()
+        assert (kpis["question_likes"], kpis["question_dislikes"]) == (2, 3)
+        assert [(q["question_id"], q["text"], q["likes"], q["dislikes"]) for q in most_liked] == [
+            (1, "Who is the funniest?", 2, 1)]
+        assert [(q["question_id"], q["likes"], q["dislikes"]) for q in most_disliked] == [(2, 0, 2), (1, 2, 1)]
+
+        page = admin.get("/admin/").text
+        assert "Avis sur les questions" in page and "Qui est le plus drôle ?" in page
+
+    def test_question_left_the_pool(self, world, ctx, admin_app):
+        with ctx():
+            question = factories.make_question(world.group, question_id=42)
+            factories.make_question_feedback(question, world.admin, liked=True)
+        with admin_app.test_request_context():
+            most_liked, _ = stats.question_ratings()
+        assert most_liked[0]["text"] == "#42"
 
     def test_profile_pictures(self, admin, admin_app, ctx, world):
         import os
@@ -256,6 +307,7 @@ class TestDatabaseBrowser:
             factories.make_message(world.group, world.member)
             factories.make_invitation(world.group)
             factories.make_item(world.member, world.group)
+            factories.make_question_feedback(question, world.member)
         for model in DATABASE_MODELS:
             url = f"/admin/db/{model.__tablename__}/"
             response = admin.get(url)

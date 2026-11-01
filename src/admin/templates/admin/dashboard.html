@@ -32,6 +32,57 @@
     {{ kpi(tr('Accounts'), kpis.users_total, tr('total in database'), url_for('db_users.index_view'), 'secondary') }}
   </section>
 
+  {% set most_liked, most_disliked = question_ratings %}
+  <section class="sk-panels sk-panels-top">
+    <div class="card sk-panel">
+      <div class="card-header"><span class="fa fa-tags"></span> {{ tr('Most selected themes') }}
+        <span class="float-right small text-muted">{{ tr('{count} groups', count=kpis.groups_total) }}</span></div>
+      <ul class="list-group list-group-flush">
+        {% for theme in theme_counts %}
+          <li class="list-group-item sk-theme">
+            <div class="d-flex justify-content-between">
+              <span>{{ theme.label }}</span>
+              <span class="text-muted small sk-num">{{ tr('{count} groups', count=theme.count) }}</span>
+            </div>
+            <div class="progress sk-bar">
+              <div class="progress-bar" role="progressbar"
+                   style="width: {{ (100 * theme.count / kpis.groups_total) | round(1) if kpis.groups_total else 0 }}%"></div>
+            </div>
+          </li>
+        {% else %}
+          <li class="list-group-item text-muted">{{ tr('No theme.') }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card sk-panel">
+      <div class="card-header"><span class="fa fa-thumbs-o-up"></span> {{ tr('Question feedback') }}
+        <span class="float-right small text-muted">
+          <span class="text-success">👍 {{ kpis.question_likes }}</span> · <span class="text-danger">👎 {{ kpis.question_dislikes }}</span>
+        </span></div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item sk-subheader">{{ tr('Most liked') }}</li>
+        {% for q in most_liked %}
+          <li class="list-group-item d-flex justify-content-between align-items-center sk-rating">
+            <span>{{ q.text }}</span>
+            <span class="small sk-num"><span class="text-success">👍 {{ q.likes }}</span> · <span class="text-danger">👎 {{ q.dislikes }}</span></span>
+          </li>
+        {% else %}
+          <li class="list-group-item text-muted">{{ tr('No feedback yet.') }}</li>
+        {% endfor %}
+        <li class="list-group-item sk-subheader">{{ tr('Most disliked') }}</li>
+        {% for q in most_disliked %}
+          <li class="list-group-item d-flex justify-content-between align-items-center sk-rating">
+            <span>{{ q.text }}</span>
+            <span class="small sk-num"><span class="text-danger">👎 {{ q.dislikes }}</span> · <span class="text-success">👍 {{ q.likes }}</span></span>
+          </li>
+        {% else %}
+          <li class="list-group-item text-muted">{{ tr('No feedback yet.') }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
   <section class="sk-panels">
     <div class="card sk-panel">
       <div class="card-header"><span class="fa fa-bug"></span> {{ tr('Unresolved bugs') }}

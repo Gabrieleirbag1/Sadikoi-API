@@ -1,13 +1,17 @@
 """Read-only aggregate queries for the admin dashboard. Every function needs an app context."""
 import datetime
 
-from sqlalchemy import func
+from collections import Counter
 
+from sqlalchemy import case, func
+
+from admin.i18n import get_locale
 from db import db
 from models import (
-    BugReportModel, ChatMessageModel, GroupModel, GroupUser, QuestionModel, QuestionVote, ReportUserModel,
-    SuggestionModel, UserModel,
+    BugReportModel, ChatMessageModel, GroupModel, GroupUser, QuestionFeedbackModel, QuestionModel, QuestionVote,
+    ReportUserModel, SuggestionModel, UserModel,
 )
+from utils import question_pool, question_themes
 
 
 def days_ago(days: int) -> datetime.datetime:
@@ -43,6 +47,8 @@ def get_kpis() -> dict[str, int | float]:
         "suggestions_total": count(SuggestionModel),
         "suggestions_7d": count(SuggestionModel, SuggestionModel.timestamp >= week),
         "user_reports_total": count(ReportUserModel),
+        "question_likes": count(QuestionFeedbackModel, QuestionFeedbackModel.liked.is_(True)),
+        "question_dislikes": count(QuestionFeedbackModel, QuestionFeedbackModel.liked.is_(False)),
     }
 
 
@@ -71,3 +77,42 @@ def top_groups(limit: int = 5) -> list[tuple[GroupModel, int, int]]:
             .order_by(func.coalesce(messages.c.n, 0).desc(), GroupModel.id)
             .limit(limit).all())
     return [(group, int(n_messages), int(n_members)) for group, n_messages, n_members in rows]
+
+
+def theme_counts() -> list[dict]:
+    """How many groups selected each theme (their current choice), most selected first.
+
+    Every known theme is listed, even when no group picked it; ids missing from question_themes.json
+    (removed themes still saved in a group) are listed with their id as label."""
+    counts = Counter(theme for (themes,) in db.session.query(GroupModel.themes) for theme in set(themes or []))
+    language = get_locale()
+    rows = [{"id": theme_id, "label": theme.get(language) or theme_id, "count": counts.get(theme_id, 0)}
+            for theme_id, theme in question_themes.items()]
+    rows += [{"id": theme_id, "label": theme_id, "count": n} for theme_id, n in counts.items()
+             if theme_id not in question_themes]
+    return sorted(rows, key=lambda row: (-row["count"], row["label"].lower()))
+
+
+def question_text(question_id: int) -> str:
+    """The pool question's text in the admin's language (its id if it left the pool)."""
+    question = next((q for q in question_pool if q["question_id"] == question_id), None)
+    if not question:
+        return f"#{question_id}"
+    return question["content"].get(get_locale()) or next(iter(question["content"].values()), f"#{question_id}")
+
+
+def question_ratings(limit: int = 5) -> tuple[list[dict], list[dict]]:
+    """Likes and dislikes per pool question (every time it was served counts): (most liked, most disliked)."""
+    likes = func.sum(case((QuestionFeedbackModel.liked.is_(True), 1), else_=0))
+    dislikes = func.sum(case((QuestionFeedbackModel.liked.is_(False), 1), else_=0))
+    rows = [
+        {"question_id": question_id, "text": question_text(question_id), "likes": int(n_likes), "dislikes": int(n_dislikes)}
+        for question_id, n_likes, n_dislikes in (
+            db.session.query(QuestionModel.question_id, likes, dislikes)
+            .join(QuestionFeedbackModel, QuestionFeedbackModel.question_id == QuestionModel.id)
+            .group_by(QuestionModel.question_id).all()
+        )
+    ]
+    most_liked = sorted((r for r in rows if r["likes"]), key=lambda r: (-r["likes"], r["dislikes"], r["question_id"]))
+    most_disliked = sorted((r for r in rows if r["dislikes"]), key=lambda r: (-r["dislikes"], r["likes"], r["question_id"]))
+    return most_liked[:limit], most_disliked[:limit]

@@ -84,6 +84,13 @@ FR = {
     "Most active groups": "Groupes les plus actifs",
     "{members} members · {messages} messages": "{members} membres · {messages} messages",
     "No group.": "Aucun groupe.",
+    "Most selected themes": "Thèmes les plus sélectionnés",
+    "{count} groups": "{count} groupe(s)",
+    "No theme.": "Aucun thème.",
+    "Question feedback": "Avis sur les questions",
+    "Most liked": "Les plus aimées",
+    "Most disliked": "Les moins aimées",
+    "No feedback yet.": "Aucun avis pour l'instant.",
 }
 CATALOGS = {'fr': FR}
 DATE_FORMATS = {'en': ('%Y-%m-%d', '%Y-%m-%d %H:%M'), 'fr': ('%d/%m/%Y', '%d/%m/%Y %H:%M')}

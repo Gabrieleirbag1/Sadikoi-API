@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash
 
 from db import db
 from models import (
-    ChatMessageModel, GroupInvitationModel, GroupModel, GroupUser, ItemModel, QuestionModel,
+    ChatMessageModel, GroupInvitationModel, GroupModel, GroupUser, ItemModel, QuestionFeedbackModel, QuestionModel,
     QuestionVote, QuestionVoteTarget, UserModel, UserSecurity, BugReportModel, SuggestionModel,
 )
 
@@ -139,3 +139,10 @@ def make_suggestion(user: U, question: str = "Qui dort le plus ?", *, theme: str
     db.session.add(suggestion)
     db.session.commit()
     return suggestion.id
+
+
+def make_question_feedback(question: Q, user: U, liked: bool = True) -> int:
+    feedback = QuestionFeedbackModel(user_id=user.id, question_id=question.id, liked=liked)
+    db.session.add(feedback)
+    db.session.commit()
+    return feedback.id

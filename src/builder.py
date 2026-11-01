@@ -1,6 +1,6 @@
 import datetime
 
-from models import ChatMessageModel, GroupModel, ItemAnnouncement, ItemModel, QuestionModel, UserModel, GroupUser
+from models import ChatMessageModel, GroupModel, ItemAnnouncement, ItemModel, QuestionFeedbackModel, QuestionModel, UserModel, GroupUser
 from db import db
 from flask_login import current_user
 from utils import question_pool
@@ -69,8 +69,15 @@ def build_chat_message_response(message: ChatMessageModel) -> dict:
         "sender": build_user_response(message.user)
     }
 
+def get_user_feedback(question: QuestionModel, user_id: int | None) -> bool | None:
+    """The like (True) or dislike (False) `user_id` gave to this question, None if they haven't rated it."""
+    if user_id is None:
+        return None
+    feedback = QuestionFeedbackModel.query.filter_by(user_id=user_id, question_id=question.id).first()
+    return feedback.liked if feedback else None
+
 def build_question_response(question: QuestionModel, question_pool: list, language: str, votes: dict = None,
-                            announcement: dict | None = None) -> dict:
+                            announcement: dict | None = None, user_id: int | None = None) -> dict:
     content = next((q['content'][language] for q in question_pool if q['question_id'] == question.question_id), None)
     theme = next((q['theme'][language] for q in question_pool if q['question_id'] == question.question_id), None)
     return {
@@ -85,7 +92,8 @@ def build_question_response(question: QuestionModel, question_pool: list, langua
         "canWrite": question.canWrite,
         "date": question.date.isoformat(),
         "item_name": question.item_name,
-        "votes": votes
+        "votes": votes,
+        "my_feedback": get_user_feedback(question, user_id),
     }
 
 def build_question_model(question_data: dict, group: GroupModel) -> QuestionModel:

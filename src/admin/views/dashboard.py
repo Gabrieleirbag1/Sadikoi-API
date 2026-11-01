@@ -17,6 +17,8 @@ class DashboardView(SecretProtectedMixin, AdminIndexView):
             latest_bugs=stats.latest_open_bugs(),
             latest_suggestions=stats.latest_suggestions(),
             top_groups=stats.top_groups(),
+            theme_counts=stats.theme_counts(),
+            question_ratings=stats.question_ratings(),
         )
 
     @expose('/uploads/<path:filename>')

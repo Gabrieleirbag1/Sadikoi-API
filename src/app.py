@@ -9,7 +9,7 @@ from lite_logging.lite_logging import log
 from models import UserModel, GroupUser, UserSecurity
 from group import create_group, get_group, promote_user_group_role, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
-from question import get_question, vote_question, get_questions_by_date
+from question import get_question, vote_question, get_questions_by_date, rate_question
 from gifs import get_trending_gifs, get_recent_gifs, search_gifs, share_gif
 from feedback import create_bug_report, create_suggestion
 from db import db
@@ -250,6 +250,11 @@ def get_questions_by_date_endpoint(group_id, month, year):
 @limiter.limit("30 per minute", key_func=user_or_ip_key)
 def vote_question_endpoint(group_id):
     return vote_question(group_id, request)
+
+@app.route('/api/questions/<int:group_id>/<int:question_id>/feedback/', methods=['POST'])
+@limiter.limit("30 per minute", key_func=user_or_ip_key)
+def rate_question_endpoint(group_id, question_id):
+    return rate_question(group_id, question_id, request)
 
 ############## FEEDBACK ENDPOINTS ##############
 
