@@ -48,6 +48,12 @@ body { background: var(--sk-bg); }
 @media (min-width: 992px) { .sk-panels { grid-template-columns: repeat(2, 1fr); } }
 .sk-panel { border-color: var(--sk-border); border-radius: var(--sk-radius); overflow: hidden; }
 .sk-panel .card-header { background: var(--sk-card); font-weight: 600; }
+.sk-panels-top { margin-bottom: .75rem; }
+.sk-theme { padding-top: .5rem; padding-bottom: .5rem; }
+.sk-bar { height: 6px; margin-top: .3rem; background: var(--sk-bg); }
+.sk-subheader { padding-top: .35rem; padding-bottom: .35rem; background: var(--sk-bg); font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--sk-muted); }
+.sk-rating { gap: .75rem; }
+.sk-num { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .sk-row-meta { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-top: .35rem; font-size: .8rem; color: var(--sk-muted); }
 
 /* Users */

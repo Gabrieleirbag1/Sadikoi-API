@@ -7,12 +7,14 @@ from admin.views.base import ProtectedModelView
 from db import db
 from models import (
     BugReportModel, ChatMessageModel, GroupInvitationModel, GroupModel, GroupUser, ItemModel, PasswordResetToken,
-    QuestionModel, QuestionVote, QuestionVoteTarget, ReportUserModel, SuggestionModel, UserModel, UserSecurity,
+    QuestionFeedbackModel, QuestionModel, QuestionVote, QuestionVoteTarget, ReportUserModel, SuggestionModel, UserModel,
+    UserSecurity,
 )
 
 DATABASE_MODELS = [
     UserModel, UserSecurity, PasswordResetToken, GroupModel, GroupUser, GroupInvitationModel, ChatMessageModel,
-    QuestionModel, QuestionVote, QuestionVoteTarget, ItemModel, SuggestionModel, BugReportModel, ReportUserModel,
+    QuestionModel, QuestionVote, QuestionVoteTarget, QuestionFeedbackModel, ItemModel, SuggestionModel, BugReportModel,
+    ReportUserModel,
 ]
 # Secrets or credentials: never displayed, not even hashed.
 SENSITIVE_COLUMNS = {'password', 'token_hash', 'auth_code', 'token'}
