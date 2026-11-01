@@ -80,7 +80,9 @@ def test_fresh_database_is_not_adopted(db_file):
 
 def test_rollback_then_migrate_again(db_file):
     manage.run(["--db", str(db_file), "migrate"])
-    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0006_review_account
+    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0007_chat_message_client_id
+    assert "client_id" not in columns(db_file, "chat_messages")
+    manage.run(["--db", str(db_file), "rollback"])  # then 0006_review_account
     assert "skip_device_verification" not in columns(db_file, "users")
     manage.run(["--db", str(db_file), "rollback"])  # then 0005_group_notification_settings
     assert "notifications_muted" in columns(db_file, "group_user")
@@ -96,6 +98,7 @@ def test_rollback_then_migrate_again(db_file):
     manage.run(["--db", str(db_file), "migrate"])
     assert "status" in columns(db_file, "bug_reports")
     assert "notify_messages" in columns(db_file, "users")
+    assert "client_id" in columns(db_file, "chat_messages")
 
 
 def test_the_baseline_cannot_be_rolled_back(db_file):
