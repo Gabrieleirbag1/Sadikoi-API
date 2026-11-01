@@ -73,6 +73,16 @@ def get_messages(group_id: int) -> tuple[dict, int]:
 
     return {"success": True, "message": "Messages retrieved successfully", "content": messages_data}, 200
 
+CLIENT_ID_MAX_LENGTH = 64
+
+
+def find_duplicate(user_id: int, client_id: str | None) -> ChatMessageModel | None:
+    """The message this user already sent with this client_id, if any."""
+    if client_id is None:
+        return None
+    return ChatMessageModel.query.filter_by(user_id=user_id, client_id=client_id).first()
+
+
 def send_message(group_id: int, request: Request) -> tuple[dict, int]:
     group = GroupModel.query.get(group_id)
     if not group:
@@ -91,6 +101,15 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
     if user not in group.users:
         return {"success": False, "message": "User is not a member of the group"}, 403
 
+    client_id = request.json.get('client_id')
+    if client_id is not None and (not isinstance(client_id, str) or not 0 < len(client_id) <= CLIENT_ID_MAX_LENGTH):
+        return {"success": False, "message": "Invalid client_id"}, 400
+    # Already received (double tap, or the request replayed after a network error): answer with the
+    # stored message, without broadcasting or notifying it again.
+    duplicate = find_duplicate(user.id, client_id)
+    if duplicate:
+        return {"success": True, "message": "Message already sent", "content": build_chat_message_response(duplicate)}, 200
+
     # Messages of a previous day can be read but not written to: the group's latest question must
     # still be open, and a question_id, when given, must be that question.
     current_question = group.questions.order_by(QuestionModel.date.desc()).first()
@@ -100,10 +119,14 @@ def send_message(group_id: int, request: Request) -> tuple[dict, int]:
         if not does_exist_question_today(group) or (question_id is not None and question_id != current_question.id):
             return {"success": False, "message": "Cannot send messages to a previous day"}, 403
 
-    message = ChatMessageModel(content=content, user_id=user.id, group_id=group_id)
+    message = ChatMessageModel(content=content, user_id=user.id, group_id=group_id, client_id=client_id)
 
     result = add_to_db(message)
     if result.get("error"):
+        # Two copies sent at the same time: the other one was stored first (unique user_id + client_id).
+        duplicate = find_duplicate(user.id, client_id)
+        if duplicate:
+            return {"success": True, "message": "Message already sent", "content": build_chat_message_response(duplicate)}, 200
         return result, 500
 
     log(f"User {user.id} sent message {message.id} in group {group_id}", level="INFO")
