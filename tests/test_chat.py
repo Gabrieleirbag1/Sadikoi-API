@@ -133,6 +133,33 @@ class TestSendMessage:
     def test_unknown_group(self, login_as, world):
         assert self.send(login_as(world.member), 9999, content="hi").status_code == 404
 
+    def test_same_client_id_is_stored_once(self, login_as, world, today, externals, ctx):
+        client = login_as(world.member)
+        first = self.send(client, world.group.id, content="hi", client_id="abc")
+        again = self.send(client, world.group.id, content="hi", client_id="abc")
+        assert first.status_code == 201 and again.status_code == 200
+        assert again.get_json()["content"]["id"] == first.get_json()["content"]["id"]
+        assert len([e for e in externals.events if e["event"] == "new_message"]) == 1
+        with ctx():
+            assert ChatMessageModel.query.filter_by(group_id=world.group.id).count() == 1
+
+    def test_client_id_belongs_to_its_sender(self, login_as, world, today, ctx):
+        assert self.send(login_as(world.member), world.group.id, content="a", client_id="same").status_code == 201
+        assert self.send(login_as(world.admin), world.group.id, content="b", client_id="same").status_code == 201
+        with ctx():
+            assert ChatMessageModel.query.filter_by(group_id=world.group.id).count() == 2
+
+    def test_messages_without_client_id_are_all_stored(self, login_as, world, today, ctx):
+        client = login_as(world.member)
+        self.send(client, world.group.id, content="hi")
+        self.send(client, world.group.id, content="hi")
+        with ctx():
+            assert ChatMessageModel.query.filter_by(group_id=world.group.id).count() == 2
+
+    @pytest.mark.parametrize("client_id", ["", 12, "x" * 65])
+    def test_invalid_client_id(self, login_as, world, today, client_id):
+        assert self.send(login_as(world.member), world.group.id, content="hi", client_id=client_id).status_code == 400
+
     def test_previous_day_forbidden_without_question_id(self, login_as, world, ctx):
         with ctx():
             factories.make_question(world.group, days_ago=2)
