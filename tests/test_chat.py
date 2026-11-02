@@ -43,6 +43,11 @@ class TestGetMessages:
         assert message["sender"]["username"] == "member"
         assert {"id", "content", "timestamp", "sender"} <= set(message)
 
+    def test_timestamp_carries_its_utc_offset(self, login_as, world, days):
+        # SQLite stores naive UTC datetimes: without the offset, browsers would show them as local time.
+        message = login_as(world.member).get(messages_url(world.group.id)).get_json()["content"][0]
+        assert datetime.datetime.fromisoformat(message["timestamp"]).utcoffset() == H(0)
+
     def test_previous_day_by_question_id(self, login_as, world, days):
         response = login_as(world.member).get(messages_url(world.group.id), query_string={"question_id": days[0].id})
         assert contents(response) == ["yesterday-1", "yesterday-2"]
