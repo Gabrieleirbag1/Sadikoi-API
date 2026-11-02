@@ -141,12 +141,17 @@ def delete_group(group_id: int) -> tuple[dict, int]:
     if not group_user or group_user.role != 'admin':
         return {"success": False, "message": "Only admins can delete the group"}, 403
 
+    return _delete_group(group, f"User {user.id} deleted group {group_id}")
+
+def _delete_group(group: GroupModel, log_message: str) -> tuple[dict, int]:
+    """Delete the group and tell the members' open pages."""
+    group_id = group.id
     response_data = build_group_response(group)
     result = delete_from_db(group)
     if result.get("error"):
         return result, 500
 
-    log(f"User {user.id} deleted group {group_id}", level="INFO")
+    log(log_message, level="INFO")
     socketio.emit('group_deleted', {"group_id": group_id}, to=str(group_id))
 
     return {"success": True, "message": "Group deleted successfully", "content": response_data}, 200
@@ -207,13 +212,14 @@ def remove_user_from_group(group_id: int, user_to_remove_info: str) -> tuple[dic
     if group_user.role != 'admin' and current_user.id != user_to_remove.id:
         return {"success": False, "message": "Only admins can remove other users from the group"}, 403
     
-    if group_user_to_remove.role == 'admin':
-        # Find another user to make admin
-        other_user = GroupUser.query.filter_by(group_id=group_id).filter(GroupUser.user_id != user_to_remove.id).first()
-        if other_user:
-            other_user.role = 'admin'
-        else:
-            return {"success": False, "message": "Cannot remove the only admin from the group"}, 400
+    others = GroupUser.query.filter_by(group_id=group_id).filter(GroupUser.user_id != user_to_remove.id)
+    if others.count() == 0:
+        # The last member leaves: nobody is left to use the group, so it goes with them.
+        return _delete_group(group, f"User {user_to_remove.id} left group {group_id}, its last member: group deleted")
+
+    if group_user_to_remove.role == 'admin' and not others.filter_by(role='admin').first():
+        # The group always keeps an admin: the longest-standing member takes over.
+        others.order_by(GroupUser.joined_at, GroupUser.user_id).first().role = 'admin'
 
     result = delete_from_db(group_user_to_remove)
     if result.get("error"):
