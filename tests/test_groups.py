@@ -201,10 +201,22 @@ class TestRemoveMember:
         assert login_as(world.admin).delete(url(world.group.id, world.admin.id)).status_code == 200
         assert roles(ctx, world.group) == {world.member.id: "admin"}
 
-    def test_only_member_admin_cannot_leave(self, login_as, world, ctx):
+    def test_admin_leaving_keeps_the_other_admin(self, login_as, world, ctx):
+        with ctx():
+            third = factories.make_user("third")
+            db.session.add(GroupUser(user_id=third.id, group_id=world.group.id, role="admin"))
+            db.session.commit()
+            third_id = third.id
+        assert login_as(world.admin).delete(url(world.group.id, world.admin.id)).status_code == 200
+        assert roles(ctx, world.group) == {world.member.id: "member", third_id: "admin"}
+
+    def test_last_member_leaving_deletes_the_group(self, login_as, world, externals, ctx):
         response = login_as(world.other).delete(url(world.other_group.id, world.other.id))
-        assert response.status_code == 400
-        assert roles(ctx, world.other_group) == {world.other.id: "admin"}
+        assert response.status_code == 200
+        with ctx():
+            assert GroupModel.query.get(world.other_group.id) is None
+            assert GroupUser.query.filter_by(group_id=world.other_group.id).count() == 0
+        assert events(externals, "group_deleted")[0]["data"] == {"group_id": world.other_group.id}
 
     def test_caller_not_in_group(self, login_as, world):
         assert login_as(world.outsider).delete(url(world.group.id, world.member.id)).status_code == 400
