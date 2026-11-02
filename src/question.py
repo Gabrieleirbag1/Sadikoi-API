@@ -10,7 +10,7 @@ from models import GroupModel, QuestionFeedbackModel, QuestionModel, QuestionVot
 from db import add_to_db, update_from_db, db
 from auth import get_user_object
 from items import assign_items
-from builder import build_announcement_response, build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start
+from builder import iso_utc, build_announcement_response, build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start
 from config import ALLOWED_LANGUAGES
 from sockets import socketio
 from notifications import notify_new_answer
@@ -352,7 +352,7 @@ def extract_votes_info(question: QuestionModel, group: GroupModel, date: datetim
 
         vote_info = {
             "voterUser": voterUser,
-            "voteDate": vote.date.isoformat(),
+            "voteDate": iso_utc(vote.date),
             "writtenAnswer": vote.written_answer,
             "targets": targets
         }

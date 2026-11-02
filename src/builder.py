@@ -6,6 +6,18 @@ from flask_login import current_user
 from utils import question_pool
 
 
+def iso_utc(value: datetime.datetime | None) -> str | None:
+    """ISO string of a datetime, always with its UTC offset ("+00:00").
+
+    SQLite hands back naive datetimes (they are UTC): sent as is, browsers would read them as local
+    time and show them shifted by the user's offset.
+    """
+    if value is None:
+        return None
+    aware = value.replace(tzinfo=datetime.timezone.utc) if value.tzinfo is None else value.astimezone(datetime.timezone.utc)
+    return aware.isoformat()
+
+
 def current_window_start(group: GroupModel, now: datetime.datetime | None = None) -> datetime.datetime:
     """Start of the group's current daily window: the last reset time (UTC) that has passed.
 
@@ -65,7 +77,7 @@ def build_chat_message_response(message: ChatMessageModel) -> dict:
     return {
         "id": message.id,
         "content": message.content,
-        "timestamp": message.timestamp.isoformat(),
+        "timestamp": iso_utc(message.timestamp),
         "sender": build_user_response(message.user)
     }
 
@@ -90,7 +102,7 @@ def build_question_response(question: QuestionModel, question_pool: list, langua
         "enableMultipleVoting": question.enableMultipleVoting,
         "voteNumberLimit": question.voteNumberLimit,
         "canWrite": question.canWrite,
-        "date": question.date.isoformat(),
+        "date": iso_utc(question.date),
         "item_name": question.item_name,
         "votes": votes,
         "my_feedback": get_user_feedback(question, user_id),
@@ -122,7 +134,7 @@ def build_item_response(item: ItemModel, streak: int) -> dict:
     return {
         "id": item.id,
         "item_name": item.item_name,
-        "acquired_at": item.acquired_at.isoformat(),
+        "acquired_at": iso_utc(item.acquired_at),
         "streak": streak
     }
 

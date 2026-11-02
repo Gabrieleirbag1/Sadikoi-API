@@ -16,7 +16,7 @@ from models import PasswordResetToken, UserModel, UserSecurity, ReportUserModel
 from config import allowed_file
 from notifications import remove_device_tokens
 from db import db, add_to_db, delete_from_db, update_from_db
-from builder import build_user_response
+from builder import build_user_response, iso_utc
 from email_sender import send_auth_code_email, send_password_reset_email, RESET_TOKEN_TTL_MINUTES
 from config import GOOGLE_CLIENT_BROWSER_ID, GOOGLE_CLIENT_MOBILE_ID, FRONTEND_URL, TURNSTILE_SECRET_KEY
 
@@ -563,8 +563,8 @@ def list_devices() -> tuple[dict, int]:
             "device_id": d.device_id,
             "device_name": d.device_name,
             "ip_address": d.ip_address,
-            "first_seen": d.first_seen.isoformat() if d.first_seen else None,
-            "last_login": d.last_login.isoformat() if d.last_login else None,
+            "first_seen": iso_utc(d.first_seen),
+            "last_login": iso_utc(d.last_login),
             "authorized": d.authorized,
         }
         for d in devices
