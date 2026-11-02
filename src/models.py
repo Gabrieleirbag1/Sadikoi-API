@@ -284,6 +284,22 @@ class ChatMessageModel(db.Model):
     user = db.relationship('UserModel', backref=db.backref('messages', lazy='dynamic'))
     group = db.relationship('GroupModel', backref=db.backref('messages', lazy='dynamic'))
 
+    @validates('content')
+    def validate_content(self, _key: str, content: str) -> str:
+        """Validate the message content to ensure it is 500 characters or less.
+
+        :param str key: The key to validate.
+        :param str content: The message content to validate.
+
+        :raise ValueTooLongException: If the content is more than 500 characters.
+
+        :return: The message content.
+        :rtype: str
+        """
+        if len(content) > 500:
+            raise ValueTooLongException("Message must be 500 characters or less")
+        return content
+
     def __repr__(self) -> str:
         """Return the message content and timestamp.
         
