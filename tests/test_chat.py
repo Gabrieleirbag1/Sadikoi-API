@@ -125,6 +125,15 @@ class TestSendMessage:
     def test_content_required(self, login_as, world, today, body):
         assert self.send(login_as(world.member), world.group.id, **body).status_code == 400
 
+    def test_content_up_to_500_characters(self, login_as, world, today, ctx):
+        client = login_as(world.member)
+        assert self.send(client, world.group.id, content="a" * 500).status_code == 201
+        response = self.send(client, world.group.id, content="a" * 501)
+        assert response.status_code == 400
+        assert response.get_json()["message"] == "Message must be 500 characters or less"
+        with ctx():
+            assert ChatMessageModel.query.count() == 1
+
     def test_non_member_forbidden(self, login_as, world, today, ctx):
         assert self.send(login_as(world.outsider), world.group.id, content="hi").status_code == 403
         with ctx():
