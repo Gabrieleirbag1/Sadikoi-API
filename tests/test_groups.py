@@ -4,7 +4,7 @@ import datetime
 import pytest
 
 from db import db
-from models import GroupInvitationModel, GroupModel, GroupUser
+from models import ChatMessageModel, GroupInvitationModel, GroupModel, GroupUser, QuestionModel
 from tests import factories
 
 GROUPS = "/api/groups/"
@@ -157,9 +157,24 @@ class TestDeleteGroup:
         response = login_as(world.admin).delete(url(world.group.id))
         assert response.status_code == 200
         with ctx():
-            assert GroupModel.query.get(world.group.id) is None
-            assert GroupUser.query.filter_by(group_id=world.group.id).count() == 0
+            # Only marked: the group and its members stay in the database.
+            assert GroupModel.query.get(world.group.id).deleted is True
+            assert GroupUser.query.filter_by(group_id=world.group.id).count() == 2
         assert events(externals, "group_deleted")[0]["data"] == {"group_id": world.group.id}
+
+    def test_keeps_the_group_data(self, login_as, world, ctx):
+        with ctx():
+            question = factories.make_question(world.group)
+            message = factories.make_message(world.group, world.member)
+        login_as(world.admin).delete(url(world.group.id))
+        with ctx():
+            assert QuestionModel.query.get(question.id) is not None
+            assert ChatMessageModel.query.get(message) is not None
+
+    def test_already_deleted(self, login_as, world):
+        client = login_as(world.admin)
+        assert client.delete(url(world.group.id)).status_code == 200
+        assert client.delete(url(world.group.id)).status_code == 404
 
     def test_member_forbidden(self, login_as, world, ctx):
         assert login_as(world.member).delete(url(world.group.id)).status_code == 403
@@ -214,8 +229,8 @@ class TestRemoveMember:
         response = login_as(world.other).delete(url(world.other_group.id, world.other.id))
         assert response.status_code == 200
         with ctx():
-            assert GroupModel.query.get(world.other_group.id) is None
-            assert GroupUser.query.filter_by(group_id=world.other_group.id).count() == 0
+            assert GroupModel.query.get(world.other_group.id).deleted is True
+            assert GroupUser.query.filter_by(group_id=world.other_group.id).count() == 1
         assert events(externals, "group_deleted")[0]["data"] == {"group_id": world.other_group.id}
 
     def test_caller_not_in_group(self, login_as, world):
@@ -332,3 +347,37 @@ class TestInvitations:
             second = factories.make_user("second")
         assert login_as(world.outsider).post(f"{GROUPS}invitations/{token}/").status_code == 200
         assert login_as(second).post(f"{GROUPS}invitations/{token}/").status_code == 200
+
+
+# ------------------------------------------------------------ deleted groups
+class TestDeletedGroup:
+    """A deleted group stays in the database but the app no longer sees it."""
+
+    @pytest.fixture(autouse=True)
+    def deleted(self, login_as, world):
+        assert login_as(world.admin).delete(url(world.group.id)).status_code == 200
+
+    def test_not_in_the_user_groups(self, login_as, world):
+        groups = login_as(world.member).get(GROUPS + "user/").get_json()["content"]
+        assert groups == []
+
+    @pytest.mark.parametrize("method, path", [
+        ("get", ""), ("put", ""), ("get", "invitations/"), ("get", "messages/"), ("post", "messages/"),
+    ])
+    def test_group_routes_answer_not_found(self, login_as, world, method, path):
+        body = {"name": "x", "themes": ["connerie"], "content": "hi"}
+        response = getattr(login_as(world.member), method)(url(world.group.id) + path, json=body)
+        assert response.status_code == 404
+
+    def test_question_routes_answer_not_found(self, login_as, world):
+        assert login_as(world.member).get(f"/api/questions/{world.group.id}/").status_code == 404
+
+    def test_invitation_cannot_join_it(self, login_as, world, ctx):
+        with ctx():
+            token = factories.make_invitation(world.group)
+        assert login_as(world.outsider).post(GROUPS + f"invitations/{token}/").status_code == 404
+
+    def test_notification_settings_are_refused(self, login_as, world):
+        # Like for a group the user is not in.
+        response = login_as(world.member).get(f"/api/notifications/settings/groups/{world.group.id}/")
+        assert response.status_code == 403

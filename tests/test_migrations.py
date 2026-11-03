@@ -44,6 +44,8 @@ def test_legacy_database_is_adopted(db_file):
         connection.execute("ALTER TABLE bug_reports DROP COLUMN status")
         # Added by 0009_feedback_categories (the old report_users below has no category either).
         connection.execute("ALTER TABLE bug_reports DROP COLUMN category")
+        # Added by 0010_group_soft_delete.
+        connection.execute("ALTER TABLE groups DROP COLUMN deleted")
         # Old report_users, before group_id / message_id (SQLite cannot drop a foreign key column).
         connection.execute("DROP TABLE report_users")
         connection.execute("""CREATE TABLE report_users (
@@ -71,6 +73,7 @@ def test_legacy_database_is_adopted(db_file):
     assert "status" in columns(db_file, "bug_reports")
     assert {"group_id", "message_id", "category"} <= set(columns(db_file, "report_users"))
     assert "category" in columns(db_file, "bug_reports")
+    assert "deleted" in columns(db_file, "groups")
     with sqlite3.connect(db_file) as connection:
         assert connection.execute("SELECT username FROM users").fetchall() == [("alice",)]
     with app.app_context():
@@ -85,7 +88,9 @@ def test_fresh_database_is_not_adopted(db_file):
 
 def test_rollback_then_migrate_again(db_file):
     manage.run(["--db", str(db_file), "migrate"])
-    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0009_feedback_categories
+    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0010_group_soft_delete
+    assert "deleted" not in columns(db_file, "groups")
+    manage.run(["--db", str(db_file), "rollback"])  # then 0009_feedback_categories
     assert "category" not in columns(db_file, "bug_reports")
     assert "category" not in columns(db_file, "report_users")
     manage.run(["--db", str(db_file), "rollback"])  # then 0008_question_feedback
@@ -110,6 +115,7 @@ def test_rollback_then_migrate_again(db_file):
     assert "notify_messages" in columns(db_file, "users")
     assert "client_id" in columns(db_file, "chat_messages")
     assert "category" in columns(db_file, "report_users")
+    assert "deleted" in columns(db_file, "groups")
 
 
 def test_the_baseline_cannot_be_rolled_back(db_file):
