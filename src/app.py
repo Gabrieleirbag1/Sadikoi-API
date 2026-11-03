@@ -6,7 +6,7 @@ import os
 from werkzeug.middleware.proxy_fix import ProxyFix
 from lite_logging.lite_logging import log
 
-from models import UserModel, GroupUser, UserSecurity
+from models import GroupModel, UserModel, GroupUser, UserSecurity
 from group import create_group, get_group, promote_user_group_role, update_group, delete_group, get_user_groups, answer_invitation, remove_user_from_group, get_group_invitation
 from chat import get_messages, send_message
 from question import get_question, vote_question, get_questions_by_date, rate_question
@@ -344,7 +344,7 @@ def handle_join(data):
         log(f"Rate limited join_group for user {current_user.id}", level="WARNING")
         return
     group_id = int(data['groupId'])
-    if not GroupUser.query.filter_by(user_id=current_user.id, group_id=group_id).first():
+    if not GroupModel.get_active(group_id) or not GroupUser.active().filter_by(user_id=current_user.id, group_id=group_id).first():
         log(f"Denied join_group: user {current_user.id} not a member of group {group_id}", level="WARNING")
         return
     join_room(str(group_id))

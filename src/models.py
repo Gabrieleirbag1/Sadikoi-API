@@ -38,7 +38,17 @@ class GroupUser(db.Model):
     notify_questions = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
     notify_vote_reminder = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
     notify_answers = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
-    
+    # Set when the user leaves or is removed: the row is kept, the user is no longer a member.
+    left_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    @classmethod
+    def active(cls):
+        """Query on the current memberships (users who haven't left).
+
+        :return: The query, to filter further.
+        """
+        return cls.query.filter(cls.left_at.is_(None))
+
 class ItemModel(db.Model):
     """Tracks items per user, scoped to a group membership"""
     __tablename__ = 'items'
@@ -239,9 +249,31 @@ class GroupModel(db.Model):
     # Start of the last daily window whose push notification was sent (so each one is sent once).
     last_question_notified_at = db.Column(db.DateTime(timezone=True), nullable=True)
     last_vote_reminder_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    # Soft delete: a deleted group stays in the database with all its data, but the app no longer sees it.
+    deleted = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
 
-    users = db.relationship('UserModel', secondary='group_user', backref=db.backref('groups', lazy='dynamic'))
+    # Current members only (users who left keep their group_user row, with left_at set).
+    # Read only: memberships are written through GroupUser.
+    users = db.relationship(
+        'UserModel', secondary='group_user',
+        primaryjoin='GroupModel.id == GroupUser.group_id',
+        secondaryjoin='and_(UserModel.id == GroupUser.user_id, GroupUser.left_at.is_(None))',
+        viewonly=True,
+        backref=db.backref('groups', lazy='dynamic', viewonly=True),
+    )
     questions = db.relationship('QuestionModel', backref='group', lazy='dynamic')
+
+    @classmethod
+    def get_active(cls, group_id: int) -> 'GroupModel | None':
+        """Get a group that is not deleted.
+
+        :param int group_id: The ID of the group.
+
+        :return: The group, or None if it doesn't exist or was deleted.
+        :rtype: GroupModel | None
+        """
+        group = cls.query.get(group_id)
+        return group if group and not group.deleted else None
 
     def __repr__(self) -> str:
         """Return the group's name.

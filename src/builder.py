@@ -42,7 +42,7 @@ def build_group_response(group: GroupModel) -> dict:
 
     roles = {
         group_user.user_id: group_user.role
-        for group_user in GroupUser.query.filter_by(group_id=group.id).all()
+        for group_user in GroupUser.active().filter_by(group_id=group.id).all()
     }
 
     for user in users:

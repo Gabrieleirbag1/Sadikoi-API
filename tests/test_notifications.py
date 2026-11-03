@@ -268,6 +268,13 @@ class TestQuestionNotifications:
         assert team["notification"] == {"title": "Team", "body": "New question of the day!"}
         assert team["android"]["notification"]["channel_id"] == "questions"
 
+    def test_deleted_group_is_skipped(self, login_as, world, phones, externals, ctx):
+        now = factories.now()
+        self.run(ctx, now - H(days=1))
+        login_as(world.admin).delete(f"/api/groups/{world.group.id}/")
+        self.run(ctx, now)
+        assert tokens_of(externals.pushes) == ["token-other"]
+
     def test_respects_settings(self, login_as, world, phones, externals, ctx):
         login_as(world.member).put(SETTINGS, json={"questions": False})
         login_as(world.other).put(group_settings_url(world.other_group), json={"questions": False})
