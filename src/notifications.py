@@ -163,7 +163,7 @@ def recipients(group_id: int, setting: str, exclude_user_id: int | None = None) 
     query = (
         UserModel.query
         .join(GroupUser, GroupUser.user_id == UserModel.id)
-        .filter(GroupUser.group_id == group_id, getattr(GroupUser, column).is_(True),
+        .filter(GroupUser.group_id == group_id, GroupUser.left_at.is_(None), getattr(GroupUser, column).is_(True),
                 getattr(UserModel, column).is_(True), UserModel.deleted.isnot(True))
     )
     if exclude_user_id is not None:
@@ -363,7 +363,7 @@ def update_settings(request: Request) -> tuple[dict, int]:
 def _membership(group_id: int) -> GroupUser | None:
     if not GroupModel.get_active(group_id):
         return None
-    return GroupUser.query.filter_by(user_id=int(current_user.id), group_id=group_id).first()
+    return GroupUser.active().filter_by(user_id=int(current_user.id), group_id=group_id).first()
 
 
 def get_group_settings(group_id: int) -> tuple[dict, int]:
