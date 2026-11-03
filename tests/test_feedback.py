@@ -4,7 +4,8 @@ import datetime
 import pytest
 
 from db import db
-from models import BugReportModel, SuggestionModel
+from exceptions import InvalidChoiceException
+from models import BUG_CATEGORIES, BugReportModel, SuggestionModel, suggestion_themes, validate_choice
 from tests import factories
 
 BUGS = "/api/feedback/bug-reports/"
@@ -61,6 +62,40 @@ class TestBugReports:
     def test_requires_login(self, anon):
         assert anon.post(BUGS, json=self.body).status_code == 401
 
+    def test_preset_category_is_the_title(self, login_as, alice, ctx):
+        response = login_as(alice).post(BUGS, json={"category": "crash", "description": "It crashes"})
+        assert response.status_code == 201
+        with ctx():
+            report = BugReportModel.query.one()
+            assert (report.category, report.title) == ("crash", "crash")
+
+    def test_other_category_keeps_the_typed_title(self, login_as, alice, ctx):
+        login_as(alice).post(BUGS, json={"category": "other", "title": "Weird sound", "description": "d"})
+        with ctx():
+            report = BugReportModel.query.one()
+            assert (report.category, report.title) == ("other", "Weird sound")
+
+    def test_other_category_requires_a_title(self, login_as, alice):
+        assert login_as(alice).post(BUGS, json={"category": "other", "description": "d"}).status_code == 400
+
+    def test_without_category_is_other(self, login_as, alice, ctx):
+        """Older app versions send a title and no category."""
+        login_as(alice).post(BUGS, json=self.body)
+        with ctx():
+            assert BugReportModel.query.one().category == "other"
+
+    @pytest.mark.parametrize("category", ["unknown", "", "Crash", 3])
+    def test_unknown_category(self, login_as, alice, ctx, category):
+        body = {"category": category, "title": "t", "description": "d"}
+        assert login_as(alice).post(BUGS, json=body).status_code == 400
+        with ctx():
+            assert BugReportModel.query.count() == 0
+
+    @pytest.mark.parametrize("category", BUG_CATEGORIES)
+    def test_every_category_is_accepted(self, login_as, alice, category):
+        body = {"category": category, "title": "t", "description": "d"}
+        assert login_as(alice).post(BUGS, json=body).status_code == 201
+
 
 class TestSuggestions:
     body = {"theme": "connerie", "question": "Who would survive a zombie apocalypse?"}
@@ -91,3 +126,26 @@ class TestSuggestions:
 
     def test_requires_login(self, anon):
         assert anon.post(SUGGESTIONS, json=self.body).status_code == 401
+
+    def test_themes_are_the_question_themes_and_other(self, themes):
+        assert suggestion_themes() == (*themes.keys(), "other")
+
+    @pytest.mark.parametrize("theme", ["other", "style"])
+    def test_known_theme(self, login_as, alice, theme):
+        body = {"theme": theme, "question": "q"}
+        assert login_as(alice).post(SUGGESTIONS, json=body).status_code == 201
+
+    @pytest.mark.parametrize("theme", ["unknown", "Fête", "STYLE"])
+    def test_unknown_theme(self, login_as, alice, ctx, theme):
+        assert login_as(alice).post(SUGGESTIONS, json={"theme": theme, "question": "q"}).status_code == 400
+        with ctx():
+            assert SuggestionModel.query.count() == 0
+
+
+class TestValidateChoice:
+    def test_known_value(self):
+        assert validate_choice("a", ("a", "b"), "Letter") == "a"
+
+    def test_unknown_value(self):
+        with pytest.raises(InvalidChoiceException, match="Letter must be one of a, b"):
+            validate_choice("c", ("a", "b"), "Letter")
