@@ -38,13 +38,13 @@ class BugReportAdminView(ProtectedModelView):
     can_edit = True  # status only
     can_delete = True
 
-    column_list = ['id', 'title', 'user', 'device_name', 'status', 'timestamp']
-    column_details_list = ['id', 'title', 'description', 'user', 'device_name', 'status', 'timestamp']
-    column_labels = {'id': 'ID', 'title': lazy('Title'), 'description': lazy('Description'), 'user': lazy('Author'),
+    column_list = ['id', 'category', 'title', 'user', 'device_name', 'status', 'timestamp']
+    column_details_list = ['id', 'category', 'title', 'description', 'user', 'device_name', 'status', 'timestamp']
+    column_labels = {'id': 'ID', 'category': lazy('Category'), 'title': lazy('Title'), 'description': lazy('Description'), 'user': lazy('Author'),
                      'device_name': lazy('Device'), 'status': lazy('Status'), 'timestamp': lazy('Date')}
     column_searchable_list = ['title', 'description', *AUTHOR_SEARCH]
-    column_filters = ['status', 'timestamp', 'device_name', author_filter()]
-    column_sortable_list = ['id', 'title', 'device_name', 'status', 'timestamp', ('user', 'user.username')]
+    column_filters = ['status', 'category', 'timestamp', 'device_name', author_filter()]
+    column_sortable_list = ['id', 'category', 'title', 'device_name', 'status', 'timestamp', ('user', 'user.username')]
     column_default_sort = ('timestamp', True)
     column_editable_list = ['status']
     column_choices = {'status': BUG_STATUS_CHOICES}

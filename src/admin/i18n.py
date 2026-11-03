@@ -51,6 +51,7 @@ FR = {
     "Question": "Question",
     "Date": "Date",
     "Title": "Titre",
+    "Category": "Catégorie",
     "Description": "Description",
     "Device": "Appareil",
     "Open": "Ouvert",
