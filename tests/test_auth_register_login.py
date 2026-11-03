@@ -39,6 +39,12 @@ class TestRegister:
             assert user.language == "fr"  # "fr-FR" is reduced to the primary subtag
             assert user.password != "Passw0rd!"
 
+    @pytest.mark.parametrize("language", ["de-DE", "", None])
+    def test_unsupported_language_falls_back_to_english(self, anon, ctx, language):
+        assert anon.post(REGISTER, json=register_payload(language=language)).status_code == 201
+        with ctx():
+            assert UserModel.query.filter_by(username="newbie").one().language == "en"
+
     def test_register_form_data(self, anon):
         payload = register_payload(login="false")
         response = anon.post(REGISTER, data=payload, content_type="multipart/form-data")
@@ -355,6 +361,12 @@ class TestAccount:
         with ctx():
             user = UserModel.query.get(self.user.id)
             assert (user.username, user.email, user.language) == ("alice2", "a2@example.com", "fr")
+
+    def test_update_with_unsupported_language_keeps_the_current_one(self, login_as, ctx):
+        login_as(self.user).put(ACCOUNT, json={"language": "fr"})
+        assert login_as(self.user).put(ACCOUNT, json={"language": "de-DE"}).status_code == 200
+        with ctx():
+            assert UserModel.query.get(self.user.id).language == "fr"
 
     def test_update_password_logs_everyone_out(self, login_as, ctx):
         client = login_as(self.user)
