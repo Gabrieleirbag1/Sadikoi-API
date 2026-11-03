@@ -239,9 +239,23 @@ class GroupModel(db.Model):
     # Start of the last daily window whose push notification was sent (so each one is sent once).
     last_question_notified_at = db.Column(db.DateTime(timezone=True), nullable=True)
     last_vote_reminder_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    # Soft delete: a deleted group stays in the database with all its data, but the app no longer sees it.
+    deleted = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
 
     users = db.relationship('UserModel', secondary='group_user', backref=db.backref('groups', lazy='dynamic'))
     questions = db.relationship('QuestionModel', backref='group', lazy='dynamic')
+
+    @classmethod
+    def get_active(cls, group_id: int) -> 'GroupModel | None':
+        """Get a group that is not deleted.
+
+        :param int group_id: The ID of the group.
+
+        :return: The group, or None if it doesn't exist or was deleted.
+        :rtype: GroupModel | None
+        """
+        group = cls.query.get(group_id)
+        return group if group and not group.deleted else None
 
     def __repr__(self) -> str:
         """Return the group's name.
