@@ -38,7 +38,17 @@ class GroupUser(db.Model):
     notify_questions = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
     notify_vote_reminder = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
     notify_answers = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
-    
+    # Set when the user leaves or is removed: the row is kept, the user is no longer a member.
+    left_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    @classmethod
+    def active(cls):
+        """Query on the current memberships (users who haven't left).
+
+        :return: The query, to filter further.
+        """
+        return cls.query.filter(cls.left_at.is_(None))
+
 class ItemModel(db.Model):
     """Tracks items per user, scoped to a group membership"""
     __tablename__ = 'items'
@@ -242,7 +252,15 @@ class GroupModel(db.Model):
     # Soft delete: a deleted group stays in the database with all its data, but the app no longer sees it.
     deleted = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
 
-    users = db.relationship('UserModel', secondary='group_user', backref=db.backref('groups', lazy='dynamic'))
+    # Current members only (users who left keep their group_user row, with left_at set).
+    # Read only: memberships are written through GroupUser.
+    users = db.relationship(
+        'UserModel', secondary='group_user',
+        primaryjoin='GroupModel.id == GroupUser.group_id',
+        secondaryjoin='and_(UserModel.id == GroupUser.user_id, GroupUser.left_at.is_(None))',
+        viewonly=True,
+        backref=db.backref('groups', lazy='dynamic', viewonly=True),
+    )
     questions = db.relationship('QuestionModel', backref='group', lazy='dynamic')
 
     @classmethod
