@@ -30,7 +30,7 @@ def get_kpis() -> dict[str, int | float]:
     groups = count(GroupModel, GroupModel.deleted.is_(False))
     memberships = (db.session.query(func.count()).select_from(GroupUser)
                    .join(GroupModel, GroupModel.id == GroupUser.group_id)
-                   .filter(GroupModel.deleted.is_(False)).scalar() or 0)
+                   .filter(GroupModel.deleted.is_(False), GroupUser.left_at.is_(None)).scalar() or 0)
     return {
         "users_total": count(UserModel),
         "users_active": count(UserModel, UserModel.deleted.isnot(True)),
@@ -73,6 +73,7 @@ def top_groups(limit: int = 5) -> list[tuple[GroupModel, int, int]]:
     messages = (db.session.query(ChatMessageModel.group_id, func.count().label("n"))
                 .group_by(ChatMessageModel.group_id).subquery())
     members = (db.session.query(GroupUser.group_id, func.count().label("n"))
+               .filter(GroupUser.left_at.is_(None))
                .group_by(GroupUser.group_id).subquery())
     rows = (db.session.query(GroupModel, func.coalesce(messages.c.n, 0), func.coalesce(members.c.n, 0))
             .outerjoin(messages, messages.c.group_id == GroupModel.id)
