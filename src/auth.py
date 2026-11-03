@@ -13,6 +13,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
 from models import PasswordResetToken, UserModel, UserSecurity, ReportUserModel
+from exceptions import InvalidChoiceException
 from config import allowed_file
 from notifications import remove_device_tokens
 from db import db, add_to_db, delete_from_db, update_from_db
@@ -695,7 +696,12 @@ def report_user(request: Request) -> tuple[dict, int]:
         return {"success": False, "message": "Reporter not found"}, 404
 
     reported_user_info = request.json.get('reported_user_info')
-    reason = request.json.get('reason', 'No reason provided')
+    category = request.json.get('category', 'other')  # older app versions send no category
+    reason = str(request.json.get('reason') or '')
+    # Picking "other" means none of the categories fit: the user has to say why.
+    if 'category' in request.json and category == 'other' and not reason.strip():
+        return {"success": False, "message": "Reason is required for the other category"}, 400
+    reason = reason or 'No reason provided'
 
     reported_user: UserModel | None = get_user_object(reported_user_info)
     if not reported_user:
@@ -704,19 +710,23 @@ def report_user(request: Request) -> tuple[dict, int]:
     group_id = request.json.get('group_id', None)  # Optional: if the report is related to a group
     message_id = request.json.get('message_id', None)  # Optional: if the report is related to a specific message
 
-    report: ReportUserModel = ReportUserModel(
-        reporter_id=reporter.id,
-        reported_id=reported_user.id,
-        group_id = group_id,
-        message_id = message_id,
-        reason=reason,
-        timestamp=datetime.datetime.now(datetime.timezone.utc)
-    )
+    try:
+        report: ReportUserModel = ReportUserModel(
+            reporter_id=reporter.id,
+            reported_id=reported_user.id,
+            group_id = group_id,
+            message_id = message_id,
+            category=category,
+            reason=reason,
+            timestamp=datetime.datetime.now(datetime.timezone.utc)
+        )
+    except InvalidChoiceException as error:
+        return {"success": False, "message": str(error)}, 400
 
     result = add_to_db(report)
     if result.get("error"):
         return result, 500
 
-    log(f"User {reporter.username} reported user {reported_user.username} for reason: {reason}", level="INFO")
+    log(f"User {reporter.username} reported user {reported_user.username} for {category}: {reason}", level="INFO")
 
     return {"success": True, "message": "User reported successfully"}, 200
