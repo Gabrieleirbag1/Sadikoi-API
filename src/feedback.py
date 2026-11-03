@@ -4,6 +4,7 @@ from flask_login import current_user
 from auth import get_user_object
 from models import UserModel, BugReportModel, SuggestionModel
 from db import add_to_db
+from exceptions import InvalidChoiceException
 from lite_logging.lite_logging import log
 
 def is_user_spamming(user: UserModel, feedback: BugReportModel | SuggestionModel, time_threshold: int = 60) -> bool:
@@ -33,14 +34,22 @@ def create_bug_report(request):
     if is_user_spamming(user, BugReportModel):
         return {"success": False, "message": "You are submitting bug reports too frequently. Please wait before submitting another."}, 429
     
+    category = request.json.get("category", "other")  # older app versions send no category
     title = request.json.get("title")
     description = request.json.get("description")
     device_name = request.json.get("device_name", "Unknown Device")
 
-    if not title or not description:
-        return {"success": False, "message": "Title and description are required"}, 400
-    
-    bug_report = BugReportModel(user_id=user.id, title=title, description=description, device_name=device_name)
+    if not description:
+        return {"success": False, "message": "Description is required"}, 400
+    # A preset category is the title; "other" needs one typed by the user.
+    if category == "other" and not title:
+        return {"success": False, "message": "Title is required for the other category"}, 400
+
+    try:
+        bug_report = BugReportModel(user_id=user.id, category=category, title=title or category,
+                                    description=description, device_name=device_name)
+    except InvalidChoiceException as error:
+        return {"success": False, "message": str(error)}, 400
     result = add_to_db(bug_report)
     if result.get("error"):
         return result, 500
@@ -63,7 +72,10 @@ def create_suggestion(request):
     if not theme or not question:
         return {"success": False, "message": "Theme and question are required"}, 400
     
-    suggestion = SuggestionModel(user_id=user.id, theme=theme, question=question)
+    try:
+        suggestion = SuggestionModel(user_id=user.id, theme=theme, question=question)
+    except InvalidChoiceException as error:
+        return {"success": False, "message": str(error)}, 400
     result = add_to_db(suggestion)
     if result.get("error"):
         return result, 500

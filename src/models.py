@@ -5,7 +5,25 @@ import hashlib
 from db import db
 from sqlalchemy.orm import validates
 import uuid
-from exceptions import ValueTooLongException
+from exceptions import InvalidChoiceException, ValueTooLongException
+from utils import question_themes
+
+
+def validate_choice(value: str, choices: tuple[str, ...], name: str) -> str:
+    """Check that a value is one of the allowed choices.
+
+    :param str value: The value to check.
+    :param tuple choices: The allowed values.
+    :param str name: The field name, for the error message.
+
+    :raise InvalidChoiceException: If the value is not one of the choices.
+
+    :return: The value.
+    :rtype: str
+    """
+    if value not in choices:
+        raise InvalidChoiceException(f"{name} must be one of {', '.join(choices)}")
+    return value
 
 class GroupUser(db.Model):
     """Association table for users and groups."""
@@ -397,6 +415,24 @@ class QuestionFeedbackModel(db.Model):
     question = db.relationship('QuestionModel', backref=db.backref('feedbacks', lazy='dynamic'))
 
 BUG_STATUSES = ("open", "in_progress", "resolved")
+# What the bug is about, from the ISO/IEC 25010 quality characteristics put in the user's words:
+# reliability (crash), usability (display), performance, functional suitability (feature), security (account),
+# plus the app's own areas. "other" lets the user type their own title.
+BUG_CATEGORIES = ("crash", "display", "performance", "feature", "account", "notifications", "connection", "other")
+# Why a user is reported, from the usual moderation categories (Google Play user-generated content policy, DSA).
+REPORT_CATEGORIES = (
+    "harassment", "hate_speech", "sexual_content", "violence", "self_harm", "spam", "impersonation", "privacy",
+    "inappropriate_profile", "other",
+)
+
+
+def suggestion_themes() -> tuple[str, ...]:
+    """The themes a suggested question can have: the real question themes, or "other".
+
+    :return: The theme ids.
+    :rtype: tuple[str, ...]
+    """
+    return (*question_themes.keys(), "other")
 
 class BugReportModel(db.Model):
     """Bug report model for the database."""
@@ -409,6 +445,7 @@ class BugReportModel(db.Model):
     device_name = db.Column(db.String(100), nullable=False, default="Unknown Device")
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
     status = db.Column(db.String(20), nullable=False, default="open", server_default="open")
+    category = db.Column(db.String(30), nullable=False, default="other", server_default="other")
 
     user = db.relationship('UserModel', backref=db.backref('bug_reports', lazy='dynamic'))
 
@@ -416,14 +453,23 @@ class BugReportModel(db.Model):
     def validate_status(self, _key: str, status: str) -> str:
         """Validate the status against BUG_STATUSES.
 
-        :raise ValueError: If the status is unknown.
+        :raise InvalidChoiceException: If the status is unknown.
 
         :return: The status.
         :rtype: str
         """
-        if status not in BUG_STATUSES:
-            raise ValueError(f"Bug report status must be one of {', '.join(BUG_STATUSES)}")
-        return status
+        return validate_choice(status, BUG_STATUSES, "Bug report status")
+
+    @validates('category')
+    def validate_category(self, _key: str, category: str) -> str:
+        """Validate the category against BUG_CATEGORIES.
+
+        :raise InvalidChoiceException: If the category is unknown.
+
+        :return: The category.
+        :rtype: str
+        """
+        return validate_choice(category, BUG_CATEGORIES, "Bug report category")
 
     def __repr__(self) -> str:
         """Return the bug report description and timestamp.
@@ -442,6 +488,7 @@ class ReportUserModel(db.Model):
     reported_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), nullable=True)
     message_id = db.Column(db.Integer, db.ForeignKey('chat_messages.id'), nullable=True)
+    category = db.Column(db.String(30), nullable=False, default="other", server_default="other")
     reason = db.Column(db.String(200), nullable=False)
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
 
@@ -449,6 +496,17 @@ class ReportUserModel(db.Model):
     reported = db.relationship('UserModel', foreign_keys=[reported_id], backref=db.backref('reports_received', lazy='dynamic'))
     group = db.relationship('GroupModel', foreign_keys=[group_id], backref=db.backref('reports', lazy='dynamic'))
     message = db.relationship('ChatMessageModel', foreign_keys=[message_id], backref=db.backref('reports', lazy='dynamic'))
+
+    @validates('category')
+    def validate_category(self, _key: str, category: str) -> str:
+        """Validate the category against REPORT_CATEGORIES.
+
+        :raise InvalidChoiceException: If the category is unknown.
+
+        :return: The category.
+        :rtype: str
+        """
+        return validate_choice(category, REPORT_CATEGORIES, "Report category")
 
     def __repr__(self) -> str:
         """Return the report reason and timestamp.
@@ -470,13 +528,24 @@ class SuggestionModel(db.Model):
 
     user = db.relationship('UserModel', backref=db.backref('suggestions', lazy='dynamic'))
 
-    def __repr__(self) -> str:
-        """Return the suggestion description and timestamp.
-        
-        :return: The suggestion description and timestamp.
+    @validates('theme')
+    def validate_theme(self, _key: str, theme: str) -> str:
+        """Validate the theme against suggestion_themes().
+
+        :raise InvalidChoiceException: If the theme is unknown.
+
+        :return: The theme.
         :rtype: str
         """
-        return f'Suggestion: {self.description} at {self.timestamp}'
+        return validate_choice(theme, suggestion_themes(), "Suggestion theme")
+
+    def __repr__(self) -> str:
+        """Return the suggested question and timestamp.
+        
+        :return: The suggested question and timestamp.
+        :rtype: str
+        """
+        return f'Suggestion: {self.question} at {self.timestamp}'
 
 
 class PushTokenModel(db.Model):

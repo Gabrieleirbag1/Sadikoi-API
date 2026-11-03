@@ -4,7 +4,7 @@ import datetime
 import pytest
 
 from db import db
-from models import PasswordResetToken, ReportUserModel, UserModel, UserSecurity
+from models import REPORT_CATEGORIES, PasswordResetToken, ReportUserModel, UserModel, UserSecurity
 from tests import factories
 
 VERIFY = "/api/auth/security/verify-device/"
@@ -308,3 +308,35 @@ class TestReportUser:
 
     def test_requires_login(self, anon):
         assert anon.post(REPORT, json={"reported_user_info": "bob"}).status_code == 401
+
+    def test_report_with_category(self, login_as, ctx):
+        body = {"reported_user_info": "bob", "category": "harassment"}
+        assert login_as(self.alice).post(REPORT, json=body).status_code == 200
+        with ctx():
+            report = ReportUserModel.query.one()
+            assert (report.category, report.reason) == ("harassment", "No reason provided")
+
+    def test_without_category_is_other(self, login_as, ctx):
+        """Older app versions send a free text reason only, which may be empty."""
+        assert login_as(self.alice).post(REPORT, json={"reported_user_info": "bob"}).status_code == 200
+        with ctx():
+            assert ReportUserModel.query.one().category == "other"
+
+    @pytest.mark.parametrize("reason", [None, "", "   "])
+    def test_other_category_requires_a_reason(self, login_as, ctx, reason):
+        body = {"reported_user_info": "bob", "category": "other", "reason": reason}
+        assert login_as(self.alice).post(REPORT, json=body).status_code == 400
+        with ctx():
+            assert ReportUserModel.query.count() == 0
+
+    @pytest.mark.parametrize("category", ["insult", "", "SPAM"])
+    def test_unknown_category(self, login_as, ctx, category):
+        body = {"reported_user_info": "bob", "category": category, "reason": "x"}
+        assert login_as(self.alice).post(REPORT, json=body).status_code == 400
+        with ctx():
+            assert ReportUserModel.query.count() == 0
+
+    @pytest.mark.parametrize("category", REPORT_CATEGORIES)
+    def test_every_category_is_accepted(self, login_as, category):
+        body = {"reported_user_info": "bob", "category": category, "reason": "x"}
+        assert login_as(self.alice).post(REPORT, json=body).status_code == 200
