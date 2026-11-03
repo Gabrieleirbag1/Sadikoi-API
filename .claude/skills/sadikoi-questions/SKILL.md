@@ -1,6 +1,6 @@
 ---
 name: sadikoi-questions
-description: Génère, réécrit ou corrige des questions bilingues (FR/EN) pour l'appli Sadikoi, où chaque jour le groupe vote pour un de ses membres. Produit un fichier JSON compatible avec l'API (src/data/questions*.json, question_themes*.json). Utilise ce skill dès que l'utilisateur veut de nouvelles questions, un nouveau lot, un nouveau thème, des questions plus hot/drôles/gênantes, corriger la traduction ou le français des questions existantes, ou ajouter des items/objets aux questions, et aussi quand il donne directement une liste de thèmes à ajouter (« ajoute les thèmes nostalgie, avenir… ») — même s'il ne dit pas « skill » ni « JSON ».
+description: Génère, réécrit ou corrige des questions bilingues (FR/EN) pour l'appli Sadikoi, où chaque jour le groupe vote pour un de ses membres. Produit un fichier JSON compatible avec l'API (src/data/questions*.json, question_themes*.json). Utilise ce skill dès que l'utilisateur veut de nouvelles questions, un nouveau lot, un nouveau thème, des questions plus hot/drôles/gênantes, corriger la traduction ou le français des questions existantes, ajouter des items/objets aux questions, ou ajouter des questions à vote multiple (« on vote pour tous ceux que ça concerne »), et aussi quand il donne directement une liste de thèmes à ajouter (« ajoute les thèmes nostalgie, avenir… ») — même s'il ne dit pas « skill » ni « JSON ».
 ---
 
 # Questions Sadikoi
@@ -17,14 +17,18 @@ Le premier lot généré avait un français « traduit de l'anglais » (« Qui e
    ```bash
    python3 .claude/skills/sadikoi-questions/scripts/build_questions.py lot.txt \
      --out src/data/questions_<nom>.json \
-     --existing src/data/questions_v7.json \
+     --existing src/data/questions_v8.json \
      --themes src/data/question_themes_<nom>.json
    ```
    - `--existing` (répétable) : fichiers déjà en place. Le script refuse les doublons et numérote à la suite (ou `--start-id N`).
    - Ne renumérote jamais les questions existantes : `question_id` est stocké en base et `src/builder.py` s'en sert pour retrouver le texte. Quand on supprime un thème, les trous dans les ids restent.
    - `--themes` : fichier de thèmes à créer ou compléter. Sans ça, l'API refuse les nouveaux thèmes (`src/group.py`).
    - Le script s'arrête sur la première passe si une règle est violée et liste chaque problème avec sa ligne. Corrige le `.txt` et relance jusqu'à ce qu'il passe.
-4. **Relire à froid** quelques questions de chaque thème avec la grille de la fin de ce fichier : le script attrape les erreurs mécaniques, pas une phrase maladroite.
+4. **Relire la langue, chaque langue à part.** L'utilisateur y tient beaucoup : une phrase qui sent la traduction gâche la question, même si l'idée est bonne. Le script attrape les erreurs mécaniques, pas une phrase maladroite. Fais trois passes sur **toutes** les questions du lot, pas un échantillon :
+   - **Le français seul**, sans regarder l'anglais : lis chaque phrase comme si tu la disais à voix haute à des potes à l'apéro. Si tu ne la dirais pas telle quelle (ordre des mots, verbe trop écrit, tournure qui calque l'anglais), réécris-la.
+   - **L'anglais seul**, sans regarder le français : un Américain de 25 ans doit pouvoir l'envoyer dans un groupe de potes sans que ça sonne traduit. Pas de mot à mot : adapte l'expression (« se taper la honte » → "embarrass yourself", pas "hit the shame"), la référence et le registre (un gros mot français garde un gros mot en anglais).
+   - **Les deux côte à côte** : même sens, même niveau d'humour, même mécanique de vote (une question à vote multiple reste ouverte à plusieurs personnes dans les deux langues).
+   Applique ensuite la grille de la section 7, et corrige le `.txt` puis relance le script.
 5. **Ne pas écraser** un fichier existant sans que l'utilisateur le demande : crée un nouveau fichier et dis-lui comment le brancher (`src/utils.py` charge `questions.json` et `question_themes.json`).
 
 ## Thèmes proposés par l'utilisateur
@@ -35,7 +39,7 @@ Quand l'utilisateur donne une liste de thèmes (« ajoute ces thèmes : nostalgi
 - **L'id n'existe pas** : crée le thème avec le mot de l'utilisateur (au singulier, en snake_case, sans accent : « entreprises » → `entreprise`), même s'il ressemble à un thème existant (avenir / futur, travail / boulot). Lis alors les questions du thème voisin et choisis un angle différent : par exemple futur = célébrité, Mars, prédictions ; avenir = vie d'adulte concrète (appart, mariage, enfants, impôts).
 - **« a/b »** (« ecole/etudes ») désigne un seul thème qui couvre les deux sujets : prends l'id existant s'il y en a un, sinon le premier mot.
 - Le nom EN ne doit pas reprendre celui d'un thème existant (futur s'appelle déjà *Future*, donc avenir devient *What's Next*).
-- Volume par défaut : 40 questions par thème, sauf si l'utilisateur donne un autre chiffre.
+- Volume par défaut : 40 questions par thème, plus 20 à 30 questions à vote multiple (section 3), sauf si l'utilisateur donne un autre chiffre.
 - Mets tous les thèmes dans un seul `.txt` et un seul lot. Le fichier `--themes` contient aussi les thèmes réutilisés, pour que le lot soit complet à lui seul.
 - Dans le compte rendu, sépare les thèmes créés des thèmes complétés, et signale chaque thème proche d'un thème existant.
 
@@ -47,12 +51,14 @@ s H|Qui serait le premier à vomir en soirée ?|Who'd be the first to throw up a
 d P|Quel duo finirait par se pécho après une soirée trop arrosée ?|Which two would end up hooking up after a few too many drinks?
 s! B|Qui viendrait te chercher à 4h du mat sans poser de questions ?|Who'd come pick you up at 4 a.m., no questions asked?
 r V|Classe le groupe du plus sobre au plus bourré en fin de soirée.|Rank the group from soberest to drunkest by the end of the night.
+s+ K|Qui a déjà quitté une soirée sans dire au revoir à personne ?|Who here has ever left a party without saying bye to anyone?
 ```
 
 - `# id|Nom FR|Nom EN` ouvre un thème ; les lignes suivantes en font partie.
-- Ligne de question : `<type><!?> <item>|<français>|<anglais>`.
+- Ligne de question : `<type><!?><+?> <item>|<français>|<anglais>`.
 - Types : `s` solo, `d` duo, `r` ranking, `c` scenario, `t` trap, `y` dynamique.
 - `!` après le type passe `enableSelfVote` à `false`, quand voter pour soi n'a pas de sens (« Qui *te* dit la vérité… »). Les duos sont déjà à `false`.
+- `+` après le type (`s+`, `c+`, `t+`, `y+`, combinable avec `!` : `s+!`) en fait une question à vote multiple : `enableMultipleVoting: true`, `voteNumberLimit: 0`. Interdit sur `d` et `r`, qui sont déjà multiples.
 - Item : la lettre du tableau des items (ou son id complet).
 
 ## 1. Langue
@@ -138,11 +144,29 @@ Répartition conseillée : environ 25 % solo, 20 % duo, 10 % ranking, 15 % scena
 
 Chaque question doit se résoudre par un vote pour des membres du groupe. À éviter : les questions à deux réponses (« qui donne les ordres et qui obéit ? »), les questions oui/non et celles qui visent quelqu'un hors du groupe.
 
-Règles de vote, appliquées par le script : solo, scenario, trap et dynamique → `enableSelfVote: true`, `enableMultipleVoting: false`, `voteNumberLimit: 1` ; duo → `false`, `true`, `2` ; ranking → `true`, `true`, `0` (illimité). `canWrite` vaut toujours `false` (`true` voudrait dire réponse libre en texte au lieu d'un vote, cf. `src/question.py`).
+Règles de vote, appliquées par le script : solo, scenario, trap et dynamique → `enableSelfVote: true`, `enableMultipleVoting: false`, `voteNumberLimit: 1` (avec `+` : `true`, `true`, `0`) ; duo → `false`, `true`, `2` ; ranking → `true`, `true`, `0` (illimité). `canWrite` vaut toujours `false` (`true` voudrait dire réponse libre en texte au lieu d'un vote, cf. `src/question.py`).
+
+### Questions à vote multiple (`+`)
+
+Chaque thème doit avoir **20 à 30 questions à vote multiple** qui ne sont ni des duos ni des rankings : des solo, scenario, trap ou dynamique où chacun coche **tous les membres concernés** (au moins un, sans maximum). Quand tu crées un thème, ajoute-les en plus des 40 questions ; quand tu complètes un thème qui n'en a pas encore, ajoute-en 20 à 30. Compte les questions existantes avec `enableMultipleVoting: true` hors `duo`/`ranking` pour savoir où on en est.
+
+Comment ça marche : l'API accepte un ou plusieurs membres (`voteNumberLimit: 0`), l'appli affiche « plusieurs choix possibles » et chaque membre coché reçoit une voix. Celui qui est le plus coché gagne l'item. Pas besoin d'écrire « (plusieurs réponses possibles) » dans la question.
+
+La question doit donc pouvoir concerner **plusieurs personnes à la fois** :
+- Bonnes mécaniques : les aveux (« Qui a déjà… », « Qui n'a jamais… »), les camps (« Qui fait partie de la team… »), les capacités (« Qui serait capable de… », « Qui tiendrait… »), les scénarios où plusieurs finissent pareil (« … : qui est encore debout à 6 h ? »).
+- À proscrire : tout ce qui désigne une seule personne. Pas de superlatif (« le plus », « le premier », « le pire », « le meilleur », « le seul »), pas de rôle unique (« le chef », « la balance », « le boulet de la bande »). Le script refuse ces formes, en français comme en anglais ("the most", "the first", "most likely").
+- Formulations : « Qui a déjà… ? », « Lesquels d'entre nous… ? », « Qui, ici, … ? », « Qui sont les … de la bande ? », « Qui fait partie de la team « … » ? », « Qui pourrait… ? ». En anglais : "Who here has ever…?", "Which of us…?", "Who's on team…?", "Who could…?". La règle des 3 mêmes débuts par thème s'applique aussi : varie.
+- `enableSelfVote` reste à `true` : se cocher soi-même fait partie du jeu (c'est un aveu). Mets `!` seulement si la question parle de « toi ».
+- Répartition conseillée parmi elles : environ 35 % solo, 25 % scenario, 20 % trap, 20 % dynamique. Un lot qui ne contient que des `+` déclenche des avertissements de répartition (duo = 0 %) : c'est normal.
+
+Exemples (mauvais → bon) :
+- « Qui est le plus en retard de la bande ? » (une seule personne) → « Qui est déjà arrivé à un rendez-vous avec plus d'une heure de retard ? »
+- « Qui serait le premier à pleurer devant Titanic ? » → « Qui a déjà pleuré devant un dessin animé, adulte ? »
+- « Qui est le chef de la team couche-tard ? » → « Qui sont les couche-tard de la bande ? »
 
 ## 4. Thèmes
 
-Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Le lot de référence est `questions_v7.json` (ids 1 à 1440, sans complot). Ses thèmes : soiree, boulot, ecole, mechant, loisirs, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets, nostalgie (Throwback), avenir (What's Next), travail (Jobs : tous les métiers, pas seulement le bureau), illegal (Illégal et dangereux / Living Dangerously), crado (Crado / Gross, 80 questions), trash (Trash / Savage, 80 questions, désactivé par défaut). Le thème complot a été retiré à la demande de l'utilisateur : ne le recrée pas sans qu'il le demande. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
+Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Le lot de référence est `questions_v8.json` (ids 1 à 1940, sans complot ; les ids 1441 à 1940 sont les 500 questions à vote multiple, 20 par thème). Ses thèmes : soiree, boulot, ecole, mechant, loisirs, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets, nostalgie (Throwback), avenir (What's Next), travail (Jobs : tous les métiers, pas seulement le bureau), illegal (Illégal et dangereux / Living Dangerously), crado (Crado / Gross, 80 questions), trash (Trash / Savage, 80 questions, désactivé par défaut). Le thème complot a été retiré à la demande de l'utilisateur : ne le recrée pas sans qu'il le demande. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
 
 Dans le fichier de thèmes, `checked` indique si le thème est activé par défaut ; le script le met à `false` pour `hot` et `trash` (`THEMES_OFF_BY_DEFAULT` dans le script) et à `true` pour les autres.
 
@@ -190,6 +214,6 @@ Si l'utilisateur veut un JSON sans passer par le script (par exemple pour coller
 Avant de rendre le lot, relis les questions et corrige celles où l'un de ces points est vrai :
 1. Un Français de 25 ans ne dirait pas cette phrase à ses potes.
 2. On dirait une traduction de l'anglais.
-3. On ne peut pas y répondre en votant pour un membre (ou deux pour un duo).
+3. On ne peut pas y répondre en votant pour un membre (ou deux pour un duo), ou bien, pour une question à vote multiple, elle ne concerne qu'une seule personne.
 4. L'anglais ne dit pas la même chose, ou sonne comme du français traduit.
 5. La question ressemble trop à une question déjà présente dans le lot ou dans les fichiers existants (même idée reformulée).

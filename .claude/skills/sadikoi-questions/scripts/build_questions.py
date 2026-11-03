@@ -5,6 +5,7 @@ Format compact (voir SKILL.md) :
     # theme_id|Nom FR|Name EN
     s H|Question en français ?|Question in English?
     s! B|...   (! = enableSelfVote false)
+    s+ K|...   (+ = vote multiple : on vote pour tous ceux que ça concerne)
 
 Usage :
     build_questions.py lot.txt [autre.txt ...] --out questions_x.json
@@ -42,6 +43,15 @@ VOTE = {
     "dynamique": (True, False, 1), "duo": (False, True, 2), "ranking": (True, True, 0),
 }
 TARGET_MIX = {"solo": .25, "duo": .20, "ranking": .10, "scenario": .15, "trap": .15, "dynamique": .15}
+# Vote multiple (« + ») : enableMultipleVoting true, voteNumberLimit 0 (au moins 1 membre, sans maximum).
+MULTI_TYPES = {"solo", "scenario", "trap", "dynamique"}
+# Une question à vote multiple ne doit pas désigner une seule personne.
+SINGLE_WINNER = [
+    (r"\b(le|la) (plus|moins|pire|meilleure?|seule?)\b", "superlatif qui désigne une seule personne"),
+    (r"\b(le|la) (premier|première|dernier|dernière) (à|de la bande|du groupe)\b", "« le premier à » désigne une seule personne"),
+    (r"\b(la personne|le boulet|la star|le chef) (de la bande|du groupe|qui)\b", "rôle unique"),
+]
+SINGLE_WINNER_EN = r"\b(the (most|least|worst|best|only)|the (first|last) (one )?to|most likely)\b"
 THEMES_OFF_BY_DEFAULT = {"hot", "trash"}  # thèmes osés : le groupe doit les activer lui-même
 
 # Calques de l'anglais repérés dans les anciens lots.
@@ -81,20 +91,26 @@ def parse(paths):
                     errors.append(f"{where} attendu 3 champs séparés par | : {line}")
                     continue
                 head, fr, en = (p.strip() for p in parts)
-                m = re.fullmatch(r"([sdrcty])(!?)\s+(\S+)", head)
-                if not m:
-                    errors.append(f"{where} en-tête invalide « {head} » (ex. « s H », « s! B »)")
+                m = re.fullmatch(r"([sdrcty])([!+]{0,2})\s+(\S+)", head)
+                if not m or len(set(m.group(2))) != len(m.group(2)):
+                    errors.append(f"{where} en-tête invalide « {head} » (ex. « s H », « s! B », « s+ K »)")
                     continue
                 if theme is None:
                     errors.append(f"{where} question avant toute ligne de thème")
                     continue
-                code, no_self, item = m.groups()
+                code, flags, item = m.groups()
+                no_self, multi_flag = "!" in flags, "+" in flags
                 item_def = ITEMS.get(item) or ITEMS_BY_ID.get(item)
                 if not item_def:
                     errors.append(f"{where} item inconnu « {item} »")
                     continue
                 qtype = TYPES[code]
                 self_vote, multi, limit = VOTE[qtype]
+                if multi_flag:
+                    if qtype not in MULTI_TYPES:
+                        errors.append(f"{where} « + » n'a pas de sens pour un {qtype} (déjà multiple)")
+                        continue
+                    multi, limit = True, 0
                 questions.append({
                     "content": {"fr": fr, "en": en},
                     "type": qtype,
@@ -117,6 +133,12 @@ def check(questions, existing):
     errors, warnings = [], []
     for q in questions:
         fr, en, w = q["content"]["fr"], q["content"]["en"], q["_where"]
+        if q["enableMultipleVoting"] and q["type"] in MULTI_TYPES:
+            for pattern, why in SINGLE_WINNER:
+                if re.search(pattern, fr, re.I):
+                    errors.append(f"{w} vote multiple mais {why} : {fr}")
+            if re.search(SINGLE_WINNER_EN, en, re.I):
+                errors.append(f"{w} vote multiple mais superlatif en anglais : {en}")
         if re.search(r"\w/\w|\(e\)|·", fr) or re.search(r"\b(il|elle)/(il|elle)\b", fr):
             errors.append(f"{w} écriture inclusive : {fr}")
         if re.search(r"\bsi ils?\b", fr, re.I):
@@ -199,6 +221,9 @@ def main():
 
     print(f"{len(questions)} questions, {len(themes)} thèmes, ids {start} à {start + len(questions) - 1}")
     print("types :", dict(collections.Counter(q["type"] for q in questions)))
+    multi = sum(q["enableMultipleVoting"] and q["type"] in MULTI_TYPES for q in questions)
+    if multi:
+        print(f"vote multiple (+) : {multi}")
     print("items :", dict(collections.Counter(q["item_name"]["id"] for q in questions)))
     for w in warnings:
         print("ATTENTION", w)
