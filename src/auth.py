@@ -14,6 +14,7 @@ from google.auth.transport import requests as google_requests
 
 from models import PasswordResetToken, UserModel, UserSecurity, ReportUserModel
 from exceptions import InvalidChoiceException
+from utils import normalize_language
 from config import allowed_file
 from notifications import remove_device_tokens
 from db import db, add_to_db, delete_from_db, update_from_db
@@ -121,7 +122,7 @@ def register_user(request: Request) -> tuple[dict, int]:
     confirm_password = data.get('confirm_password')
     device_id = data.get('device_id')
     device_name = data.get('device_name', 'Unknown device')
-    language = data.get('language', 'en').split("-")[0]  # Handle cases like "en-US" or "fr-FR"
+    language = normalize_language(data.get('language'))
 
     if password != confirm_password:
         return {"success": False, "message": "Passwords do not match"}, 400
@@ -187,7 +188,8 @@ def update_user(request: Request) -> tuple[dict, int]:
     user.email = data.get('email', user.email)
     user.username = data.get('username', user.username)
     confirm_password = data.get('confirm_password')
-    user.language = data.get('language', user.language).split("-")[0]  # Handle cases like "en-US" or "fr-FR"
+    if 'language' in data:
+        user.language = normalize_language(data['language'], default=user.language or 'en')
     if 'password' in data and data['password'] != confirm_password:
         return {"success": False, "message": "Passwords do not match"}, 400
     
@@ -257,7 +259,7 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         email = idinfo['email']
         username = idinfo.get('name', email.split('@')[0])
         google_picture = idinfo.get('picture')
-        language = idinfo.get('locale', 'en').split("-")[0]  # Handle cases like "en-US" or "fr-FR"
+        language = normalize_language(idinfo.get('locale'))
         
         user = get_user_object(email)
         

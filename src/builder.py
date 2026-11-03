@@ -3,7 +3,7 @@ import datetime
 from models import ChatMessageModel, GroupModel, ItemAnnouncement, ItemModel, QuestionFeedbackModel, QuestionModel, UserModel, GroupUser
 from db import db
 from flask_login import current_user
-from utils import question_pool
+from utils import normalize_language, question_pool
 
 
 def iso_utc(value: datetime.datetime | None) -> str | None:
@@ -90,6 +90,7 @@ def get_user_feedback(question: QuestionModel, user_id: int | None) -> bool | No
 
 def build_question_response(question: QuestionModel, question_pool: list, language: str, votes: dict = None,
                             announcement: dict | None = None, user_id: int | None = None) -> dict:
+    language = normalize_language(language)  # accounts saved before languages were checked
     content = next((q['content'][language] for q in question_pool if q['question_id'] == question.question_id), None)
     theme = next((q['theme'][language] for q in question_pool if q['question_id'] == question.question_id), None)
     return {
