@@ -20,7 +20,7 @@ def events(externals, name):
 
 def roles(ctx, group):
     with ctx():
-        return {row.user_id: row.role for row in GroupUser.query.filter_by(group_id=group.id).all()}
+        return {row.user_id: row.role for row in GroupUser.active().filter_by(group_id=group.id).all()}
 
 
 # ---------------------------------------------------------------------- create
@@ -381,3 +381,43 @@ class TestDeletedGroup:
         # Like for a group the user is not in.
         response = login_as(world.member).get(f"/api/notifications/settings/groups/{world.group.id}/")
         assert response.status_code == 403
+
+
+# ------------------------------------------------------------- left members
+class TestLeftMember:
+    """Leaving only sets group_user.left_at: the row stays, the user is no longer a member."""
+
+    @pytest.fixture(autouse=True)
+    def left(self, login_as, world):
+        assert login_as(world.member).delete(url(world.group.id, world.member.id)).status_code == 200
+
+    def test_the_row_is_kept(self, world, ctx):
+        with ctx():
+            row = GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one()
+            assert row.left_at is not None
+            assert [user.id for user in GroupModel.query.get(world.group.id).users] == [world.admin.id]
+
+    def test_not_listed_as_member(self, login_as, world):
+        content = login_as(world.admin).get(url(world.group.id)).get_json()["content"]
+        assert [user["id"] for user in content["users"]] == [world.admin.id]
+
+    def test_no_longer_sees_the_group(self, login_as, world):
+        client = login_as(world.member)
+        assert client.get(GROUPS + "user/").get_json()["content"] == []
+        assert client.get(url(world.group.id)).status_code == 403
+        assert client.post(url(world.group.id, "messages"), json={"content": "hi"}).status_code == 403
+
+    def test_cannot_leave_twice(self, login_as, world):
+        assert login_as(world.member).delete(url(world.group.id, world.member.id)).status_code == 400
+
+    def test_comes_back_as_a_new_member(self, login_as, world, ctx):
+        with ctx():
+            row = GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one()
+            row.role, row.notify_messages = "admin", False  # as they were when leaving
+            db.session.commit()
+            token = factories.make_invitation(world.group)
+        assert login_as(world.member).post(GROUPS + f"invitations/{token}/").status_code == 200
+        with ctx():
+            row = GroupUser.query.filter_by(user_id=world.member.id, group_id=world.group.id).one()
+            assert (row.left_at, row.role, row.notify_messages) == (None, "member", True)
+        assert roles(ctx, world.group) == {world.admin.id: "admin", world.member.id: "member"}
