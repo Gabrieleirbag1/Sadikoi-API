@@ -344,7 +344,7 @@ def handle_join(data):
         log(f"Rate limited join_group for user {current_user.id}", level="WARNING")
         return
     group_id = int(data['groupId'])
-    if not GroupModel.get_active(group_id) or not GroupUser.query.filter_by(user_id=current_user.id, group_id=group_id).first():
+    if not GroupModel.get_active(group_id) or not GroupUser.active().filter_by(user_id=current_user.id, group_id=group_id).first():
         log(f"Denied join_group: user {current_user.id} not a member of group {group_id}", level="WARNING")
         return
     join_room(str(group_id))

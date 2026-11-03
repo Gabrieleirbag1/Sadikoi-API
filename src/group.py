@@ -6,7 +6,7 @@ from flask_login import current_user
 
 from models import GroupInvitationModel, GroupModel, UserModel, GroupUser
 from flask import Request, request
-from db import add_to_db, delete_from_db, update_from_db
+from db import db, add_to_db, update_from_db
 from auth import get_user_object
 from builder import build_group_response, build_groups_response
 from notifications import init_notification_markers
@@ -84,7 +84,7 @@ def update_group(group_id: int) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
     
-    group_user = GroupUser.query.filter_by(user_id=user.id, group_id=group_id).first()
+    group_user = GroupUser.active().filter_by(user_id=user.id, group_id=group_id).first()
     if not group_user:
         return {"success": False, "message": "User is not a member of the group"}, 403
     if not group_user or group_user.role != 'admin':
@@ -135,7 +135,7 @@ def delete_group(group_id: int) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
     
-    group_user = GroupUser.query.filter_by(user_id=user.id, group_id=group_id).first()
+    group_user = GroupUser.active().filter_by(user_id=user.id, group_id=group_id).first()
     if not group_user:
         return {"success": False, "message": "User is not a member of the group"}, 403
     if not group_user or group_user.role != 'admin':
@@ -177,7 +177,16 @@ def add_user_to_group(group_id: int, user_info: str) -> tuple[dict, int]:
     if user in group.users:
         return {"success": False, "message": "User is already in the group"}, 400
 
-    group.users.append(user)
+    # Someone who left keeps their row (one per user and group): they come back as a new member.
+    group_user = GroupUser.query.filter_by(user_id=user.id, group_id=group_id).first()
+    if group_user:
+        group_user.left_at = None
+        group_user.role = 'member'
+        group_user.joined_at = datetime.datetime.now(datetime.timezone.utc)
+        for column in ('notify_messages', 'notify_questions', 'notify_vote_reminder', 'notify_answers'):
+            setattr(group_user, column, True)
+    else:
+        db.session.add(GroupUser(user_id=user.id, group_id=group_id, role='member'))
 
     result = update_from_db()
     if result.get("error"):
@@ -202,18 +211,21 @@ def remove_user_from_group(group_id: int, user_to_remove_info: str) -> tuple[dic
     if not user_to_remove:
         return {"success": False, "message": "User not found"}, 404
 
-    group_user = GroupUser.query.filter_by(user_id=current_user.id, group_id=group_id).first()
+    group_user = GroupUser.active().filter_by(user_id=current_user.id, group_id=group_id).first()
     if not group_user:
         return {"success": False, "message": "User is not in the group"}, 400
     
-    group_user_to_remove = GroupUser.query.filter_by(user_id=user_to_remove.id, group_id=group_id).first()
+    group_user_to_remove = GroupUser.active().filter_by(user_id=user_to_remove.id, group_id=group_id).first()
     if not group_user_to_remove:
         return {"success": False, "message": "User is not in the group"}, 400
 
     if group_user.role != 'admin' and current_user.id != user_to_remove.id:
         return {"success": False, "message": "Only admins can remove other users from the group"}, 403
     
-    others = GroupUser.query.filter_by(group_id=group_id).filter(GroupUser.user_id != user_to_remove.id)
+    # Nothing is deleted: the membership is only marked as left.
+    group_user_to_remove.left_at = datetime.datetime.now(datetime.timezone.utc)
+
+    others = GroupUser.active().filter_by(group_id=group_id).filter(GroupUser.user_id != user_to_remove.id)
     if others.count() == 0:
         # The last member leaves: nobody is left to use the group, so it goes with them.
         return _delete_group(group, f"User {user_to_remove.id} left group {group_id}, its last member: group deleted")
@@ -222,11 +234,9 @@ def remove_user_from_group(group_id: int, user_to_remove_info: str) -> tuple[dic
         # The group always keeps an admin: the longest-standing member takes over.
         others.order_by(GroupUser.joined_at, GroupUser.user_id).first().role = 'admin'
 
-    result = delete_from_db(group_user_to_remove)
+    result = update_from_db()
     if result.get("error"):
         return result, 500
-
-    update_from_db()
 
     if user_to_remove.id == current_user.id:
         log(f"User {user_to_remove.id} left group {group_id}", level="INFO")
@@ -252,7 +262,7 @@ def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     if not user_to_update_role_info:
         return {"success": False, "message": "User info is required to set role"}, 400
 
-    group_user: GroupUser = GroupUser.query.filter_by(user_id=user.id, group_id=group_id, role='admin').first()
+    group_user: GroupUser = GroupUser.active().filter_by(user_id=user.id, group_id=group_id, role='admin').first()
     if not group_user:
         return {"success": False, "message": "User is not a member of the group or not an admin"}, 403
 
@@ -260,7 +270,7 @@ def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     if not user_to_update_role:
         return {"success": False, "message": "User not found"}, 404
 
-    group_user_to_update: GroupUser = GroupUser.query.filter_by(user_id=user_to_update_role.id, group_id=group_id).first()
+    group_user_to_update: GroupUser = GroupUser.active().filter_by(user_id=user_to_update_role.id, group_id=group_id).first()
     if not group_user_to_update:
         return {"success": False, "message": "User to update role is not a member of the group"}, 404
 
