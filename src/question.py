@@ -317,7 +317,7 @@ def get_group_for_member(group_id: int) -> tuple[GroupModel | None, UserModel | 
 
     :return: (group, user, error); error is the (response, status) to return when the access is denied, else None.
     :rtype: tuple[GroupModel | None, UserModel | None, tuple[dict, int] | None]"""
-    group = GroupModel.query.get(group_id)
+    group = GroupModel.get_active(group_id)
     if not group:
         return None, None, ({"success": False, "message": "Group not found"}, 404)
     user = get_user_object(current_user.id or current_user.username)

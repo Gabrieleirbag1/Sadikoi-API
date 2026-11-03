@@ -26,8 +26,11 @@ def count(model, *criteria) -> int:
 def get_kpis() -> dict[str, int | float]:
     """Key metrics of the database."""
     week, month = days_ago(7), days_ago(30)
-    groups = count(GroupModel)
-    memberships = count(GroupUser)
+    # Deleted groups stay in the database: the dashboard counts the others.
+    groups = count(GroupModel, GroupModel.deleted.is_(False))
+    memberships = (db.session.query(func.count()).select_from(GroupUser)
+                   .join(GroupModel, GroupModel.id == GroupUser.group_id)
+                   .filter(GroupModel.deleted.is_(False)).scalar() or 0)
     return {
         "users_total": count(UserModel),
         "users_active": count(UserModel, UserModel.deleted.isnot(True)),
@@ -74,6 +77,7 @@ def top_groups(limit: int = 5) -> list[tuple[GroupModel, int, int]]:
     rows = (db.session.query(GroupModel, func.coalesce(messages.c.n, 0), func.coalesce(members.c.n, 0))
             .outerjoin(messages, messages.c.group_id == GroupModel.id)
             .outerjoin(members, members.c.group_id == GroupModel.id)
+            .filter(GroupModel.deleted.is_(False))
             .order_by(func.coalesce(messages.c.n, 0).desc(), GroupModel.id)
             .limit(limit).all())
     return [(group, int(n_messages), int(n_members)) for group, n_messages, n_members in rows]
@@ -84,7 +88,8 @@ def theme_counts() -> list[dict]:
 
     Every known theme is listed, even when no group picked it; ids missing from question_themes.json
     (removed themes still saved in a group) are listed with their id as label."""
-    counts = Counter(theme for (themes,) in db.session.query(GroupModel.themes) for theme in set(themes or []))
+    counts = Counter(theme for (themes,) in db.session.query(GroupModel.themes).filter(GroupModel.deleted.is_(False))
+                     for theme in set(themes or []))
     language = get_locale()
     rows = [{"id": theme_id, "label": theme.get(language) or theme_id, "count": counts.get(theme_id, 0)}
             for theme_id, theme in question_themes.items()]

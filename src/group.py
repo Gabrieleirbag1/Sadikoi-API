@@ -65,7 +65,7 @@ def get_group(group_id: int) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
-    group = GroupModel.query.get(group_id)
+    group = GroupModel.get_active(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
     
@@ -75,7 +75,7 @@ def get_group(group_id: int) -> tuple[dict, int]:
     return {"success": True, "message": "Group retrieved successfully", "content": build_group_response(group)}, 200
 
 def update_group(group_id: int) -> tuple[dict, int]:
-    group = GroupModel.query.get(group_id)
+    group = GroupModel.get_active(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
     
@@ -126,7 +126,7 @@ def update_group(group_id: int) -> tuple[dict, int]:
     return {"success": True, "message": "Group updated successfully", "content": response_data}, 200
 
 def delete_group(group_id: int) -> tuple[dict, int]:
-    group = GroupModel.query.get(group_id)
+    group = GroupModel.get_active(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
 
@@ -144,10 +144,11 @@ def delete_group(group_id: int) -> tuple[dict, int]:
     return _delete_group(group, f"User {user.id} deleted group {group_id}")
 
 def _delete_group(group: GroupModel, log_message: str) -> tuple[dict, int]:
-    """Delete the group and tell the members' open pages."""
+    """Mark the group as deleted (nothing is removed from the database) and tell the members' open pages."""
     group_id = group.id
     response_data = build_group_response(group)
-    result = delete_from_db(group)
+    group.deleted = True
+    result = update_from_db()
     if result.get("error"):
         return result, 500
 
@@ -161,11 +162,11 @@ def get_user_groups() -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
-    groups = build_groups_response(user.groups)
+    groups = build_groups_response(user.groups.filter(GroupModel.deleted.is_(False)))
     return {"success": True, "message": "Groups retrieved successfully", "content": groups}, 200
 
 def add_user_to_group(group_id: int, user_info: str) -> tuple[dict, int]:
-    group = GroupModel.query.get(group_id)
+    group = GroupModel.get_active(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
 
@@ -193,7 +194,7 @@ def remove_user_from_group(group_id: int, user_to_remove_info: str) -> tuple[dic
     if not user_info:
         return {"success": False, "message": "User info is required to remove a user from a group"}, 400
     
-    group = GroupModel.query.get(group_id)
+    group = GroupModel.get_active(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
 
@@ -241,7 +242,7 @@ def promote_user_group_role(group_id: int) -> tuple[dict, int]:
     if not user:
         return {"success": False, "message": "User not found"}, 404
 
-    group = GroupModel.query.get(group_id)
+    group = GroupModel.get_active(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
 
@@ -311,7 +312,7 @@ def create_invitation(group: GroupModel) -> tuple[dict, int]:
     return {"success": True, "message": "Invitation created successfully", "content": invitation.token}, 201
 
 def get_group_invitation(group_id: int) -> tuple[dict, int]:
-    group: GroupModel = GroupModel.query.get(group_id)
+    group: GroupModel = GroupModel.get_active(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
     

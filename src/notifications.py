@@ -234,7 +234,7 @@ def init_notification_markers(group: GroupModel, now: datetime.datetime | None =
 def notify_new_questions(now: datetime.datetime | None = None) -> None:
     """At each group's reset time: one notification per new daily window."""
     pairs = []
-    for group in GroupModel.query.all():
+    for group in GroupModel.query.filter(GroupModel.deleted.is_(False)):
         start = current_window_start(group, now)
         last = _as_utc(group.last_question_notified_at)
         group.last_question_notified_at = start
@@ -265,7 +265,7 @@ def notify_vote_reminders(now: datetime.datetime | None = None) -> None:
     """One hour before the end of each group's day: remind the members who haven't voted."""
     now = now or datetime.datetime.now(datetime.timezone.utc)
     pairs = []
-    for group in GroupModel.query.all():
+    for group in GroupModel.query.filter(GroupModel.deleted.is_(False)):
         start = current_window_start(group, now)
         in_last_hour = now >= start + DAY - REMINDER_BEFORE_END
         last = _as_utc(group.last_vote_reminder_at)
@@ -361,6 +361,8 @@ def update_settings(request: Request) -> tuple[dict, int]:
 
 
 def _membership(group_id: int) -> GroupUser | None:
+    if not GroupModel.get_active(group_id):
+        return None
     return GroupUser.query.filter_by(user_id=int(current_user.id), group_id=group_id).first()
 
 

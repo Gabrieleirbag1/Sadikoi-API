@@ -84,7 +84,7 @@ def find_duplicate(user_id: int, client_id: str | None) -> ChatMessageModel | No
 
 
 def send_message(group_id: int, request: Request) -> tuple[dict, int]:
-    group = GroupModel.query.get(group_id)
+    group = GroupModel.get_active(group_id)
     if not group:
         return {"success": False, "message": "Group not found"}, 404
 
