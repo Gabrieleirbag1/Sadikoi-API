@@ -275,7 +275,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -297,7 +297,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -319,7 +319,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -341,7 +341,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -363,7 +363,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -385,7 +385,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -407,7 +407,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -429,7 +429,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -451,7 +451,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -473,7 +473,7 @@
       "fr": "Soirée",
       "en": "Party"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1375,7 +1375,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1397,7 +1397,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1419,7 +1419,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1441,7 +1441,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1463,7 +1463,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1485,7 +1485,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1507,7 +1507,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1529,7 +1529,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1551,7 +1551,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -1573,7 +1573,7 @@
       "fr": "Boulot",
       "en": "Work"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2475,7 +2475,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2497,7 +2497,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2519,7 +2519,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2541,7 +2541,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2563,7 +2563,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2585,7 +2585,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2607,7 +2607,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2629,7 +2629,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2651,7 +2651,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -2673,7 +2673,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3575,7 +3575,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3597,7 +3597,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3619,7 +3619,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3641,7 +3641,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3663,7 +3663,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3685,7 +3685,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3707,7 +3707,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3729,7 +3729,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3751,7 +3751,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -3773,7 +3773,7 @@
       "fr": "Méchant",
       "en": "Villain"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4675,7 +4675,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4697,7 +4697,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4719,7 +4719,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4741,7 +4741,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4763,7 +4763,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4785,7 +4785,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4807,7 +4807,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4829,7 +4829,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4851,7 +4851,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -4873,7 +4873,7 @@
       "fr": "Loisirs",
       "en": "Hobbies"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5775,7 +5775,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5797,7 +5797,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5819,7 +5819,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5841,7 +5841,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5863,7 +5863,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5885,7 +5885,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5907,7 +5907,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5929,7 +5929,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5951,7 +5951,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -5973,7 +5973,7 @@
       "fr": "Et si",
       "en": "What if"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -6875,7 +6875,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -6897,7 +6897,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -6919,7 +6919,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -6941,7 +6941,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -6963,7 +6963,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -6985,7 +6985,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -7007,7 +7007,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -7029,7 +7029,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -7051,7 +7051,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -7073,7 +7073,7 @@
       "fr": "Hot",
       "en": "Spicy"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -7975,7 +7975,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -7997,7 +7997,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -8019,7 +8019,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -8041,7 +8041,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -8063,7 +8063,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -8085,7 +8085,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -8107,7 +8107,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -8129,7 +8129,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -8151,7 +8151,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -8173,7 +8173,7 @@
       "fr": "Voyage",
       "en": "Travel"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9075,7 +9075,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9097,7 +9097,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9119,7 +9119,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9141,7 +9141,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9163,7 +9163,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9185,7 +9185,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9207,7 +9207,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9229,7 +9229,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9251,7 +9251,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -9273,7 +9273,7 @@
       "fr": "Argent",
       "en": "Money"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10175,7 +10175,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10197,7 +10197,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10219,7 +10219,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10241,7 +10241,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10263,7 +10263,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10285,7 +10285,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10307,7 +10307,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10329,7 +10329,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10351,7 +10351,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -10373,7 +10373,7 @@
       "fr": "Réseaux",
       "en": "Social media"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11275,7 +11275,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11297,7 +11297,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11319,7 +11319,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11341,7 +11341,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11363,7 +11363,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11385,7 +11385,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11407,7 +11407,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11429,7 +11429,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11451,7 +11451,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -11473,7 +11473,7 @@
       "fr": "Amour",
       "en": "Love"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12375,7 +12375,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12397,7 +12397,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12419,7 +12419,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12441,7 +12441,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12463,7 +12463,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12485,7 +12485,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12507,7 +12507,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12529,7 +12529,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12551,7 +12551,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -12573,7 +12573,7 @@
       "fr": "Famille",
       "en": "Family"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13475,7 +13475,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13497,7 +13497,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13519,7 +13519,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13541,7 +13541,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13563,7 +13563,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13585,7 +13585,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13607,7 +13607,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13629,7 +13629,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13651,7 +13651,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -13673,7 +13673,7 @@
       "fr": "Survie",
       "en": "Survival"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14575,7 +14575,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14597,7 +14597,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14619,7 +14619,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14641,7 +14641,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14663,7 +14663,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14685,7 +14685,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14707,7 +14707,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14729,7 +14729,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14751,7 +14751,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -14773,7 +14773,7 @@
       "fr": "Absurde",
       "en": "Absurd"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15675,7 +15675,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15697,7 +15697,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15719,7 +15719,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15741,7 +15741,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15763,7 +15763,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15785,7 +15785,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15807,7 +15807,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15829,7 +15829,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15851,7 +15851,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -15873,7 +15873,7 @@
       "fr": "Amitié",
       "en": "Friendship"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16775,7 +16775,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16797,7 +16797,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16819,7 +16819,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16841,7 +16841,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16863,7 +16863,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16885,7 +16885,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16907,7 +16907,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16929,7 +16929,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16951,7 +16951,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -16973,7 +16973,7 @@
       "fr": "Futur",
       "en": "Future"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -17875,7 +17875,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -17897,7 +17897,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -17919,7 +17919,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -17941,7 +17941,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -17963,7 +17963,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -17985,7 +17985,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -18007,7 +18007,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -18029,7 +18029,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -18051,7 +18051,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -18073,7 +18073,7 @@
       "fr": "Bouffe",
       "en": "Food"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -18975,7 +18975,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -18997,7 +18997,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -19019,7 +19019,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -19041,7 +19041,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -19063,7 +19063,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -19085,7 +19085,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -19107,7 +19107,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -19129,7 +19129,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -19151,7 +19151,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -19173,7 +19173,7 @@
       "fr": "Sport",
       "en": "Sports"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20075,7 +20075,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20097,7 +20097,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20119,7 +20119,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20141,7 +20141,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20163,7 +20163,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20185,7 +20185,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20207,7 +20207,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20229,7 +20229,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20251,7 +20251,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20273,7 +20273,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -20581,7 +20581,7 @@
       "fr": "Secrets",
       "en": "Secrets"
     },
-    "enableSelfVote": true,
+    "enableSelfVote": false,
     "enableMultipleVoting": false,
     "voteNumberLimit": 1,
     "canWrite": false,
@@ -21153,7 +21153,7 @@
       "fr": "Nostalgie",
       "en": "Throwback"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -21175,7 +21175,7 @@
       "fr": "Nostalgie",
       "en": "Throwback"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -21197,7 +21197,7 @@
       "fr": "Nostalgie",
       "en": "Throwback"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -21219,7 +21219,7 @@
       "fr": "Nostalgie",
       "en": "Throwback"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -21241,7 +21241,7 @@
       "fr": "Nostalgie",
       "en": "Throwback"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -21263,7 +21263,7 @@
       "fr": "Nostalgie",
       "en": "Throwback"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -21285,7 +21285,7 @@
       "fr": "Nostalgie",
       "en": "Throwback"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -21307,7 +21307,7 @@
       "fr": "Nostalgie",
       "en": "Throwback"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -21329,7 +21329,7 @@
       "fr": "Nostalgie",
       "en": "Throwback"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22033,7 +22033,7 @@
       "fr": "Avenir",
       "en": "What's Next"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22055,7 +22055,7 @@
       "fr": "Avenir",
       "en": "What's Next"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22077,7 +22077,7 @@
       "fr": "Avenir",
       "en": "What's Next"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22099,7 +22099,7 @@
       "fr": "Avenir",
       "en": "What's Next"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22121,7 +22121,7 @@
       "fr": "Avenir",
       "en": "What's Next"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22143,7 +22143,7 @@
       "fr": "Avenir",
       "en": "What's Next"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22165,7 +22165,7 @@
       "fr": "Avenir",
       "en": "What's Next"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22187,7 +22187,7 @@
       "fr": "Avenir",
       "en": "What's Next"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22209,7 +22209,7 @@
       "fr": "Avenir",
       "en": "What's Next"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22913,7 +22913,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22935,7 +22935,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22957,7 +22957,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -22979,7 +22979,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23001,7 +23001,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23023,7 +23023,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23045,7 +23045,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23067,7 +23067,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23089,7 +23089,7 @@
       "fr": "École",
       "en": "School"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23793,7 +23793,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23815,7 +23815,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23837,7 +23837,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23859,7 +23859,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23881,7 +23881,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23903,7 +23903,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23925,7 +23925,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23947,7 +23947,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -23969,7 +23969,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -24387,7 +24387,7 @@
       "fr": "Travail",
       "en": "Jobs"
     },
-    "enableSelfVote": true,
+    "enableSelfVote": false,
     "enableMultipleVoting": false,
     "voteNumberLimit": 1,
     "canWrite": false,
@@ -24673,7 +24673,7 @@
       "fr": "Illégal et dangereux",
       "en": "Living Dangerously"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -24695,7 +24695,7 @@
       "fr": "Illégal et dangereux",
       "en": "Living Dangerously"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -24717,7 +24717,7 @@
       "fr": "Illégal et dangereux",
       "en": "Living Dangerously"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -24739,7 +24739,7 @@
       "fr": "Illégal et dangereux",
       "en": "Living Dangerously"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -24761,7 +24761,7 @@
       "fr": "Illégal et dangereux",
       "en": "Living Dangerously"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -24783,7 +24783,7 @@
       "fr": "Illégal et dangereux",
       "en": "Living Dangerously"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -24805,7 +24805,7 @@
       "fr": "Illégal et dangereux",
       "en": "Living Dangerously"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -24827,7 +24827,7 @@
       "fr": "Illégal et dangereux",
       "en": "Living Dangerously"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -24849,7 +24849,7 @@
       "fr": "Illégal et dangereux",
       "en": "Living Dangerously"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -25553,7 +25553,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -25575,7 +25575,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -25597,7 +25597,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -25619,7 +25619,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -25641,7 +25641,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -25663,7 +25663,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -25685,7 +25685,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -25707,7 +25707,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -26433,7 +26433,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -26455,7 +26455,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -26477,7 +26477,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -26499,7 +26499,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -26521,7 +26521,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -26543,7 +26543,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -26565,7 +26565,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -26587,7 +26587,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -26609,7 +26609,7 @@
       "fr": "Crado",
       "en": "Gross"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27555,7 +27555,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27577,7 +27577,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27599,7 +27599,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27621,7 +27621,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27643,7 +27643,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27665,7 +27665,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27687,7 +27687,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27709,7 +27709,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27731,7 +27731,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27753,7 +27753,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27775,7 +27775,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27797,7 +27797,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27819,7 +27819,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27841,7 +27841,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27863,7 +27863,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27885,7 +27885,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27907,7 +27907,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
@@ -27929,7 +27929,7 @@
       "fr": "Trash",
       "en": "Savage"
     },
-    "enableSelfVote": false,
+    "enableSelfVote": true,
     "enableMultipleVoting": true,
     "voteNumberLimit": 2,
     "canWrite": false,
