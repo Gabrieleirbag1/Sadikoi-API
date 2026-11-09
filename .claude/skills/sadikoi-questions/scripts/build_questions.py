@@ -4,7 +4,7 @@
 Format compact (voir SKILL.md) :
     # theme_id|Nom FR|Name EN
     s H|Question en français ?|Question in English?
-    s! B|...   (! = enableSelfVote false)
+    s! B|...   (! = enableSelfVote false, seulement si la question parle de « toi »)
     s+ K|...   (+ = vote multiple : on vote pour tous ceux que ça concerne)
 
 Usage :
@@ -40,8 +40,12 @@ TYPES = {"s": "solo", "d": "duo", "r": "ranking", "c": "scenario", "t": "trap", 
 # enableSelfVote, enableMultipleVoting, voteNumberLimit
 VOTE = {
     "solo": (True, False, 1), "scenario": (True, False, 1), "trap": (True, False, 1),
-    "dynamique": (True, False, 1), "duo": (False, True, 2), "ranking": (True, True, 0),
+    "dynamique": (True, False, 1), "duo": (True, True, 2), "ranking": (True, True, 0),
 }
+# Voter pour soi est permis par défaut sur tous les types (c'est un aveu). « ! » ne se justifie que si
+# la question vise celui qui vote (« Qui te dit la vérité… ? ») : on repère ces mots pour vérifier.
+ADDRESSES_VOTER = r"\b(te|toi|ton|ta|tes|tu)\b|\bt'"
+ADDRESSES_VOTER_EN = r"\b(you|your|yours|yourself)\b"
 TARGET_MIX = {"solo": .25, "duo": .20, "ranking": .10, "scenario": .15, "trap": .15, "dynamique": .15}
 # Vote multiple (« + ») : enableMultipleVoting true, voteNumberLimit 0 (au moins 1 membre, sans maximum).
 MULTI_TYPES = {"solo", "scenario", "trap", "dynamique"}
@@ -139,6 +143,12 @@ def check(questions, existing):
                     errors.append(f"{w} vote multiple mais {why} : {fr}")
             if re.search(SINGLE_WINNER_EN, en, re.I):
                 errors.append(f"{w} vote multiple mais superlatif en anglais : {en}")
+        quoted = re.sub(r"«[^»]*»", "", fr)
+        talks_to_voter = re.search(ADDRESSES_VOTER, quoted, re.I)
+        if not q["enableSelfVote"] and not talks_to_voter:
+            warnings.append(f"{w} « ! » sans « te/toi/ton » : voter pour soi doit rester permis sauf bonne raison -> {fr}")
+        if q["enableSelfVote"] and talks_to_voter and re.search(ADDRESSES_VOTER_EN, en, re.I):
+            warnings.append(f"{w} la question parle de « toi » : faut-il « ! » ? -> {fr}")
         if re.search(r"\w/\w|\(e\)|·", fr) or re.search(r"\b(il|elle)/(il|elle)\b", fr):
             errors.append(f"{w} écriture inclusive : {fr}")
         if re.search(r"\bsi ils?\b", fr, re.I):
