@@ -248,6 +248,58 @@ class TestMessageNotifications:
         assert tokens_of(externals.pushes) == ["admin-tablet", "token-admin"]
 
 
+# ------------------------------------------------- group seen on another device
+class TestGroupSeen:
+    @pytest.fixture(autouse=True)
+    def admin_notified(self, login_as, world, ctx, externals):
+        """The admin (who voted) has a phone and a tablet; the member's message reaches both."""
+        with ctx():
+            factories.make_vote(factories.make_question(world.group), world.admin, [world.member])
+            add_token(world.admin, "admin-phone", device_id="phone")
+            add_token(world.admin, "admin-tablet", device_id="tablet")
+        login_as(world.member).post(f"/api/groups/{world.group.id}/messages/", json={"content": "hello"})
+        assert tokens_of(externals.pushes) == ["admin-phone", "admin-tablet"]
+        externals.pushes.clear()
+
+    def seen(self, client, group, device_id="computer"):
+        return client.post(f"/api/notifications/groups/{group.id}/seen/", json={"device_id": device_id})
+
+    def test_seen_on_the_computer_clears_every_phone(self, login_as, world, externals):
+        assert self.seen(login_as(world.admin), world.group).status_code == 200
+        assert tokens_of(externals.pushes) == ["admin-phone", "admin-tablet"]
+        message = externals.pushes[0][1]
+        assert message["data"] == {"action": "dismiss", "tags": f"chat-{world.group.id}"}
+        assert "notification" not in message  # nothing shown on the phone
+
+    def test_seen_on_a_phone_clears_the_other_ones(self, login_as, world, externals):
+        self.seen(login_as(world.admin), world.group, device_id="phone")
+        assert tokens_of(externals.pushes) == ["admin-tablet"]
+
+    def test_cleared_once(self, login_as, world, externals):
+        client = login_as(world.admin)
+        self.seen(client, world.group)
+        externals.pushes.clear()
+        assert self.seen(client, world.group).status_code == 200
+        assert externals.pushes == []
+
+    def test_every_tag_of_the_group(self, login_as, world, externals):
+        login_as(world.member).post(f"/api/questions/{world.group.id}/vote/", json={"votedUsers": [world.admin.id]})
+        externals.pushes.clear()  # the "answered" notification, also to the admin
+        self.seen(login_as(world.admin), world.group)
+        assert externals.pushes[0][1]["data"]["tags"] == f"answers-{world.group.id},chat-{world.group.id}"
+
+    def test_nothing_sent_to_who_has_nothing_to_clear(self, login_as, world, externals):
+        self.seen(login_as(world.member), world.group)
+        assert externals.pushes == []
+
+    def test_requires_membership(self, login_as, world):
+        assert self.seen(login_as(world.outsider), world.group).status_code == 403
+
+    @pytest.mark.parametrize("device_id", [42, "x" * 65])
+    def test_invalid_device_id(self, login_as, world, device_id):
+        assert self.seen(login_as(world.admin), world.group, device_id).status_code == 400
+
+
 # ------------------------------------------------------------- new questions
 class TestQuestionNotifications:
     def run(self, ctx, now):
