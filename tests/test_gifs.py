@@ -49,6 +49,7 @@ def test_trending_returns_the_gif_list_and_uses_the_server_key(login_as, alice, 
     assert response.json["content"] == KLIPY_GIFS
     assert "test-key" in klipy.calls[0]["url"]
     assert "test-key" not in response.get_data(as_text=True)
+    assert klipy.calls[0]["params"]["content_filter"] == "off"
 
 
 def test_recent_uses_the_current_user_id(login_as, alice, klipy):
@@ -57,12 +58,12 @@ def test_recent_uses_the_current_user_id(login_as, alice, klipy):
 
 
 def test_search_forces_the_customer_id_and_filter(login_as, alice, klipy):
-    response = login_as(alice).get("/api/gifs/search/?q=cat&customer_id=999&content_filter=off")
+    response = login_as(alice).get("/api/gifs/search/?q=cat&customer_id=999&content_filter=high")
     assert response.status_code == 200
     params = klipy.calls[0]["params"]
     assert params["q"] == "cat"
     assert params["customer_id"] == str(alice.id)
-    assert params["content_filter"] == "medium"
+    assert params["content_filter"] == "off"
 
 
 @pytest.mark.parametrize("query", ["", "   ", "x" * 101])
