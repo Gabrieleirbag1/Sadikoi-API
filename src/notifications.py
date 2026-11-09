@@ -51,6 +51,15 @@ SETTINGS_COLUMNS = {
     'answers': 'notify_answers',
 }
 PLATFORMS = {'android', 'ios'}
+# Tags of a group's notifications (also in the app, push.service.ts): seeing the group clears them all.
+GROUP_TAG_PREFIXES = ('chat', 'answers', 'question')
+DEVICE_ID_MAX_LENGTH = 64
+
+# Tags each user may still have in their phones' tray (user id -> tags). When the group is seen on one device,
+# the others are only woken up if there is something to remove. In memory: needs a single process, like the
+# scheduler; after a restart, the notifications sent before it are not cleared from the other devices.
+_in_tray: dict[int, set[str]] = {}
+_in_tray_lock = threading.Lock()
 
 
 def _as_utc(value: datetime.datetime | None) -> datetime.datetime | None:
@@ -133,6 +142,18 @@ def build_message(title: str, body: str, route: str, channel: str, tag: str | No
     }
 
 
+def build_dismiss_message(tags: set[str]) -> dict:
+    """Data-only FCM message: the app removes these notifications from the tray without showing anything.
+
+    Normal priority: no need to wake a phone in Doze, nobody is looking at it. After a day the
+    notifications are old news: Firebase drops the message instead of delivering it late.
+    """
+    return {
+        'data': {'action': 'dismiss', 'tags': ','.join(sorted(tags))},
+        'android': {'priority': 'normal', 'ttl': '86400s'},
+    }
+
+
 def deliver(pairs: list[tuple[str, dict]]) -> None:
     """Send (token, message) pairs in the background, so no request waits for Firebase."""
     if not pairs or not fcm.enabled:
@@ -183,8 +204,26 @@ def _pairs_for(users: list[UserModel], build) -> list[tuple[str, dict]]:
         user = by_id[push_token.user_id]
         if user.id not in messages:
             messages[user.id] = build(user)
+            _remember_in_tray(user.id, messages[user.id]['data'].get('tag'))
         pairs.append((push_token.token, messages[user.id]))
     return pairs
+
+
+def _remember_in_tray(user_id: int, tag: str | None) -> None:
+    if tag:
+        with _in_tray_lock:
+            _in_tray.setdefault(user_id, set()).add(tag)
+
+
+def _take_from_tray(user_id: int, tags: set[str]) -> set[str]:
+    """The given tags this user may still have in their tray, now forgotten."""
+    with _in_tray_lock:
+        pending = _in_tray.get(user_id, set()) & tags
+        if pending:
+            _in_tray[user_id] -= pending
+            if not _in_tray[user_id]:
+                del _in_tray[user_id]
+        return pending
 
 
 ############## THE NOTIFICATIONS ##############
@@ -391,6 +430,29 @@ def update_group_settings(group_id: int, request: Request) -> tuple[dict, int]:
         return result, 500
     log(f"User {membership.user_id} changed their notification settings for group {group_id}: {changed}", level="INFO")
     return get_group_settings(group_id)
+
+
+def mark_group_seen(group_id: int, request: Request) -> tuple[dict, int]:
+    """The group is open on one of the user's devices (website or app): its notifications leave the tray
+    of their other phones. `device_id` is the device that saw it, which clears its own tray itself."""
+    device_id = (request.get_json(silent=True) or {}).get('device_id')
+    if device_id is not None and (not isinstance(device_id, str) or len(device_id) > DEVICE_ID_MAX_LENGTH):
+        return {"success": False, "message": "Invalid device_id"}, 400
+    membership = _membership(group_id)
+    if not membership:
+        return {"success": False, "message": "User is not a member of the group"}, 403
+
+    tags = _take_from_tray(membership.user_id, {f'{prefix}-{group_id}' for prefix in GROUP_TAG_PREFIXES})
+    if not tags:
+        return {"success": True, "message": "No notification to clear"}, 200
+    query = PushTokenModel.query.filter_by(user_id=membership.user_id)
+    if device_id:
+        query = query.filter(db.or_(PushTokenModel.device_id.is_(None), PushTokenModel.device_id != device_id))
+    message = build_dismiss_message(tags)
+    pairs = [(push_token.token, message) for push_token in query.all()]
+    deliver(pairs)
+    log(f"User {membership.user_id} saw group {group_id}: clearing {sorted(tags)} on {len(pairs)} device(s)", level="DEBUG")
+    return {"success": True, "message": "Notifications cleared on the other devices"}, 200
 
 
 def register_device(request: Request) -> tuple[dict, int]:

@@ -122,6 +122,8 @@ def externals(monkeypatch):
     monkeypatch.setattr(socketio, "emit", fake_emit)
     # Push notifications: (token, FCM message) pairs, sent synchronously and never to Firebase.
     monkeypatch.setattr(notifications, "deliver", lambda pairs: ext.pushes.extend(pairs))
+    # What each user has in their tray (kept in memory by the API): empty at the start of every test.
+    monkeypatch.setattr(notifications, "_in_tray", {})
     return ext
 
 
