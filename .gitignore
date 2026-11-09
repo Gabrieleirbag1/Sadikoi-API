@@ -216,3 +216,4 @@ uploads/
 
 # Container output (server_sadikoi.sh)
 sadikoi-logs
+logs/
