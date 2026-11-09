@@ -23,8 +23,9 @@
 #   - $HOST_SECRETS_DIR/.*.secrets and .firebase-service-account.json -> $APP_DIR/src/ (read-only)
 #     The secrets are excluded from the image (.dockerignore): only the files that exist on the host are mounted.
 #
-# Logs: everything the container prints is appended to $LOG_FILE (sadikoi-logs next to this script,
-# git-ignored), until the container stops. Which levels are printed is set when building the image:
+# Logs: everything the container prints is appended to one file per day, $LOG_DIR/YYYY-MM-DD.log
+# (logs/ next to this script, git-ignored), each line prefixed with its time, until the container stops.
+# Which levels are printed is set when building the image:
 #   sudo docker build --build-arg DEBUG=true --build-arg INFO=true -t sadikoi-api .
 # (defaults: DEBUG=false, INFO=true).
 
@@ -38,10 +39,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOST_INSTANCE_DIR="${HOST_INSTANCE_DIR:-$SCRIPT_DIR/instance}"
 HOST_UPLOADS_DIR="${HOST_UPLOADS_DIR:-$SCRIPT_DIR/src/uploads}"
 HOST_SECRETS_DIR="${HOST_SECRETS_DIR:-$SCRIPT_DIR/src}"
-LOG_FILE="${LOG_FILE:-$SCRIPT_DIR/sadikoi-logs}"
+LOG_DIR="${LOG_DIR:-$SCRIPT_DIR/logs}"
 
 # Created here, not by Docker: Docker would create missing folders owned by root.
-mkdir -p "$HOST_INSTANCE_DIR" "$HOST_UPLOADS_DIR" "$HOST_SECRETS_DIR"
+mkdir -p "$HOST_INSTANCE_DIR" "$HOST_UPLOADS_DIR" "$HOST_SECRETS_DIR" "$LOG_DIR"
 
 # The API generates SECRET_KEY when it is missing, but inside a --rm container it would be lost
 # on every restart (logging everyone out): create it on the host instead.
@@ -63,16 +64,28 @@ for secret in "$HOST_SECRETS_DIR"/.*.secrets "$HOST_SECRETS_DIR/.firebase-servic
     VOLUMES+=(-v "$secret:$APP_DIR/src/$name:ro")
 done
 
+# Reads log lines on stdin and appends each one to the file of the current day ($LOG_DIR/YYYY-MM-DD.log),
+# so a new file starts at midnight without restarting anything. --tee also prints the lines on the terminal.
+write_daily_logs() {
+    local line now
+    while IFS= read -r line || [ -n "$line" ]; do
+        printf -v now '%(%F %T)T' -1    # bash builtin: no `date` process per line
+        printf '%s %s\n' "${now#* }" "$line" >> "$LOG_DIR/${now%% *}.log"
+        [ "$1" = "--tee" ] && printf '%s\n' "$line"
+    done
+}
+
 start_detached() {
     sudo docker run -d --rm --name "$CONTAINER_NAME" -p 8082:8082 "${VOLUMES[@]}" "$IMAGE" || return
-    # Copies the container's output into the log file in the background; stops by itself with the container.
+    # Copies the container's output into the daily log files in the background; stops by itself with the container.
     # sudo -n: never waits for a password in the background (the run above just asked for it).
-    nohup sudo -n docker logs -f "$CONTAINER_NAME" >> "$LOG_FILE" 2>&1 &
-    echo "Logs: $LOG_FILE"
+    # trap '' HUP: keeps running after the terminal is closed (what nohup did before).
+    (trap '' HUP; sudo -n docker logs -f "$CONTAINER_NAME" 2>&1 | write_daily_logs) </dev/null >/dev/null 2>&1 &
+    echo "Logs: $LOG_DIR/$(date +%F).log"
 }
 
 start_interactive() {
-    sudo docker run -it --rm --name "$CONTAINER_NAME" -p 8082:8082 "${VOLUMES[@]}" "$IMAGE" 2>&1 | tee -a "$LOG_FILE"
+    sudo docker run -it --rm --name "$CONTAINER_NAME" -p 8082:8082 "${VOLUMES[@]}" "$IMAGE" 2>&1 | write_daily_logs --tee
 }
 
 stop_container() {

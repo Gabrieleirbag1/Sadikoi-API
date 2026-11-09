@@ -57,7 +57,7 @@ s+ K|Qui a déjà quitté une soirée sans dire au revoir à personne ?|Who here
 - `# id|Nom FR|Nom EN` ouvre un thème ; les lignes suivantes en font partie.
 - Ligne de question : `<type><!?><+?> <item>|<français>|<anglais>`.
 - Types : `s` solo, `d` duo, `r` ranking, `c` scenario, `t` trap, `y` dynamique.
-- `!` après le type passe `enableSelfVote` à `false`, quand voter pour soi n'a pas de sens (« Qui *te* dit la vérité… »). Les duos sont déjà à `false`.
+- `!` après le type passe `enableSelfVote` à `false`. **Par défaut, voter pour soi est permis sur tous les types, duos compris** : se désigner soi-même est un aveu et fait partie du jeu. L'utilisateur trouve que `false` revenait trop souvent : mets `!` seulement quand voter pour soi n'a aucun sens, c'est-à-dire quand la question vise celui qui vote (« Qui *te* dit la vérité… », « Qui garderait *ton* secret… », « Quels deux membres *te* tiendraient les cheveux… »). Une question gênante, une accusation ou un duo (« Quel duo finirait par se pécho… ») ne sont pas des raisons : celui qui vote peut se mettre dedans. Le script prévient quand un `!` est mis sans « te/toi/ton », ou oublié sur une question qui parle de « toi ».
 - `+` après le type (`s+`, `c+`, `t+`, `y+`, combinable avec `!` : `s+!`) en fait une question à vote multiple : `enableMultipleVoting: true`, `voteNumberLimit: 0`. Interdit sur `d` et `r`, qui sont déjà multiples.
 - Item : la lettre du tableau des items (ou son id complet).
 
@@ -144,7 +144,7 @@ Répartition conseillée : environ 25 % solo, 20 % duo, 10 % ranking, 15 % scena
 
 Chaque question doit se résoudre par un vote pour des membres du groupe. À éviter : les questions à deux réponses (« qui donne les ordres et qui obéit ? »), les questions oui/non et celles qui visent quelqu'un hors du groupe.
 
-Règles de vote, appliquées par le script : solo, scenario, trap et dynamique → `enableSelfVote: true`, `enableMultipleVoting: false`, `voteNumberLimit: 1` (avec `+` : `true`, `true`, `0`) ; duo → `false`, `true`, `2` ; ranking → `true`, `true`, `0` (illimité). `canWrite` vaut toujours `false` (`true` voudrait dire réponse libre en texte au lieu d'un vote, cf. `src/question.py`).
+Règles de vote, appliquées par le script : solo, scenario, trap et dynamique → `enableSelfVote: true`, `enableMultipleVoting: false`, `voteNumberLimit: 1` (avec `+` : `true`, `true`, `0`) ; duo → `true`, `true`, `2` (le votant peut se mettre dans le duo) ; ranking → `true`, `true`, `0` (illimité). `canWrite` vaut toujours `false` (`true` voudrait dire réponse libre en texte au lieu d'un vote, cf. `src/question.py`).
 
 ### Questions à vote multiple (`+`)
 

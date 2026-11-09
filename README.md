@@ -207,7 +207,7 @@ The container exposes port `8082`. These host paths are mounted:
 - If `src/.auth.secrets` is missing, the script generates it on the host. Otherwise the API would create a new `SECRET_KEY` inside each container and log everyone out on every restart.
 - Secrets are read when the API starts: restart the container (`-r`) after changing one. No rebuild is needed.
 
-The paths can be changed with the `HOST_INSTANCE_DIR`, `HOST_UPLOADS_DIR` and `HOST_SECRETS_DIR` environment variables. Container output is appended to `sadikoi-logs` next to the script (override with `LOG_FILE`).
+The paths can be changed with the `HOST_INSTANCE_DIR`, `HOST_UPLOADS_DIR` and `HOST_SECRETS_DIR` environment variables. Container output is written to one file per day, `logs/YYYY-MM-DD.log` next to the script, each line prefixed with its time (override the folder with `LOG_DIR`). A new file starts at midnight without restarting the container.
 
 ## Deployment
 

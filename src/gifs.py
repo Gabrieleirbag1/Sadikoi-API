@@ -11,6 +11,9 @@ KLIPY_TIMEOUT_SECONDS = 5
 GIFS_PER_PAGE = 50
 MAX_QUERY_LENGTH = 100
 SLUG_PATTERN = re.compile(r'^[A-Za-z0-9_-]{1,200}$')
+# Klipy's least strict level (off < low < medium < high). Never taken from the app's request.
+# The Partner Dashboard (partner.klipy.com/manage-content) can still filter more, globally or by country.
+CONTENT_FILTER = "off"
 
 def _klipy(method: str, path: str, **kwargs):
     """Call Klipy with the server-side key; returns (content, None) or (None, (body, status))."""
@@ -33,7 +36,7 @@ def _gifs(payload) -> list:
     return data.get("data") or []
 
 def get_trending_gifs():
-    payload, error = _klipy("GET", "trending")
+    payload, error = _klipy("GET", "trending", params={"content_filter": CONTENT_FILTER})
     if error:
         return error
     return {"success": True, "content": _gifs(payload)}, 200
@@ -48,7 +51,7 @@ def search_gifs(request):
     query = (request.args.get("q") or "").strip()
     if not query or len(query) > MAX_QUERY_LENGTH:
         return {"success": False, "message": f"q is required (max {MAX_QUERY_LENGTH} characters)"}, 400
-    params = {"q": query, "per_page": GIFS_PER_PAGE, "content_filter": "medium", "customer_id": str(current_user.id)}
+    params = {"q": query, "per_page": GIFS_PER_PAGE, "content_filter": CONTENT_FILTER, "customer_id": str(current_user.id)}
     payload, error = _klipy("GET", "search", params=params)
     if error:
         return error
