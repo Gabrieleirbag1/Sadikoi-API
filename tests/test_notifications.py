@@ -5,7 +5,7 @@ import pytest
 
 import notifications
 from db import db
-from models import GroupModel, GroupUser, PushTokenModel, UserModel
+from models import GroupModel, GroupUser, PushTokenModel, QuestionModel, UserModel
 from tests import factories
 
 H = datetime.timedelta
@@ -360,6 +360,57 @@ class TestQuestionNotifications:
         self.run(ctx, now + H(minutes=1, seconds=30))
         assert tokens_of(externals.pushes) == ["token-admin", "token-member"]
 
+
+    # The previous question stays at least 24 h (question.does_exist_question_today): after a change of
+    # reset time, the "new question" notification waits for it instead of coming at the new time a day early.
+    @staticmethod
+    def at(day, hour, minute=0):
+        return datetime.datetime(2026, 1, day, hour, minute, tzinfo=datetime.timezone.utc)
+
+    def move_reset(self, ctx, world, old_hour, new_hour, changed_at):
+        """A question set at `old_hour` on Jan 1st, then the reset time moved to `new_hour` (as group.update_group does)."""
+        with ctx():
+            group = db.session.get(GroupModel, world.group.id)
+            group.daily_reset_timestamp = datetime.time(old_hour)
+            db.session.add(QuestionModel(question_id=1, date=self.at(1, old_hour), theme="connerie",
+                                         item_name="bonnet_honte", group_id=group.id))
+            group.daily_reset_timestamp = datetime.time(new_hour)
+            notifications.init_notification_markers(group, changed_at)
+            db.session.commit()
+
+    @staticmethod
+    def team_pushes(externals):
+        return tokens_of([(t, m) for t, m in externals.pushes if m["notification"]["title"] == "Team"])
+
+    def test_reset_moved_earlier_notifies_when_the_question_comes(self, world, phones, externals, ctx):
+        self.move_reset(ctx, world, 15, 10, changed_at=self.at(1, 16))
+        self.run(ctx, self.at(2, 10, 1))                   # new time, but yesterday's question stays until 15:00
+        assert self.team_pushes(externals) == []
+        self.run(ctx, self.at(2, 15, 1))                   # 24 h later: the new question
+        assert self.team_pushes(externals) == ["token-admin", "token-member"]
+        self.run(ctx, self.at(2, 15, 30))
+        assert len(self.team_pushes(externals)) == 2
+        with ctx():                                         # created at 15:01, dated at the start of its window
+            db.session.add(QuestionModel(question_id=2, date=self.at(2, 10), theme="connerie",
+                                         item_name="bonnet_honte", group_id=world.group.id))
+            db.session.commit()
+        self.run(ctx, self.at(3, 10, 1))                   # from then on, the new time
+        assert len(self.team_pushes(externals)) == 4
+
+    def test_reset_moved_later_skips_the_day_without_a_new_question(self, world, phones, externals, ctx):
+        self.move_reset(ctx, world, 15, 20, changed_at=self.at(1, 16))
+        self.run(ctx, self.at(1, 20, 1))                   # the 15:00 question stays until tomorrow 20:00
+        self.run(ctx, self.at(2, 15, 1))
+        assert self.team_pushes(externals) == []
+        self.run(ctx, self.at(2, 20, 1))
+        assert self.team_pushes(externals) == ["token-admin", "token-member"]
+
+    def test_question_already_created_by_a_member(self, login_as, world, phones, externals, ctx):
+        now = factories.now()
+        self.run(ctx, now - H(days=1))
+        login_as(world.member).get(f"/api/questions/{world.group.id}/")  # created before the scheduler's run
+        self.run(ctx, now)
+        assert self.team_pushes(externals) == ["token-admin", "token-member"]
 
 # -------------------------------------------------------------------- answers
 class TestAnswerNotifications:
