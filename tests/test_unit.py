@@ -166,11 +166,24 @@ class TestChooseQuestion:
         assert {question_module.chose_random_question(["style"], 2)["question_id"] for _ in range(30)} == {2}
         assert {question_module.chose_random_question(["style"], 3)["question_id"] for _ in range(60)} == {2, 3}
 
-    def test_no_self_vote_question_needs_two_members(self, pool):
+    def test_no_self_vote_question_needs_three_members(self, pool):
+        # With two members, the only candidate would be the other one: no choice.
         pool[:] = [{**pool[0], "enableSelfVote": False}]
-        with pytest.raises(StopIteration):
-            question_module.chose_random_question(["connerie"], 1)
-        assert question_module.chose_random_question(["connerie"], 2)["question_id"] == 1
+        for member_count in (1, 2):
+            with pytest.raises(StopIteration):
+                question_module.chose_random_question(["connerie"], member_count)
+        assert question_module.chose_random_question(["connerie"], 3)["question_id"] == 1
+
+    def test_no_duo_question_for_two_members_even_with_self_vote(self, pool):
+        # 2 picks out of 2 members: both are picked every time.
+        pool.append({**pool[0], "question_id": 3, "theme": pool[1]["theme"], "type": "duo",
+                     "enableSelfVote": True, "enableMultipleVoting": True, "voteNumberLimit": 2})
+        assert {question_module.chose_random_question(["style"], 2)["question_id"] for _ in range(30)} == {2}
+        assert {question_module.chose_random_question(["style"], 3)["question_id"] for _ in range(60)} == {2, 3}
+
+    def test_two_members_still_get_written_and_free_choice_questions(self, pool):
+        pool.append({**pool[0], "question_id": 3, "type": "solo", "enableMultipleVoting": True, "voteNumberLimit": 0})
+        assert {question_module.chose_random_question(["connerie", "style"], 2)["question_id"] for _ in range(60)} == {1, 2, 3}
 
     def test_fallback_skips_questions_the_group_cannot_play(self, world, ctx, pool):
         # Every playable question was asked more than the mean: the fallback must not

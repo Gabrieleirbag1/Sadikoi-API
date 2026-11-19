@@ -5,6 +5,9 @@ from db import db
 from flask_login import current_user
 from utils import normalize_language, question_pool
 
+# Shortest time a question stays: moving the reset time never brings the next question sooner.
+MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
+
 
 def iso_utc(value: datetime.datetime | None) -> str | None:
     """ISO string of a datetime, always with its UTC offset ("+00:00").
@@ -26,6 +29,23 @@ def current_window_start(group: GroupModel, now: datetime.datetime | None = None
     now = now or datetime.datetime.now(datetime.timezone.utc)
     reset_time = datetime.datetime.combine(now.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc)
     return reset_time if now >= reset_time else reset_time - datetime.timedelta(days=1)
+
+def next_question_time(group: GroupModel, question: QuestionModel) -> datetime.datetime:
+    """When get_question will create the question after `question` (same rules as question.does_exist_question_today).
+
+    Usually the group's next reset; later if the reset time was moved and the 24 h interval isn't over then.
+    """
+    question_date = question.date
+    if question_date.tzinfo is None:
+        question_date = question_date.replace(tzinfo=datetime.timezone.utc)
+    # The question no longer belongs to the current window...
+    first_reset_after = current_window_start(group, question_date) + datetime.timedelta(days=1)
+    # ...and the required interval since it was set has passed.
+    old_reset_time = datetime.datetime.combine(
+        question_date.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc
+    )
+    required_interval = MIN_QUESTION_INTERVAL + max(datetime.timedelta(0), old_reset_time - question_date)
+    return max(first_reset_after, question_date + required_interval)
 
 def build_user_response(user: UserModel) -> dict:
     return {

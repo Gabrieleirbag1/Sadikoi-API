@@ -9,7 +9,7 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2 import service_account
 from lite_logging.lite_logging import log
 
-from builder import current_window_start
+from builder import current_window_start, next_question_time
 from config import ALLOWED_LANGUAGES, FIREBASE_SERVICE_ACCOUNT_PATH
 from db import db, update_from_db
 from models import ChatMessageModel, GroupModel, GroupUser, PushTokenModel, QuestionModel, UserModel
@@ -243,7 +243,7 @@ def notify_new_message(message: ChatMessageModel) -> None:
                              f'/group/{group.id}', CHANNEL_MESSAGES, tag=f'chat-{group.id}')
 
     # The chat only shows once the question of the day is answered: no message notifications before voting.
-    voters = _voters_of_window(group, current_window_start(group))
+    voters = _voters_of(_current_question(group)[2])
     users = [user for user in recipients(group.id, 'messages', exclude_user_id=sender.id) if user.id in voters]
     deliver(_pairs_for(users, build))
 
@@ -266,20 +266,40 @@ def init_notification_markers(group: GroupModel, now: datetime.datetime | None =
     now = now or datetime.datetime.now(datetime.timezone.utc)
     start = current_window_start(group, now)
     group.last_question_notified_at = start
-    # No reminder for a day already in its last hour.
-    group.last_vote_reminder_at = start if now >= start + DAY - REMINDER_BEFORE_END else start - DAY
+    # No reminder for a question already in its last hour; one already sent for it is kept (never moved back).
+    key, end, _ = _current_question(group, now)
+    marker = key if now >= end - REMINDER_BEFORE_END else key - DAY
+    last = _as_utc(group.last_vote_reminder_at)
+    group.last_vote_reminder_at = max(last, marker) if last else marker
+
+
+def _new_question_due(group: GroupModel, start: datetime.datetime, now: datetime.datetime) -> bool:
+    """Whether the question of the window starting at `start` exists or can be created now.
+
+    Usually as soon as the window starts. But after a change of reset time, the previous question stays at
+    least 24 h (question.does_exist_question_today): the new time only applies from the following day, and
+    the notification must wait for the question instead of announcing it at the new time a day too early.
+    """
+    question = group.questions.order_by(QuestionModel.date.desc()).first()
+    if not question or _as_utc(question.date) >= start:
+        return True
+    return now >= next_question_time(group, question)
 
 
 def notify_new_questions(now: datetime.datetime | None = None) -> None:
-    """At each group's reset time: one notification per new daily window."""
+    """When each group's new question becomes available: one notification per new daily window."""
+    now = now or datetime.datetime.now(datetime.timezone.utc)
     pairs = []
     for group in GroupModel.query.filter(GroupModel.deleted.is_(False)):
         start = current_window_start(group, now)
         last = _as_utc(group.last_question_notified_at)
-        group.last_question_notified_at = start
         # Group created before init_notification_markers existed: start from the next window.
-        if last is None or last >= start:
+        if last is None:
+            group.last_question_notified_at = start
             continue
+        if last >= start or not _new_question_due(group, start, now):
+            continue
+        group.last_question_notified_at = start
 
         def build(user: UserModel, group=group) -> dict:
             return build_message(group.name, _texts(user)['question'], f'/group/{group.id}',
@@ -292,30 +312,49 @@ def notify_new_questions(now: datetime.datetime | None = None) -> None:
     deliver(pairs)
 
 
-def _voters_of_window(group: GroupModel, start: datetime.datetime) -> set[int]:
-    """Users who voted on the question of the window starting at `start` (none if it wasn't created yet)."""
+def _current_question(group: GroupModel, now: datetime.datetime | None = None
+                      ) -> tuple[datetime.datetime, datetime.datetime, QuestionModel | None]:
+    """The question members answer now: (its date, when the next one replaces it, the question).
+
+    Usually the question of the current window. After a change of reset time, the previous question stays
+    its 24 h (question.does_exist_question_today), past the start of the new window. With no current
+    question (not created yet), the current window: (its start, its end, None).
+    """
+    now = now or datetime.datetime.now(datetime.timezone.utc)
     question = group.questions.order_by(QuestionModel.date.desc()).first()
-    if not question or not start <= _as_utc(question.date) < start + DAY:
-        return set()
-    return {vote.voterUser_id for vote in question.votes}
+    if question:
+        end = next_question_time(group, question)
+        if end > now:
+            return _as_utc(question.date), end, question
+    start = current_window_start(group, now)
+    return start, start + DAY, None
+
+
+def _voters_of(question: QuestionModel | None) -> set[int]:
+    """Users who voted on `question` (none without a question)."""
+    return {vote.voterUser_id for vote in question.votes} if question else set()
 
 
 def notify_vote_reminders(now: datetime.datetime | None = None) -> None:
-    """One hour before the end of each group's day: remind the members who haven't voted."""
+    """One hour before the current question ends: remind the members who haven't voted.
+
+    Usually the last hour of the group's day; after a change of reset time, the last hour of the question
+    that stays its 24 h (see _current_question), not of the new day.
+    """
     now = now or datetime.datetime.now(datetime.timezone.utc)
     pairs = []
     for group in GroupModel.query.filter(GroupModel.deleted.is_(False)):
-        start = current_window_start(group, now)
-        in_last_hour = now >= start + DAY - REMINDER_BEFORE_END
+        key, end, question = _current_question(group, now)
+        in_last_hour = now >= end - REMINDER_BEFORE_END
         last = _as_utc(group.last_vote_reminder_at)
         if last is None:
             # Group created before init_notification_markers existed: no reminder for a day already in its last hour.
-            group.last_vote_reminder_at = start if in_last_hour else start - DAY
+            group.last_vote_reminder_at = key if in_last_hour else key - DAY
             continue
-        if not in_last_hour or last >= start:
+        if not in_last_hour or last >= key:
             continue
-        group.last_vote_reminder_at = start
-        voters = _voters_of_window(group, start)
+        group.last_vote_reminder_at = key
+        voters = _voters_of(question)
         users = [user for user in recipients(group.id, 'vote_reminder') if user.id not in voters]
 
         def build(user: UserModel, group=group) -> dict:

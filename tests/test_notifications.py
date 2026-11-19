@@ -5,7 +5,7 @@ import pytest
 
 import notifications
 from db import db
-from models import GroupModel, GroupUser, PushTokenModel, UserModel
+from models import GroupModel, GroupUser, PushTokenModel, QuestionModel, UserModel
 from tests import factories
 
 H = datetime.timedelta
@@ -300,6 +300,32 @@ class TestGroupSeen:
         assert self.seen(login_as(world.admin), world.group, device_id).status_code == 400
 
 
+# ------------------------------------------------- change of the reset time
+def at(day, hour, minute=0):
+    return datetime.datetime(2026, 1, day, hour, minute, tzinfo=datetime.timezone.utc)
+
+
+def move_reset(ctx, world, old_hour, new_hour, changed_at):
+    """A question set at `old_hour` on Jan 1st, then the reset time moved to `new_hour` (as group.update_group does).
+
+    Returns the question's id."""
+    with ctx():
+        group = db.session.get(GroupModel, world.group.id)
+        group.daily_reset_timestamp = datetime.time(old_hour)
+        question = QuestionModel(question_id=1, date=at(1, old_hour), theme="connerie",
+                                 item_name="bonnet_honte", group_id=group.id)
+        db.session.add(question)
+        group.daily_reset_timestamp = datetime.time(new_hour)
+        notifications.init_notification_markers(group, changed_at)
+        db.session.commit()
+        return question.id
+
+
+def team_pushes(externals):
+    """Tokens notified for `world.group` (named "Team")."""
+    return tokens_of([(t, m) for t, m in externals.pushes if m["notification"]["title"] == "Team"])
+
+
 # ------------------------------------------------------------- new questions
 class TestQuestionNotifications:
     def run(self, ctx, now):
@@ -360,6 +386,38 @@ class TestQuestionNotifications:
         self.run(ctx, now + H(minutes=1, seconds=30))
         assert tokens_of(externals.pushes) == ["token-admin", "token-member"]
 
+
+    # The previous question stays at least 24 h (question.does_exist_question_today): after a change of
+    # reset time, the "new question" notification waits for it instead of coming at the new time a day early.
+    def test_reset_moved_earlier_notifies_when_the_question_comes(self, world, phones, externals, ctx):
+        move_reset(ctx, world, 15, 10, changed_at=at(1, 16))
+        self.run(ctx, at(2, 10, 1))                   # new time, but yesterday's question stays until 15:00
+        assert team_pushes(externals) == []
+        self.run(ctx, at(2, 15, 1))                   # 24 h later: the new question
+        assert team_pushes(externals) == ["token-admin", "token-member"]
+        self.run(ctx, at(2, 15, 30))
+        assert len(team_pushes(externals)) == 2
+        with ctx():                                         # created at 15:01, dated at the start of its window
+            db.session.add(QuestionModel(question_id=2, date=at(2, 10), theme="connerie",
+                                         item_name="bonnet_honte", group_id=world.group.id))
+            db.session.commit()
+        self.run(ctx, at(3, 10, 1))                   # from then on, the new time
+        assert len(team_pushes(externals)) == 4
+
+    def test_reset_moved_later_skips_the_day_without_a_new_question(self, world, phones, externals, ctx):
+        move_reset(ctx, world, 15, 20, changed_at=at(1, 16))
+        self.run(ctx, at(1, 20, 1))                   # the 15:00 question stays until tomorrow 20:00
+        self.run(ctx, at(2, 15, 1))
+        assert team_pushes(externals) == []
+        self.run(ctx, at(2, 20, 1))
+        assert team_pushes(externals) == ["token-admin", "token-member"]
+
+    def test_question_already_created_by_a_member(self, login_as, world, phones, externals, ctx):
+        now = factories.now()
+        self.run(ctx, now - H(days=1))
+        login_as(world.member).get(f"/api/questions/{world.group.id}/")  # created before the scheduler's run
+        self.run(ctx, now)
+        assert team_pushes(externals) == ["token-admin", "token-member"]
 
 # -------------------------------------------------------------------- answers
 class TestAnswerNotifications:
@@ -456,6 +514,42 @@ class TestVoteReminders:
         team = [t for t, m in externals.pushes if m["data"]["route"] == f"/group/{world.group.id}"]
         assert team == ["token-admin"]
 
+
+    # After a change of reset time, the question stays its 24 h: the reminder comes before ITS end.
+    def test_reset_moved_earlier_reminds_before_the_question_ends(self, world, phones, externals, ctx):
+        move_reset(ctx, world, 15, 10, changed_at=at(1, 16))
+        self.run(ctx, at(2, 9, 1))                         # last hour of the new day, but the question stays until 15:00
+        assert team_pushes(externals) == []
+        self.run(ctx, at(2, 14, 1))
+        self.run(ctx, at(2, 14, 30))                       # once
+        assert team_pushes(externals) == ["token-admin", "token-member"]
+
+    def test_reset_moved_later_reminds_before_the_question_ends(self, world, phones, externals, ctx):
+        move_reset(ctx, world, 15, 20, changed_at=at(1, 16))
+        self.run(ctx, at(1, 19, 1))                        # the 15:00 question stays until tomorrow 20:00
+        self.run(ctx, at(2, 14, 1))
+        assert team_pushes(externals) == []
+        self.run(ctx, at(2, 19, 1))
+        assert team_pushes(externals) == ["token-admin", "token-member"]
+
+    def test_voters_of_the_question_that_stays_are_not_reminded(self, world, phones, externals, ctx):
+        question_id = move_reset(ctx, world, 15, 10, changed_at=at(1, 16))
+        with ctx():
+            factories.make_vote(factories.Q(id=question_id, group_id=world.group.id, date=at(1, 15)),
+                                world.member, [world.admin])
+        self.run(ctx, at(2, 14, 1))
+        assert team_pushes(externals) == ["token-admin"]
+
+    def test_a_reminder_already_sent_is_not_sent_again_after_a_change(self, login_as, world, phones, externals, ctx):
+        move_reset(ctx, world, 15, 15, changed_at=at(1, 16))
+        self.run(ctx, at(2, 14, 1))                        # sent for the question ending at 15:00
+        with ctx():
+            group = db.session.get(GroupModel, world.group.id)
+            group.daily_reset_timestamp = datetime.time(16)  # changed in its last hour: ends at 16:00 now
+            notifications.init_notification_markers(group, at(2, 14, 30))
+            db.session.commit()
+        self.run(ctx, at(2, 15, 1))
+        assert len(team_pushes(externals)) == 2
 
 # -------------------------------------------------------------------- sending
 class TestSending:
