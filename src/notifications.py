@@ -9,7 +9,7 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2 import service_account
 from lite_logging.lite_logging import log
 
-from builder import current_window_start
+from builder import current_window_start, next_question_time
 from config import ALLOWED_LANGUAGES, FIREBASE_SERVICE_ACCOUNT_PATH
 from db import db, update_from_db
 from models import ChatMessageModel, GroupModel, GroupUser, PushTokenModel, QuestionModel, UserModel
@@ -270,16 +270,33 @@ def init_notification_markers(group: GroupModel, now: datetime.datetime | None =
     group.last_vote_reminder_at = start if now >= start + DAY - REMINDER_BEFORE_END else start - DAY
 
 
+def _new_question_due(group: GroupModel, start: datetime.datetime, now: datetime.datetime) -> bool:
+    """Whether the question of the window starting at `start` exists or can be created now.
+
+    Usually as soon as the window starts. But after a change of reset time, the previous question stays at
+    least 24 h (question.does_exist_question_today): the new time only applies from the following day, and
+    the notification must wait for the question instead of announcing it at the new time a day too early.
+    """
+    question = group.questions.order_by(QuestionModel.date.desc()).first()
+    if not question or _as_utc(question.date) >= start:
+        return True
+    return now >= next_question_time(group, question)
+
+
 def notify_new_questions(now: datetime.datetime | None = None) -> None:
-    """At each group's reset time: one notification per new daily window."""
+    """When each group's new question becomes available: one notification per new daily window."""
+    now = now or datetime.datetime.now(datetime.timezone.utc)
     pairs = []
     for group in GroupModel.query.filter(GroupModel.deleted.is_(False)):
         start = current_window_start(group, now)
         last = _as_utc(group.last_question_notified_at)
-        group.last_question_notified_at = start
         # Group created before init_notification_markers existed: start from the next window.
-        if last is None or last >= start:
+        if last is None:
+            group.last_question_notified_at = start
             continue
+        if last >= start or not _new_question_due(group, start, now):
+            continue
+        group.last_question_notified_at = start
 
         def build(user: UserModel, group=group) -> dict:
             return build_message(group.name, _texts(user)['question'], f'/group/{group.id}',

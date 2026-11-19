@@ -10,14 +10,13 @@ from models import GroupModel, QuestionFeedbackModel, QuestionModel, QuestionVot
 from db import add_to_db, update_from_db, db
 from auth import get_user_object
 from items import assign_items
-from builder import iso_utc, build_announcement_response, build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start
+from builder import iso_utc, build_announcement_response, build_item_response, build_question_response, build_user_response, build_question_model, get_user_items_in_group, current_window_start, MIN_QUESTION_INTERVAL, next_question_time
 from config import ALLOWED_LANGUAGES
 from sockets import socketio
 from notifications import notify_new_answer
 from utils import question_pool
 
 
-MIN_QUESTION_INTERVAL = datetime.timedelta(hours=24)
 # The app asks for the new question as soon as its countdown ends, so every open phone of a group calls
 # get_question at the same second: only one of them may create it (the API runs in a single process).
 _question_creation_lock = threading.Lock()
@@ -282,23 +281,6 @@ def does_exist_vote_today(group: GroupModel, user: UserModel) -> tuple[bool, Que
         question_id=question.id,
     ).first()
     return vote is not None, question
-
-def next_question_time(group: GroupModel, question: QuestionModel) -> datetime.datetime:
-    """When get_question will create the question after `question` (same rules as does_exist_question_today).
-
-    Usually the group's next reset; later if the reset time was moved and the 24 h interval isn't over then.
-    """
-    question_date = question.date
-    if question_date.tzinfo is None:
-        question_date = question_date.replace(tzinfo=datetime.timezone.utc)
-    # The question no longer belongs to the current window...
-    first_reset_after = current_window_start(group, question_date) + datetime.timedelta(days=1)
-    # ...and the required interval since it was set has passed.
-    old_reset_time = datetime.datetime.combine(
-        question_date.date(), group.daily_reset_timestamp, tzinfo=datetime.timezone.utc
-    )
-    required_interval = MIN_QUESTION_INTERVAL + max(datetime.timedelta(0), old_reset_time - question_date)
-    return max(first_reset_after, question_date + required_interval)
 
 def is_user_in_group(user: UserModel, group: GroupModel) -> bool:
     """Check if a user is a member of a group.
