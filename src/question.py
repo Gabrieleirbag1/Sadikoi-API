@@ -65,6 +65,9 @@ def is_question_playable(question: dict, member_count: int) -> bool:
     A voter must be able to pick `voteNumberLimit` members other than themselves when
     self-voting is off: a DUO question (2 picks, no self vote) needs at least 3 members.
 
+    In a group of two, a vote must still be a choice: no DUO question (both members picked every
+    time) and no question without self vote (always the other member).
+
     :param dict question: The question data from the question pool.
     :param int member_count: Number of members in the group.
 
@@ -72,6 +75,8 @@ def is_question_playable(question: dict, member_count: int) -> bool:
     :rtype: bool"""
     if question.get('canWrite'):
         return True
+    if member_count == 2 and (str(question.get('type', '')).lower() == 'duo' or not question['enableSelfVote']):
+        return False
     needed = question['voteNumberLimit'] if question['enableMultipleVoting'] and question['voteNumberLimit'] > 0 else 1
     return count_vote_candidates(question['enableSelfVote'], member_count) >= needed
 
