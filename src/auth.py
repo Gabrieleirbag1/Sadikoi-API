@@ -20,7 +20,8 @@ from notifications import remove_device_tokens
 from db import db, add_to_db, delete_from_db, update_from_db
 from builder import build_user_response, iso_utc
 from email_sender import send_auth_code_email, send_password_reset_email, RESET_TOKEN_TTL_MINUTES
-from config import GOOGLE_CLIENT_BROWSER_ID, GOOGLE_CLIENT_MOBILE_ID, FRONTEND_URL, TURNSTILE_SECRET_KEY
+from config import (GOOGLE_CLIENT_BROWSER_ID, GOOGLE_CLIENT_IOS_ID, GOOGLE_CLIENT_MOBILE_ID, FRONTEND_URL,
+                    TURNSTILE_SECRET_KEY)
 
 MAX_LOGIN_ATTEMPTS = 5
 AUTH_CODE_TTL_MINUTES = 10
@@ -251,9 +252,10 @@ def google_login_handler(request: Request) -> tuple[dict, int]:
         return {"success": False, "message": "Token is required"}, 400
 
     try:
-        # The mobile app's native login normally issues tokens for the web client ID too;
-        # the mobile client ID is accepted as well in case a token is issued for it.
-        audiences = [client_id for client_id in (GOOGLE_CLIENT_BROWSER_ID, GOOGLE_CLIENT_MOBILE_ID) if client_id]
+        # The app's native login normally issues tokens for the web client ID too (iOSServerClientId on iOS);
+        # the Android and iOS client IDs are accepted as well in case a token is issued for them.
+        audiences = [client_id for client_id in (GOOGLE_CLIENT_BROWSER_ID, GOOGLE_CLIENT_MOBILE_ID,
+                                                 GOOGLE_CLIENT_IOS_ID) if client_id]
         idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), audiences)
         
         email = idinfo['email']

@@ -56,6 +56,12 @@ GOOGLE_CLIENT_MOBILE_ID = load_secret_var('GOOGLE_CLIENT_MOBILE_ID', google_secr
 if not GOOGLE_CLIENT_MOBILE_ID:
     log("GOOGLE_CLIENT_MOBILE_ID not found in .google.secrets file.", level="ERROR")
 
+# Load GOOGLE_CLIENT_IOS_ID (the iOS app's OAuth client: some Google SDK versions issue its tokens for it)
+GOOGLE_CLIENT_IOS_ID = load_secret_var('GOOGLE_CLIENT_IOS_ID', google_secrets_path)
+
+if not GOOGLE_CLIENT_IOS_ID:
+    log("GOOGLE_CLIENT_IOS_ID not found in .google.secrets file.", level="WARNING")
+
 # Load FRONTEND_URL (used to build links sent by email)
 frontend_secrets_path = os.path.join(os.path.dirname(__file__), '.frontend.secrets')
 FRONTEND_URL = load_secret_var('FRONTEND_URL', frontend_secrets_path, default='http://localhost:4200').rstrip('/')
