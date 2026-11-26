@@ -25,9 +25,9 @@ def mute(client, group, muted=True):
     return client.put(group_settings_url(group), json={name: not muted for name in ALL_ON})
 
 
-def add_token(user, token=None, device_id=None):
+def add_token(user, token=None, device_id=None, platform="android"):
     db.session.add(PushTokenModel(user_id=user.id, token=token or f"token-{user.username}",
-                                  device_id=device_id or user.device_id))
+                                  device_id=device_id or user.device_id, platform=platform))
     db.session.commit()
 
 
@@ -553,9 +553,10 @@ class TestVoteReminders:
 
 # -------------------------------------------------------------------- sending
 class TestSending:
-    def test_nothing_is_sent_without_the_firebase_key(self, monkeypatch, app, tmp_path):
+    def test_nothing_is_sent_without_the_firebase_and_apns_keys(self, monkeypatch, app, tmp_path):
         started = []
         monkeypatch.setattr(notifications, "fcm", notifications.FcmClient(str(tmp_path / "missing.json")))
+        monkeypatch.setattr(notifications, "apns", notifications.ApnsClient(str(tmp_path / "missing.p8"), "KEY", "TEAM", "app"))
         monkeypatch.setattr(notifications.socketio, "start_background_task", lambda *args: started.append(args))
         with app.app_context():
             REAL_DELIVER([("token", {})])
@@ -577,6 +578,8 @@ class TestSending:
             add_token(world.admin, "alive")
 
         class FakeFcm:
+            enabled = True
+
             def send(self, token, message):
                 return "unregistered" if token == "dead" else "ok"
 
@@ -589,6 +592,8 @@ class TestSending:
         sent = []
 
         class FlakyFcm:
+            enabled = True
+
             def send(self, token, message):
                 if token == "first":
                     raise ConnectionError("network down")
@@ -624,3 +629,107 @@ class TestSending:
         assert calls[0]["url"] == "https://fcm.googleapis.com/v1/projects/sadikoi-project/messages:send"
         assert calls[0]["headers"] == {"Authorization": "Bearer access"}
         assert calls[0]["json"] == {"message": {"token": "phone-token", "data": {"route": "/"}}}
+
+
+# -------------------------------------------------------------------- iOS (APNs)
+class Recorder:
+    def __init__(self, enabled=True):
+        self.enabled = enabled
+        self.sent = []
+
+    def send(self, token, message):
+        self.sent.append(token)
+        return "ok"
+
+
+def apns_client(tmp_path):
+    key = tmp_path / "key.p8"
+    key.write_text("unused")
+    return notifications.ApnsClient(str(key), "KEYID12345", "TEAMID1234", "com.missclick.sadikoi")
+
+
+class TestApns:
+    def test_each_token_goes_through_its_platform(self, app, world, ctx, monkeypatch):
+        with ctx():
+            add_token(world.member, "android-phone")
+            add_token(world.admin, "iphone", platform="ios")
+        fcm, apns = Recorder(), Recorder()
+        monkeypatch.setattr(notifications, "fcm", fcm)
+        monkeypatch.setattr(notifications, "apns", apns)
+        notifications._send_all(app, [("android-phone", {}), ("iphone", {})])
+        assert (fcm.sent, apns.sent) == (["android-phone"], ["iphone"])
+
+    def test_iphones_still_get_notifications_without_firebase(self, app, world, ctx, monkeypatch):
+        with ctx():
+            add_token(world.member, "android-phone")
+            add_token(world.admin, "iphone", platform="ios")
+        fcm, apns = Recorder(enabled=False), Recorder()
+        monkeypatch.setattr(notifications, "fcm", fcm)
+        monkeypatch.setattr(notifications, "apns", apns)
+        started = []
+        monkeypatch.setattr(notifications.socketio, "start_background_task", lambda *args: started.append(args))
+        with app.app_context():
+            REAL_DELIVER([("iphone", {})])
+        assert started
+        notifications._send_all(app, [("android-phone", {}), ("iphone", {})])
+        assert (fcm.sent, apns.sent) == ([], ["iphone"])
+
+    def test_alert_message(self):
+        message = notifications.build_message("Team", "member: hi", "/group/3", "messages", tag="chat-3")
+        headers, payload = notifications.to_apns(message)
+        assert headers == {"apns-push-type": "alert", "apns-priority": "10", "apns-collapse-id": "chat-3"}
+        assert payload == {
+            "aps": {"alert": {"title": "Team", "body": "member: hi"}, "sound": "default", "thread-id": "chat-3"},
+            "route": "/group/3", "channel": "messages", "tag": "chat-3",
+        }
+
+    def test_dismiss_message(self, monkeypatch):
+        monkeypatch.setattr(notifications.time, "time", lambda: 1000)
+        headers, payload = notifications.to_apns(notifications.build_dismiss_message({"chat-3", "answers-3"}))
+        assert headers == {"apns-push-type": "background", "apns-priority": "5", "apns-expiration": "87400"}
+        assert payload == {"aps": {"content-available": 1}, "action": "dismiss", "tags": "answers-3,chat-3"}
+
+    def test_disabled_without_key_id(self, tmp_path):
+        client = apns_client(tmp_path)
+        client.key_id = None
+        assert not client.enabled
+        assert apns_client(tmp_path).enabled
+
+    @pytest.mark.parametrize("status,body,expected", [
+        (200, b"", "ok"),
+        (410, b'{"reason": "Unregistered"}', "unregistered"),
+        (400, b'{"reason": "BadDeviceToken"}', "unregistered"),
+        (403, b'{"reason": "ExpiredProviderToken"}', "error"),
+        (500, b"oops", "error"),
+    ])
+    def test_apns_answers(self, monkeypatch, tmp_path, status, body, expected):
+        client = apns_client(tmp_path)
+        monkeypatch.setattr(client, "_jwt", lambda: "signed")
+        calls = []
+
+        def handler(request):
+            calls.append(request)
+            return notifications.httpx.Response(status, content=body)
+
+        client._client = notifications.httpx.Client(transport=notifications.httpx.MockTransport(handler))
+        message = notifications.build_message("Team", "hi", "/group/3", "messages", tag="chat-3")
+        assert client.send("device-token", message) == expected
+        request = calls[0]
+        assert str(request.url) == "https://api.push.apple.com/3/device/device-token"
+        assert request.headers["authorization"] == "bearer signed"
+        assert request.headers["apns-topic"] == "com.missclick.sadikoi"
+        assert request.headers["apns-collapse-id"] == "chat-3"
+
+    def test_jwt_is_signed_with_the_p8_key_and_reused(self, tmp_path):
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric import ec
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        key = tmp_path / "key.p8"
+        key.write_bytes(private_key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,
+                                                  serialization.NoEncryption()))
+        client = notifications.ApnsClient(str(key), "KEYID12345", "TEAMID1234", "app")
+        token = client._jwt()
+        assert client._jwt() == token
+        assert notifications.jwt.get_unverified_header(token) == {"alg": "ES256", "kid": "KEYID12345", "typ": "JWT"}
+        claims = notifications.jwt.decode(token, private_key.public_key(), algorithms=["ES256"])
+        assert claims["iss"] == "TEAMID1234"
