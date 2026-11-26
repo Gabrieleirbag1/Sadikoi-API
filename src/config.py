@@ -56,6 +56,12 @@ GOOGLE_CLIENT_MOBILE_ID = load_secret_var('GOOGLE_CLIENT_MOBILE_ID', google_secr
 if not GOOGLE_CLIENT_MOBILE_ID:
     log("GOOGLE_CLIENT_MOBILE_ID not found in .google.secrets file.", level="ERROR")
 
+# Load GOOGLE_CLIENT_IOS_ID (the iOS app's OAuth client: some Google SDK versions issue its tokens for it)
+GOOGLE_CLIENT_IOS_ID = load_secret_var('GOOGLE_CLIENT_IOS_ID', google_secrets_path)
+
+if not GOOGLE_CLIENT_IOS_ID:
+    log("GOOGLE_CLIENT_IOS_ID not found in .google.secrets file.", level="WARNING")
+
 # Load FRONTEND_URL (used to build links sent by email)
 frontend_secrets_path = os.path.join(os.path.dirname(__file__), '.frontend.secrets')
 FRONTEND_URL = load_secret_var('FRONTEND_URL', frontend_secrets_path, default='http://localhost:4200').rstrip('/')
@@ -101,6 +107,15 @@ ALLOWED_LANGUAGES = {'en', 'fr'}
 
 # Firebase service account key (JSON), used to send push notifications. Without it, nothing is sent.
 FIREBASE_SERVICE_ACCOUNT_PATH = os.path.join(os.path.dirname(__file__), '.firebase-service-account.json')
+
+# APNs (push notifications to iPhones), see docs/ios.html in the app: the .p8 key created on developer.apple.com,
+# its Key ID and the Team ID (in .apns.secrets). Without them, nothing is sent to iPhones.
+APNS_KEY_PATH = os.path.join(os.path.dirname(__file__), '.apns-key.p8')
+apns_secrets_path = os.path.join(os.path.dirname(__file__), '.apns.secrets')
+APNS_KEY_ID = load_secret_var('APNS_KEY_ID', apns_secrets_path)
+APNS_TEAM_ID = load_secret_var('APNS_TEAM_ID', apns_secrets_path)
+# The app's Bundle ID.
+APNS_TOPIC = 'com.missclick.sadikoi'
 
 def allowed_file(filename):
     return '.' in filename and \

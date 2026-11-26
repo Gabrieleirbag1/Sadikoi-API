@@ -581,7 +581,7 @@ class SuggestionModel(db.Model):
 
 
 class PushTokenModel(db.Model):
-    """A phone that receives push notifications (Firebase Cloud Messaging registration token)."""
+    """A phone that receives push notifications: Firebase Cloud Messaging token (android) or APNs token (ios)."""
     __tablename__ = 'push_tokens'
 
     id = db.Column(db.Integer, primary_key=True)

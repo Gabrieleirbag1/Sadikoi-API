@@ -272,6 +272,7 @@ class TestGoogle:
     def google_config(self, monkeypatch):
         monkeypatch.setattr(auth, "GOOGLE_CLIENT_BROWSER_ID", "client-id")
         monkeypatch.setattr(auth, "GOOGLE_CLIENT_MOBILE_ID", None)
+        monkeypatch.setattr(auth, "GOOGLE_CLIENT_IOS_ID", None)
 
     def fake_verify(self, monkeypatch, info=None, error=None, expected_audiences=("client-id",)):
         def verify(token, request, audiences):
@@ -289,6 +290,13 @@ class TestGoogle:
         monkeypatch.setattr(auth, "GOOGLE_CLIENT_MOBILE_ID", "mobile-id")
         self.fake_verify(monkeypatch, {"email": "gina@gmail.com", "name": "Gina"}, expected_audiences=("client-id", "mobile-id"))
         assert anon.post(GOOGLE, json={"token": "t", "device_id": "g-dev"}).status_code == 200
+
+    def test_ios_client_id_is_also_accepted(self, anon, monkeypatch):
+        monkeypatch.setattr(auth, "GOOGLE_CLIENT_MOBILE_ID", "mobile-id")
+        monkeypatch.setattr(auth, "GOOGLE_CLIENT_IOS_ID", "ios-id")
+        self.fake_verify(monkeypatch, {"email": "ian@gmail.com", "name": "Ian"},
+                         expected_audiences=("client-id", "mobile-id", "ios-id"))
+        assert anon.post(GOOGLE, json={"token": "t", "device_id": "i-dev"}).status_code == 200
 
     def test_missing_token(self, anon):
         assert anon.post(GOOGLE, json={}).status_code == 400

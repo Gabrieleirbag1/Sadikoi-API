@@ -4,7 +4,9 @@
 Format compact (voir SKILL.md) :
     # theme_id|Nom FR|Name EN
     s H|Question en français ?|Question in English?
-    s! B|...   (! = enableSelfVote false, seulement si la question parle de « toi »)
+    s! B|...   (! = enableSelfVote false, la question parle de « toi »)
+    s!a T|...  (!a = enableSelfVote false, accusation : se désigner serait esquiver)
+    s!e L|...  (!e = enableSelfVote false, éloge : se désigner serait se lancer des fleurs)
     s+ K|...   (+ = vote multiple : on vote pour tous ceux que ça concerne)
 
 Usage :
@@ -42,10 +44,20 @@ VOTE = {
     "solo": (True, False, 1), "scenario": (True, False, 1), "trap": (True, False, 1),
     "dynamique": (True, False, 1), "duo": (True, True, 2), "ranking": (True, True, 0),
 }
-# Voter pour soi est permis par défaut sur tous les types (c'est un aveu). « ! » ne se justifie que si
-# la question vise celui qui vote (« Qui te dit la vérité… ? ») : on repère ces mots pour vérifier.
+# Voter pour soi est permis par défaut (se désigner est un aveu). Le couper demande une des trois raisons
+# de SKILL.md, écrite dans l'en-tête : « ! » la question vise celui qui vote (toi), « !a » elle accuse
+# quelqu'un d'une faute envers ses proches (se désigner = esquiver), « !e » elle décerne un éloge
+# (se désigner = se lancer des fleurs). Les indices ci-dessous ne servent qu'à des avertissements :
+# la décision se prend à la relecture.
+NO_SELF_REASONS = {"!": "toi", "!a": "accusation", "!e": "éloge"}
 ADDRESSES_VOTER = r"\b(te|toi|ton|ta|tes|tu)\b|\bt'"
 ADDRESSES_VOTER_EN = r"\b(you|your|yours|yourself)\b"
+ACCUSATION_HINTS = (r"trahi|balancer? (un|le|les|ses|son)|\bla balance\b|dans (son|leur|ton) dos|faux-cul|hypocrite"
+                    r"|radin|connard|manipul|tromper|vipère|langue de pute|sabote|abandonner? un pote|lâcher (le groupe|un pote)"
+                    r"|renier|mentir (au|à son)|menti au groupe|sans payer sa|c'est la faute")
+ELOGE_HINTS = (r"\b(le|la|les) meilleure?s?\b|meilleure équipe|fiable|pilier|le mieux|réussi|gagnerait|qui gagne"
+               r"|célèbre|millionnaire|leader|capitaine|chef de la|sans poser de questions|sauve|son calme"
+               r"|sur qui on peut compter|toujours là pour")
 TARGET_MIX = {"solo": .25, "duo": .20, "ranking": .10, "scenario": .15, "trap": .15, "dynamique": .15}
 # Vote multiple (« + ») : enableMultipleVoting true, voteNumberLimit 0 (au moins 1 membre, sans maximum).
 MULTI_TYPES = {"solo", "scenario", "trap", "dynamique"}
@@ -95,15 +107,17 @@ def parse(paths):
                     errors.append(f"{where} attendu 3 champs séparés par | : {line}")
                     continue
                 head, fr, en = (p.strip() for p in parts)
-                m = re.fullmatch(r"([sdrcty])([!+]{0,2})\s+(\S+)", head)
-                if not m or len(set(m.group(2))) != len(m.group(2)):
-                    errors.append(f"{where} en-tête invalide « {head} » (ex. « s H », « s! B », « s+ K »)")
+                m = re.fullmatch(r"([sdrcty])([!+ae]{0,3})\s+(\S+)", head)
+                flags = m and m.group(2)
+                if not m or flags.count("+") > 1 or flags.replace("+", "") not in ("", *NO_SELF_REASONS):
+                    errors.append(f"{where} en-tête invalide « {head} » (ex. « s H », « s! B », « s!a T », « s+!e L »)")
                     continue
                 if theme is None:
                     errors.append(f"{where} question avant toute ligne de thème")
                     continue
                 code, flags, item = m.groups()
                 no_self, multi_flag = "!" in flags, "+" in flags
+                no_self_reason = NO_SELF_REASONS.get(flags.replace("+", ""))
                 item_def = ITEMS.get(item) or ITEMS_BY_ID.get(item)
                 if not item_def:
                     errors.append(f"{where} item inconnu « {item} »")
@@ -125,6 +139,7 @@ def parse(paths):
                     "canWrite": False,
                     "item_name": dict(zip(("id", "fr", "en"), item_def)),
                     "_where": where,
+                    "_no_self": no_self_reason,
                 })
     return questions, themes, errors
 
@@ -145,10 +160,20 @@ def check(questions, existing):
                 errors.append(f"{w} vote multiple mais superlatif en anglais : {en}")
         quoted = re.sub(r"«[^»]*»", "", fr)
         talks_to_voter = re.search(ADDRESSES_VOTER, quoted, re.I)
-        if not q["enableSelfVote"] and not talks_to_voter:
-            warnings.append(f"{w} « ! » sans « te/toi/ton » : voter pour soi doit rester permis sauf bonne raison -> {fr}")
+        # Un aveu à vote multiple (« Qui a déjà… ») reste ouvert à soi, même s'il raconte une faute.
+        confession = q["enableMultipleVoting"] and re.search(r"\b(a|s'est|est) déjà\b", fr)
+        accuses = re.search(ACCUSATION_HINTS, quoted, re.I) and not confession
+        praises = re.search(ELOGE_HINTS, quoted, re.I)
+        if q["_no_self"] == "toi" and not talks_to_voter:
+            warnings.append(f"{w} « ! » sans « te/toi/ton » : si c'est une accusation, écrire « !a » ; "
+                            f"un éloge, « !e » ; sinon retirer « ! » -> {fr}")
+        if q["_no_self"] and q["type"] == "ranking":
+            errors.append(f"{w} « ! » sur un ranking : tout le monde est classé, soi compris -> {fr}")
         if q["enableSelfVote"] and talks_to_voter and re.search(ADDRESSES_VOTER_EN, en, re.I):
             warnings.append(f"{w} la question parle de « toi » : faut-il « ! » ? -> {fr}")
+        elif q["enableSelfVote"] and q["type"] != "ranking" and (accuses or praises):
+            why = "accusation" if accuses else "éloge"
+            warnings.append(f"{w} ressemble à une {why} : faut-il « ! » ? -> {fr}")
         if re.search(r"\w/\w|\(e\)|·", fr) or re.search(r"\b(il|elle)/(il|elle)\b", fr):
             errors.append(f"{w} écriture inclusive : {fr}")
         if re.search(r"\bsi ils?\b", fr, re.I):
@@ -249,7 +274,7 @@ def main():
         ap.error("--out est requis (ou --check-only)")
 
     for q in questions:
-        del q["_where"]
+        del q["_where"], q["_no_self"]
     ordered = [{k: q[k] for k in ("question_id", "content", "type", "theme", "enableSelfVote",
                                    "enableMultipleVoting", "voteNumberLimit", "canWrite", "item_name")}
                for q in questions]

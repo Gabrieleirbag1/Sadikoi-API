@@ -20,7 +20,7 @@
 # Volumes (kept on the host, so they survive the --rm containers):
 #   - $HOST_INSTANCE_DIR -> $APP_DIR/instance     (SQLite database)
 #   - $HOST_UPLOADS_DIR  -> $APP_DIR/src/uploads  (uploaded profile pictures)
-#   - $HOST_SECRETS_DIR/.*.secrets and .firebase-service-account.json -> $APP_DIR/src/ (read-only)
+#   - $HOST_SECRETS_DIR/.*.secrets, .firebase-service-account.json and .apns-key.p8 -> $APP_DIR/src/ (read-only)
 #     The secrets are excluded from the image (.dockerignore): only the files that exist on the host are mounted.
 #
 # Logs: everything the container prints is appended to one file per day, $LOG_DIR/YYYY-MM-DD.log
@@ -58,7 +58,8 @@ VOLUMES=(
 )
 
 # Mount each secret file that exists (the admin secret stays out: the admin never runs in the container).
-for secret in "$HOST_SECRETS_DIR"/.*.secrets "$HOST_SECRETS_DIR/.firebase-service-account.json"; do
+for secret in "$HOST_SECRETS_DIR"/.*.secrets "$HOST_SECRETS_DIR/.firebase-service-account.json" \
+              "$HOST_SECRETS_DIR/.apns-key.p8"; do
     name="$(basename "$secret")"
     [ -f "$secret" ] && [ "$name" != ".admin.secrets" ] || continue
     VOLUMES+=(-v "$secret:$APP_DIR/src/$name:ro")

@@ -3,6 +3,7 @@
 # Secrets: mounted read-only at run time by server_sadikoi.sh, never baked into the image.
 **/*.secrets
 **/.firebase-service-account.json
+**/*.p8
 
 # Data: mounted as volumes by server_sadikoi.sh.
 instance
