@@ -1,7 +1,10 @@
 import datetime
 import os
 import threading
+import time
 
+import httpx
+import jwt
 import requests
 from flask import Request, current_app
 from flask_login import current_user
@@ -10,7 +13,8 @@ from google.oauth2 import service_account
 from lite_logging.lite_logging import log
 
 from builder import current_window_start, next_question_time
-from config import ALLOWED_LANGUAGES, FIREBASE_SERVICE_ACCOUNT_PATH
+from config import (ALLOWED_LANGUAGES, APNS_KEY_ID, APNS_KEY_PATH, APNS_TEAM_ID, APNS_TOPIC,
+                    FIREBASE_SERVICE_ACCOUNT_PATH)
 from db import db, update_from_db
 from models import ChatMessageModel, GroupModel, GroupUser, PushTokenModel, QuestionModel, UserModel
 from sockets import socketio
@@ -21,6 +25,7 @@ SCHEDULER_INTERVAL_SECONDS = 60
 MESSAGE_PREVIEW_LENGTH = 150
 
 # Android notification channels, created by the app (the user can also tune them in Android settings).
+# iOS has no channels: the app still receives it in the data, like on Android.
 CHANNEL_MESSAGES = 'messages'
 CHANNEL_QUESTIONS = 'questions'
 CHANNEL_REMINDERS = 'reminders'
@@ -154,18 +159,118 @@ def build_dismiss_message(tags: set[str]) -> dict:
     }
 
 
+############## APNS (iOS) ##############
+
+class ApnsClient:
+    """Sends one message to one iPhone, straight to Apple (the app has no Firebase SDK on iOS).
+
+    Takes the same messages as FcmClient (see to_apns). The authentication token (JWT signed with the .p8 key)
+    is cached: Apple wants it renewed between 20 and 60 minutes.
+    """
+    # Production: TestFlight and App Store builds (aps-environment in App.entitlements).
+    HOST = 'https://api.push.apple.com'
+    TOKEN_LIFETIME_SECONDS = 45 * 60
+
+    def __init__(self, key_path: str, key_id: str | None, team_id: str | None, topic: str):
+        self.key_path, self.key_id, self.team_id, self.topic = key_path, key_id, team_id, topic
+        self._client = None
+        self._token, self._issued = None, 0
+        self._lock = threading.Lock()
+        self._warned = False
+
+    @property
+    def enabled(self) -> bool:
+        if os.path.exists(self.key_path) and self.key_id and self.team_id:
+            return True
+        if not self._warned:
+            log(f"iOS push notifications disabled: {self.key_path} or APNS_KEY_ID / APNS_TEAM_ID "
+                "(.apns.secrets) not found.", level="WARNING")
+            self._warned = True
+        return False
+
+    def _jwt(self) -> str:
+        with self._lock:
+            if not self._token or time.time() - self._issued > self.TOKEN_LIFETIME_SECONDS:
+                with open(self.key_path) as key:
+                    self._issued = int(time.time())
+                    self._token = jwt.encode({'iss': self.team_id, 'iat': self._issued}, key.read(),
+                                             algorithm='ES256', headers={'kid': self.key_id})
+            return self._token
+
+    def _http(self) -> httpx.Client:
+        # APNs only speaks HTTP/2. Created on first use: one connection, reused for every notification.
+        with self._lock:
+            if self._client is None:
+                self._client = httpx.Client(http2=True, timeout=10)
+            return self._client
+
+    def send(self, token: str, message: dict) -> str:
+        """Same results as FcmClient.send: 'ok', 'unregistered' or 'error'."""
+        headers, payload = to_apns(message)
+        response = self._http().post(f'{self.HOST}/3/device/{token}', json=payload, headers={
+            'authorization': f'bearer {self._jwt()}', 'apns-topic': self.topic, **headers})
+        if response.status_code == 200:
+            return 'ok'
+        try:
+            reason = response.json().get('reason', '')
+        except ValueError:
+            reason = ''
+        if response.status_code == 410 or reason in ('BadDeviceToken', 'Unregistered'):
+            return 'unregistered'
+        if reason in ('ExpiredProviderToken', 'InvalidProviderToken'):
+            with self._lock:
+                self._token = None  # signed again for the next notification
+        log(f"APNs error {response.status_code}: {reason}", level="ERROR")
+        return 'error'
+
+
+apns = ApnsClient(APNS_KEY_PATH, APNS_KEY_ID, APNS_TEAM_ID, APNS_TOPIC)
+
+
+def to_apns(message: dict) -> tuple[dict, dict]:
+    """An FCM message (build_message, build_dismiss_message) in Apple's format: (headers, payload).
+
+    `data` goes at the top of the payload, where the app reads it (route, channel, tag, action, tags).
+    The tag becomes apns-collapse-id, which iOS uses as the notification's identifier: a new notification
+    with the same tag replaces the previous one, and the app removes them by tag (push.service.ts, AppDelegate).
+    """
+    data = message.get('data', {})
+    if 'notification' not in message:
+        # Dismiss: background push, low priority, dropped after a day (like the FCM ttl).
+        headers = {'apns-push-type': 'background', 'apns-priority': '5',
+                   'apns-expiration': str(int(time.time()) + 86400)}
+        return headers, {'aps': {'content-available': 1}, **data}
+    headers = {'apns-push-type': 'alert', 'apns-priority': '10'}
+    aps = {'alert': dict(message['notification']), 'sound': 'default'}
+    tag = data.get('tag')
+    if tag:
+        headers['apns-collapse-id'] = tag
+        aps['thread-id'] = tag  # groups them in the tray
+    return headers, {'aps': aps, **data}
+
+
+############## SENDING ##############
+
 def deliver(pairs: list[tuple[str, dict]]) -> None:
-    """Send (token, message) pairs in the background, so no request waits for Firebase."""
-    if not pairs or not fcm.enabled:
+    """Send (token, message) pairs in the background, so no request waits for Firebase or Apple."""
+    if not pairs or not (fcm.enabled or apns.enabled):
         return
     socketio.start_background_task(_send_all, current_app._get_current_object(), pairs)
 
 
 def _send_all(app, pairs: list[tuple[str, dict]]) -> None:
+    """Each token goes through Firebase or Apple, depending on the platform it was registered with."""
+    with app.app_context():
+        tokens = {token for token, _ in pairs}
+        platforms = dict(db.session.query(PushTokenModel.token, PushTokenModel.platform)
+                         .filter(PushTokenModel.token.in_(tokens)).all())
     stale = []
     for token, message in pairs:
+        sender = apns if platforms.get(token) == 'ios' else fcm
+        if not sender.enabled:
+            continue
         try:
-            if fcm.send(token, message) == 'unregistered':
+            if sender.send(token, message) == 'unregistered':
                 stale.append(token)
         except Exception as error:  # a network error must not stop the other notifications
             log(f"Push notification failed: {error}", level="ERROR")
@@ -495,7 +600,8 @@ def mark_group_seen(group_id: int, request: Request) -> tuple[dict, int]:
 
 
 def register_device(request: Request) -> tuple[dict, int]:
-    """Save the phone's FCM token for the current user (a token moves to whoever logged in last on it)."""
+    """Save the phone's token (FCM on Android, APNs on iOS) for the current user (a token moves to whoever
+    logged in last on it)."""
     data = request.get_json(silent=True) or {}
     token = data.get('token')
     device_id = data.get('device_id')
@@ -515,7 +621,7 @@ def register_device(request: Request) -> tuple[dict, int]:
         push_token = PushTokenModel(user_id=user_id, token=token, device_id=device_id, platform=platform)
         db.session.add(push_token)
     if device_id:
-        # Firebase sometimes renews a phone's token: forget the old one.
+        # Firebase or Apple sometimes renews a phone's token: forget the old one.
         PushTokenModel.query.filter(PushTokenModel.user_id == user_id, PushTokenModel.device_id == device_id,
                                     PushTokenModel.token != token).delete(synchronize_session=False)
     result = update_from_db()

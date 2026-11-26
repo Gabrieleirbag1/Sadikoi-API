@@ -102,6 +102,15 @@ ALLOWED_LANGUAGES = {'en', 'fr'}
 # Firebase service account key (JSON), used to send push notifications. Without it, nothing is sent.
 FIREBASE_SERVICE_ACCOUNT_PATH = os.path.join(os.path.dirname(__file__), '.firebase-service-account.json')
 
+# APNs (push notifications to iPhones), see docs/ios.html in the app: the .p8 key created on developer.apple.com,
+# its Key ID and the Team ID (in .apns.secrets). Without them, nothing is sent to iPhones.
+APNS_KEY_PATH = os.path.join(os.path.dirname(__file__), '.apns-key.p8')
+apns_secrets_path = os.path.join(os.path.dirname(__file__), '.apns.secrets')
+APNS_KEY_ID = load_secret_var('APNS_KEY_ID', apns_secrets_path)
+APNS_TEAM_ID = load_secret_var('APNS_TEAM_ID', apns_secrets_path)
+# The app's Bundle ID.
+APNS_TOPIC = 'com.missclick.sadikoi'
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
