@@ -17,7 +17,7 @@ Le premier lot généré avait un français « traduit de l'anglais » (« Qui e
    ```bash
    python3 .claude/skills/sadikoi-questions/scripts/build_questions.py lot.txt \
      --out src/data/questions_<nom>.json \
-     --existing src/data/questions_v8.json \
+     --existing src/data/questions_v10.json \
      --themes src/data/question_themes_<nom>.json
    ```
    - `--existing` (répétable) : fichiers déjà en place. Le script refuse les doublons et numérote à la suite (ou `--start-id N`).
@@ -50,6 +50,8 @@ Quand l'utilisateur donne une liste de thèmes (« ajoute ces thèmes : nostalgi
 s H|Qui serait le premier à vomir en soirée ?|Who'd be the first to throw up at a party?
 d P|Quel duo finirait par se pécho après une soirée trop arrosée ?|Which two would end up hooking up after a few too many drinks?
 s! B|Qui viendrait te chercher à 4h du mat sans poser de questions ?|Who'd come pick you up at 4 a.m., no questions asked?
+y!a T|Qui est la balance du groupe ?|Who's the snitch of the group?
+s!e B|Qui est le pote le plus fiable du groupe ?|Who's the most reliable friend in the group?
 r V|Classe le groupe du plus sobre au plus bourré en fin de soirée.|Rank the group from soberest to drunkest by the end of the night.
 s+ K|Qui a déjà quitté une soirée sans dire au revoir à personne ?|Who here has ever left a party without saying bye to anyone?
 ```
@@ -57,8 +59,8 @@ s+ K|Qui a déjà quitté une soirée sans dire au revoir à personne ?|Who here
 - `# id|Nom FR|Nom EN` ouvre un thème ; les lignes suivantes en font partie.
 - Ligne de question : `<type><!?><+?> <item>|<français>|<anglais>`.
 - Types : `s` solo, `d` duo, `r` ranking, `c` scenario, `t` trap, `y` dynamique.
-- `!` après le type passe `enableSelfVote` à `false`. **Par défaut, voter pour soi est permis sur tous les types, duos compris** : se désigner soi-même est un aveu et fait partie du jeu. L'utilisateur trouve que `false` revenait trop souvent : mets `!` seulement quand voter pour soi n'a aucun sens, c'est-à-dire quand la question vise celui qui vote (« Qui *te* dit la vérité… », « Qui garderait *ton* secret… », « Quels deux membres *te* tiendraient les cheveux… »). Une question gênante, une accusation ou un duo (« Quel duo finirait par se pécho… ») ne sont pas des raisons : celui qui vote peut se mettre dedans. Le script prévient quand un `!` est mis sans « te/toi/ton », ou oublié sur une question qui parle de « toi ».
-- `+` après le type (`s+`, `c+`, `t+`, `y+`, combinable avec `!` : `s+!`) en fait une question à vote multiple : `enableMultipleVoting: true`, `voteNumberLimit: 0`. Interdit sur `d` et `r`, qui sont déjà multiples.
+- `!`, `!a` ou `!e` après le type passe `enableSelfVote` à `false`, avec sa raison : `!` la question parle de « toi », `!a` accusation, `!e` éloge. **Par défaut, voter pour soi est permis**, duos compris. Chaque `!` doit avoir une de ces trois raisons : voir « Voter pour soi » dans la section 3.
+- `+` après le type (`s+`, `c+`, `t+`, `y+`, combinable avec `!` : `s+!`, `s+!a`, `s+!e`) en fait une question à vote multiple : `enableMultipleVoting: true`, `voteNumberLimit: 0`. Interdit sur `d` et `r`, qui sont déjà multiples.
 - Item : la lettre du tableau des items (ou son id complet).
 
 ## 1. Langue
@@ -146,6 +148,31 @@ Chaque question doit se résoudre par un vote pour des membres du groupe. À év
 
 Règles de vote, appliquées par le script : solo, scenario, trap et dynamique → `enableSelfVote: true`, `enableMultipleVoting: false`, `voteNumberLimit: 1` (avec `+` : `true`, `true`, `0`) ; duo → `true`, `true`, `2` (le votant peut se mettre dans le duo) ; ranking → `true`, `true`, `0` (illimité). `canWrite` vaut toujours `false` (`true` voudrait dire réponse libre en texte au lieu d'un vote, cf. `src/question.py`).
 
+### Voter pour soi (`!`, `!a`, `!e`)
+
+Par défaut, `enableSelfVote` vaut `true` : se désigner soi-même est un aveu ou de l'autodérision, et ça fait partie du jeu. L'utilisateur trouve incohérente une question où l'on ne peut pas voter pour soi sans raison visible (exemple : « Quel duo finirait par se pécho après une soirée trop arrosée ? » doit rester ouvert à soi). On coupe l'auto-vote seulement pour une de ces trois raisons, à noter dans l'en-tête :
+
+| marque | raison | pourquoi couper | exemples |
+|---|---|---|---|
+| `!` | **toi** : la question vise celui qui vote | se désigner n'a aucun sens | « Qui *te* dit la vérité… », « Quels deux membres *tu* prendrais en coloc ? », « Qui *nous* manquerait le plus… » |
+| `!a` | **accusation** : on reproche une faute envers ses proches ou le groupe (trahison, mensonge, coup bas, radinerie, hypocrisie, infidélité, égoïsme qui coûte aux autres) | se désigner permettrait d'esquiver : la question existe pour balancer quelqu'un | « Qui est la balance du groupe ? », « Qui pourrait coucher avec l'ex d'un pote ? », « L'addition arrive : qui part aux toilettes pile à ce moment-là ? », la plupart des vannes de `trash` |
+| `!e` | **éloge** : titre flatteur (qualité, talent, réussite) ou bonne action imaginée | se désigner reviendrait à se lancer des fleurs, et si chacun vote pour soi, personne ne gagne | « Qui est le pilier du groupe ? », « Quel duo gagnerait Top Chef ? », « Qui deviendra célèbre ? », « Un pote est à découvert : qui lui prête de l'argent sans poser de questions ? » |
+
+Ne sont **pas** des raisons, l'auto-vote reste ouvert :
+- les gaffes, manies et petits défauts qu'on avoue en riant : « Qui serait le premier à vomir ? », « Qui annule toujours au dernier moment ? », « Qui fait la gueule quand on ne l'invite pas ? » ;
+- les aveux de faits vécus, même peu glorieux, surtout à vote multiple : « Qui a déjà lu les messages de quelqu'un pendant qu'il était aux toilettes ? » (en solo, « Qui a déjà menti au groupe sur un truc important ? » reste une accusation : elle ne vise qu'une personne) ;
+- les crimes de fiction ou contre des inconnus, propres aux thèmes `mechant` et `illegal` : « Quel duo réussirait le braquage parfait ? », « Qui serait capable de partir d'un resto sans payer ? » ;
+- les rôles et habitudes qu'on constate, même positifs : « Qui gère les comptes sur Tricount ? », « Qui paye toujours sa tournée ? », « Qui joue toujours le pote sobre qui ramène tout le monde ? » ;
+- les compétences concrètes et les défis : « Qui saurait faire du feu sans briquet ? », « Qui sait faire une vraie mayonnaise maison ? » ;
+- les duos de complicité, de drague ou de couple imaginaire : le votant peut se mettre dedans ;
+- les « meilleurs » parodiques ou absurdes : « Qui ferait le meilleur méchant de film ? », « Qui gagnerait un concours de rots ? ».
+
+Le test : si je me désigne, est-ce que j'avoue un truc drôle (garder `true`), est-ce que j'esquive le fait de balancer un pote (`!a`) ou est-ce que je me jette des fleurs (`!e`) ?
+
+Les rankings gardent toujours `true` : tout le monde est classé, soi compris (le script refuse `!` sur un `r`). Le script prévient quand `!` est mis sans « te/toi/ton », et signale les questions où l'auto-vote reste ouvert alors qu'elles contiennent un mot d'accusation ou d'éloge (« balance », « trahir », « le meilleur », « pilier »…). Ces avertissements sont des indices à relire, pas des règles : un « meilleur » parodique reste à `true`.
+
+`enableSelfVote` est copié en base quand une question est donnée à un groupe (`build_question_model` dans `src/builder.py`) : modifier le JSON ne change pas les questions déjà posées, qui gardent l'ancienne valeur.
+
 ### Questions à vote multiple (`+`)
 
 Chaque thème doit avoir **20 à 30 questions à vote multiple** qui ne sont ni des duos ni des rankings : des solo, scenario, trap ou dynamique où chacun coche **tous les membres concernés** (au moins un, sans maximum). Quand tu crées un thème, ajoute-les en plus des 40 questions ; quand tu complètes un thème qui n'en a pas encore, ajoute-en 20 à 30. Compte les questions existantes avec `enableMultipleVoting: true` hors `duo`/`ranking` pour savoir où on en est.
@@ -156,7 +183,7 @@ La question doit donc pouvoir concerner **plusieurs personnes à la fois** :
 - Bonnes mécaniques : les aveux (« Qui a déjà… », « Qui n'a jamais… »), les camps (« Qui fait partie de la team… »), les capacités (« Qui serait capable de… », « Qui tiendrait… »), les scénarios où plusieurs finissent pareil (« … : qui est encore debout à 6 h ? »).
 - À proscrire : tout ce qui désigne une seule personne. Pas de superlatif (« le plus », « le premier », « le pire », « le meilleur », « le seul »), pas de rôle unique (« le chef », « la balance », « le boulet de la bande »). Le script refuse ces formes, en français comme en anglais ("the most", "the first", "most likely").
 - Formulations : « Qui a déjà… ? », « Lesquels d'entre nous… ? », « Qui, ici, … ? », « Qui sont les … de la bande ? », « Qui fait partie de la team « … » ? », « Qui pourrait… ? ». En anglais : "Who here has ever…?", "Which of us…?", "Who's on team…?", "Who could…?". La règle des 3 mêmes débuts par thème s'applique aussi : varie.
-- `enableSelfVote` reste à `true` : se cocher soi-même fait partie du jeu (c'est un aveu). Mets `!` seulement si la question parle de « toi ».
+- `enableSelfVote` reste en général à `true` : se cocher soi-même fait partie du jeu (c'est un aveu). Les mêmes raisons que plus haut s'appliquent : `!` (toi), `!a` (« Qui sont les manipulateurs de la bande ? »), `!e` (« Qui sont les potes sur qui on peut compter ? »).
 - Répartition conseillée parmi elles : environ 35 % solo, 25 % scenario, 20 % trap, 20 % dynamique. Un lot qui ne contient que des `+` déclenche des avertissements de répartition (duo = 0 %) : c'est normal.
 
 Exemples (mauvais → bon) :
@@ -166,7 +193,7 @@ Exemples (mauvais → bon) :
 
 ## 4. Thèmes
 
-Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Le lot de référence est `questions_v8.json` (ids 1 à 1940, sans complot ; les ids 1441 à 1940 sont les 500 questions à vote multiple, 20 par thème). Ses thèmes : soiree, boulot, ecole, mechant, loisirs, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets, nostalgie (Throwback), avenir (What's Next), travail (Jobs : tous les métiers, pas seulement le bureau), illegal (Illégal et dangereux / Living Dangerously), crado (Crado / Gross, 80 questions), trash (Trash / Savage, 80 questions, désactivé par défaut). Le thème complot a été retiré à la demande de l'utilisateur : ne le recrée pas sans qu'il le demande. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
+Un `id` en snake_case sans accent, un nom FR et un nom EN naturels. Le lot de référence est `questions_v10.json` (ids 1 à 2190, sans complot ; les ids 1441 à 1940 sont les 500 questions à vote multiple, 20 par thème ; les ids 1941 à 2190 sont les 250 questions qui parlent de « toi », 10 par thème ; la v10 reprend la v9 en appliquant les règles d'auto-vote de la section 3). Ses thèmes : soiree, boulot, ecole, mechant, loisirs, et_si, hot (Hot / Spicy), voyage, argent, reseaux, amour, famille, survie, absurde, amitie, futur, bouffe, sport, secrets, nostalgie (Throwback), avenir (What's Next), travail (Jobs : tous les métiers, pas seulement le bureau), illegal (Illégal et dangereux / Living Dangerously), crado (Crado / Gross, 80 questions), trash (Trash / Savage, 80 questions, désactivé par défaut). Le thème complot a été retiré à la demande de l'utilisateur : ne le recrée pas sans qu'il le demande. Réutilise un id existant quand le sujet correspond, plutôt que d'en créer un quasi identique.
 
 Dans le fichier de thèmes, `checked` indique si le thème est activé par défaut ; le script le met à `false` pour `hot` et `trash` (`THEMES_OFF_BY_DEFAULT` dans le script) et à `true` pour les autres.
 
@@ -217,3 +244,4 @@ Avant de rendre le lot, relis les questions et corrige celles où l'un de ces po
 3. On ne peut pas y répondre en votant pour un membre (ou deux pour un duo), ou bien, pour une question à vote multiple, elle ne concerne qu'une seule personne.
 4. L'anglais ne dit pas la même chose, ou sonne comme du français traduit.
 5. La question ressemble trop à une question déjà présente dans le lot ou dans les fichiers existants (même idée reformulée).
+6. L'auto-vote est coupé sans une des trois raisons (toi, accusation, éloge), ou laissé ouvert sur une question qui sert à balancer quelqu'un ou à le flatter.
