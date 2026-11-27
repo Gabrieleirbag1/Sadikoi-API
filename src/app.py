@@ -14,7 +14,7 @@ from gifs import get_trending_gifs, get_recent_gifs, search_gifs, share_gif
 from feedback import create_bug_report, create_suggestion
 from db import db
 from manage import has_pending_migrations
-from sockets import socketio
+from sockets import socketio, user_room
 from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device, forgot_password, reset_password, report_user, get_blocks, block_user, unblock_user
 from config import SECRET_KEY, ALLOWED_ORIGINS
 from security import limiter, init_security, json_field_key, user_or_ip_key, SocketRateLimiter
@@ -349,6 +349,8 @@ def share_gif_endpoint(slug):
 def handle_connect():
     if not current_user.is_authenticated:
         return False
+    # A room of their own, for events about them only (see sockets.user_room).
+    join_room(user_room(current_user.id))
     log(f"User {current_user.id} connected", level="DEBUG")
 
 @socketio.on('disconnect')
