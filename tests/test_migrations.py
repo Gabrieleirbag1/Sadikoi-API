@@ -68,6 +68,8 @@ def test_legacy_database_is_adopted(db_file):
         connection.execute("ALTER TABLE users DROP COLUMN skip_device_verification")
         # Added by 0008_question_feedback.
         connection.execute("DROP TABLE question_feedback")
+        # Added by 0012_user_blocks.
+        connection.execute("DROP TABLE user_blocks")
         connection.execute("INSERT INTO users (id, username, email) VALUES (1, 'alice', 'alice@example.com')")
 
     manage.run(["--db", str(db_file), "migrate"])
@@ -77,6 +79,7 @@ def test_legacy_database_is_adopted(db_file):
     assert "category" in columns(db_file, "bug_reports")
     assert "deleted" in columns(db_file, "groups")
     assert "left_at" in columns(db_file, "group_user")
+    assert "blocker_id" in columns(db_file, "user_blocks")
     with sqlite3.connect(db_file) as connection:
         assert connection.execute("SELECT username FROM users").fetchall() == [("alice",)]
     with app.app_context():
@@ -91,7 +94,9 @@ def test_fresh_database_is_not_adopted(db_file):
 
 def test_rollback_then_migrate_again(db_file):
     manage.run(["--db", str(db_file), "migrate"])
-    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0011_group_user_left_at
+    manage.run(["--db", str(db_file), "rollback"])  # the latest one: 0012_user_blocks
+    assert columns(db_file, "user_blocks") == []
+    manage.run(["--db", str(db_file), "rollback"])  # then 0011_group_user_left_at
     assert "left_at" not in columns(db_file, "group_user")
     manage.run(["--db", str(db_file), "rollback"])  # then 0010_group_soft_delete
     assert "deleted" not in columns(db_file, "groups")
@@ -122,6 +127,7 @@ def test_rollback_then_migrate_again(db_file):
     assert "category" in columns(db_file, "report_users")
     assert "deleted" in columns(db_file, "groups")
     assert "left_at" in columns(db_file, "group_user")
+    assert "blocker_id" in columns(db_file, "user_blocks")
 
 
 def test_the_baseline_cannot_be_rolled_back(db_file):
