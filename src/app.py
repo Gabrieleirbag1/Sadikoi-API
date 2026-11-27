@@ -15,7 +15,7 @@ from feedback import create_bug_report, create_suggestion
 from db import db
 from manage import has_pending_migrations
 from sockets import socketio
-from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device, forgot_password, reset_password, report_user
+from auth import register_user, get_user, google_login_handler, login, logout, update_user, delete_user, logout_sessions, verify_device, list_devices, revoke_device, forgot_password, reset_password, report_user, get_blocks, block_user, unblock_user
 from config import SECRET_KEY, ALLOWED_ORIGINS
 from security import limiter, init_security, json_field_key, user_or_ip_key, SocketRateLimiter
 from exceptions import ValueTooLongException
@@ -182,6 +182,20 @@ def reset_password_endpoint():
 @limiter.limit("5 per hour", key_func=user_or_ip_key)
 def report_user_endpoint():
     return report_user(request)
+
+@app.route('/api/auth/security/blocks/', methods=['GET'])
+def get_blocks_endpoint():
+    return get_blocks()
+
+@app.route('/api/auth/security/blocks/<int:user_id>', methods=['PUT'])
+@limiter.limit("30 per hour", key_func=user_or_ip_key)
+def block_user_endpoint(user_id):
+    return block_user(user_id)
+
+@app.route('/api/auth/security/blocks/<int:user_id>', methods=['DELETE'])
+@limiter.limit("30 per hour", key_func=user_or_ip_key)
+def unblock_user_endpoint(user_id):
+    return unblock_user(user_id)
 
 ############## USER-GROUP ENDPOINTS ##############
 
