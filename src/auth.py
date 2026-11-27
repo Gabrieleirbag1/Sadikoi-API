@@ -12,13 +12,15 @@ from lite_logging.lite_logging import log
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
-from models import PasswordResetToken, UserModel, UserSecurity, ReportUserModel
+from models import (PasswordResetToken, UserModel, UserSecurity, ReportUserModel, UserBlockModel, blocked_ids,
+                    blocked_by_ids)
 from exceptions import InvalidChoiceException
 from utils import normalize_language
 from config import allowed_file
 from notifications import remove_device_tokens
 from db import db, add_to_db, delete_from_db, update_from_db
 from builder import build_user_response, iso_utc
+from sockets import socketio, user_room
 from email_sender import send_auth_code_email, send_password_reset_email, RESET_TOKEN_TTL_MINUTES
 from config import (GOOGLE_CLIENT_BROWSER_ID, GOOGLE_CLIENT_IOS_ID, GOOGLE_CLIENT_MOBILE_ID, FRONTEND_URL,
                     TURNSTILE_SECRET_KEY)
@@ -734,3 +736,42 @@ def report_user(request: Request) -> tuple[dict, int]:
     log(f"User {reporter.username} reported user {reported_user.username} for {category}: {reason}", level="INFO")
 
     return {"success": True, "message": "User reported successfully"}, 200
+
+def notify_blocks_changed(blocker_id: int, blocked_id: int) -> None:
+    """Both users reload their blocks, so their open chats update without a page reload."""
+    for user_id in (blocker_id, blocked_id):
+        socketio.emit('blocks_changed', {}, to=user_room(user_id))
+
+def get_blocks() -> tuple[dict, int]:
+    """The users the current user blocked, and the users who blocked them."""
+    user_id = int(current_user.id)
+    return {"success": True, "message": "Blocks fetched successfully",
+            "content": {"blocked": sorted(blocked_ids(user_id)), "blocked_by": sorted(blocked_by_ids(user_id))}}, 200
+
+def block_user(user_id: int) -> tuple[dict, int]:
+    """Block a user. Blocking someone already blocked does nothing."""
+    blocker_id = int(current_user.id)
+    if user_id == blocker_id:
+        return {"success": False, "message": "You cannot block yourself"}, 400
+    blocked: UserModel | None = get_user_object(user_id)
+    if not blocked:
+        return {"success": False, "message": "User not found"}, 404
+
+    if UserBlockModel.query.filter_by(blocker_id=blocker_id, blocked_id=blocked.id).first() is None:
+        result = add_to_db(UserBlockModel(blocker_id=blocker_id, blocked_id=blocked.id))
+        if result.get("error"):
+            return {"success": False, "message": "Could not block user"}, 500
+        log(f"User {blocker_id} blocked user {blocked.id}", level="INFO")
+        notify_blocks_changed(blocker_id, blocked.id)
+    return {"success": True, "message": "User blocked successfully"}, 200
+
+def unblock_user(user_id: int) -> tuple[dict, int]:
+    """Unblock a user. Unblocking someone who is not blocked does nothing."""
+    block = UserBlockModel.query.filter_by(blocker_id=int(current_user.id), blocked_id=user_id).first()
+    if block is not None:
+        result = delete_from_db(block)
+        if result.get("error"):
+            return {"success": False, "message": "Could not unblock user"}, 500
+        log(f"User {current_user.id} unblocked user {user_id}", level="INFO")
+        notify_blocks_changed(int(current_user.id), user_id)
+    return {"success": True, "message": "User unblocked successfully"}, 200

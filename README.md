@@ -18,7 +18,7 @@ The web and Android client lives in a separate repository: [Gabrieleirbag1/Sadik
 - Votes, daily results and item announcements (new, stolen, kept, with streaks)
 - Real-time group chat over Socket.IO, with GIFs through the Klipy API
 - Push notifications through Firebase Cloud Messaging: new question, vote reminder one hour before the end of the day, new messages, with per-group settings
-- Bug reports, suggestions and user reports
+- Bug reports, suggestions, user reports and blocking
 - Rate limiting, Cloudflare Turnstile captcha, restricted CORS
 - Local admin interface (Flask-Admin)
 

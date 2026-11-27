@@ -733,3 +733,28 @@ class TestApns:
         assert notifications.jwt.get_unverified_header(token) == {"alg": "ES256", "kid": "KEYID12345", "typ": "JWT"}
         claims = notifications.jwt.decode(token, private_key.public_key(), algorithms=["ES256"])
         assert claims["iss"] == "TEAMID1234"
+
+
+# ------------------------------------------------------------- user blocks
+class TestBlockedMessageNotifications:
+    @pytest.fixture(autouse=True)
+    def both_voted(self, world, ctx):
+        with ctx():
+            question = factories.make_question(world.group)
+            factories.make_vote(question, world.admin, [world.member])
+            factories.make_vote(question, world.member, [world.admin])
+
+    def send(self, login_as, user, world):
+        return login_as(user).post(f"/api/groups/{world.group.id}/messages/", json={"content": "hello"})
+
+    @pytest.mark.parametrize("blocker", ["admin", "member"])
+    def test_no_notification_either_way(self, login_as, world, phones, externals, blocker):
+        blocker, blocked = (world.admin, world.member) if blocker == "admin" else (world.member, world.admin)
+        login_as(blocker).put(f"/api/auth/security/blocks/{blocked.id}")
+        assert self.send(login_as, world.admin, world).status_code == 201
+        assert self.send(login_as, world.member, world).status_code == 201
+        assert externals.pushes == []
+
+    def test_still_notified_without_a_block(self, login_as, world, phones, externals):
+        self.send(login_as, world.member, world)
+        assert len(externals.pushes) == 1

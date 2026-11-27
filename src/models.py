@@ -547,7 +547,50 @@ class ReportUserModel(db.Model):
         :rtype: str
         """
         return f'ReportUser: {self.reason} at {self.timestamp}'
-    
+
+class UserBlockModel(db.Model):
+    """A user blocking another one: the blocker's chat masks the blocked user's messages and vice versa."""
+    __tablename__ = 'user_blocks'
+    __table_args__ = (db.UniqueConstraint('blocker_id', 'blocked_id', name='uq_user_blocks_pair'),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    blocker_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    blocked_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+
+    blocker = db.relationship('UserModel', foreign_keys=[blocker_id], backref=db.backref('blocks_made', lazy='dynamic'))
+    blocked = db.relationship('UserModel', foreign_keys=[blocked_id], backref=db.backref('blocks_received', lazy='dynamic'))
+
+    def __repr__(self) -> str:
+        """Return who blocked whom.
+
+        :return: The blocker and blocked ids.
+        :rtype: str
+        """
+        return f'UserBlock: {self.blocker_id} blocked {self.blocked_id}'
+
+
+def blocked_ids(user_id: int) -> set[int]:
+    """The users that this user blocked.
+
+    :param user_id: The blocker.
+    :return: The ids of the users they blocked.
+    :rtype: set[int]
+    """
+    rows = db.session.query(UserBlockModel.blocked_id).filter(UserBlockModel.blocker_id == user_id)
+    return {row[0] for row in rows}
+
+
+def blocked_by_ids(user_id: int) -> set[int]:
+    """The users that blocked this user.
+
+    :param user_id: The blocked user.
+    :return: The ids of the users who blocked them.
+    :rtype: set[int]
+    """
+    rows = db.session.query(UserBlockModel.blocker_id).filter(UserBlockModel.blocked_id == user_id)
+    return {row[0] for row in rows}
+
 class SuggestionModel(db.Model):
     """Suggestion model for the database."""
     __tablename__ = 'suggestions'

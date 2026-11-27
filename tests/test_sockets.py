@@ -101,3 +101,12 @@ def test_join_is_rate_limited(connect, world, monkeypatch, ctx, login_as):
     assert names(sio) == []
     login_as(world.admin).post(f"/api/groups/{world.group.id}/messages/", json={"content": "y"})
     assert names(sio) == ["new_message"]
+
+
+def test_block_changes_reach_both_users_only(connect, world, login_as):
+    """Each connection joins its user's own room: blocks are not announced to the whole group."""
+    blocked, _ = connect(world.member)
+    bystander, _ = connect(world.outsider)
+    login_as(world.admin).put(f"/api/auth/security/blocks/{world.member.id}")
+    assert names(blocked) == ["blocks_changed"]
+    assert names(bystander) == []

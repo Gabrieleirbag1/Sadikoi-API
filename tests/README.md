@@ -33,6 +33,7 @@ pip install -r requirements-dev.txt   # once only (pytest + pytest-cov)
 |---|---|
 | Registration / login / account | `python -m pytest tests/test_auth_register_login.py` |
 | Auth security (OTP, devices, forgot password, reports) | `python -m pytest tests/test_auth_security.py` |
+| User blocks (routes, hidden chat history) | `python -m pytest tests/test_blocks.py` |
 | Session guard (`before_request`) | `python -m pytest tests/test_session_guard.py` |
 | Groups (CRUD, roles, invitations) | `python -m pytest tests/test_groups.py` |
 | Chat | `python -m pytest tests/test_chat.py` |
