@@ -21,6 +21,15 @@ class TestBlockRoutes:
         content = login_as(world.member).get(BLOCKS).get_json()["content"]
         assert content == {"blocked": [], "blocked_by": [world.admin.id]}
 
+    def test_both_users_are_told(self, login_as, world, externals):
+        client = login_as(world.admin)
+        client.put(block_url(world.member.id))
+        client.put(block_url(world.member.id))  # already blocked: nothing changes, nobody is told
+        client.delete(block_url(world.member.id))
+        rooms = [(event["event"], event["to"]) for event in externals.events]
+        pair = [("blocks_changed", f"user-{world.admin.id}"), ("blocks_changed", f"user-{world.member.id}")]
+        assert rooms == pair * 2
+
     def test_blocking_twice_keeps_one_row(self, login_as, world, ctx):
         client = login_as(world.admin)
         assert client.put(block_url(world.member.id)).status_code == 200
