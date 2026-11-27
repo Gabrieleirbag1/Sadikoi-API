@@ -2,7 +2,7 @@ import datetime
 
 from flask_login import current_user
 
-from models import ChatMessageModel, GroupModel, QuestionModel
+from models import ChatMessageModel, GroupModel, QuestionModel, blocked_by_ids
 from flask import Request, request
 from db import add_to_db
 from auth import get_user_object
@@ -47,7 +47,7 @@ def get_messages(group_id: int) -> tuple[dict, int]:
     :param int | None question_id: The question whose day to fetch; defaults to the group's current question.
     """
     from question import get_group_for_member
-    group, _, error = get_group_for_member(group_id)
+    group, user, error = get_group_for_member(group_id)
     if error:
         return error
 
@@ -67,9 +67,13 @@ def get_messages(group_id: int) -> tuple[dict, int]:
         if end:
             query = query.filter(ChatMessageModel.timestamp < end)
     messages: list[ChatMessageModel] = query.order_by(ChatMessageModel.timestamp.asc()).all()
-    messages_data = [
-        build_chat_message_response(message) for message in messages
-    ]
+    messages_data = [build_chat_message_response(message) for message in messages]
+    # The messages of members who blocked this user are not sent: the app shows "this user blocked you" instead.
+    blockers = blocked_by_ids(user.id)
+    for message_data in messages_data:
+        if message_data["sender"]["id"] in blockers:
+            message_data["content"] = ""
+            message_data["blocked_you"] = True
 
     return {"success": True, "message": "Messages retrieved successfully", "content": messages_data}, 200
 

@@ -16,7 +16,8 @@ from builder import current_window_start, next_question_time
 from config import (ALLOWED_LANGUAGES, APNS_KEY_ID, APNS_KEY_PATH, APNS_TEAM_ID, APNS_TOPIC,
                     FIREBASE_SERVICE_ACCOUNT_PATH)
 from db import db, update_from_db
-from models import ChatMessageModel, GroupModel, GroupUser, PushTokenModel, QuestionModel, UserModel
+from models import (ChatMessageModel, GroupModel, GroupUser, PushTokenModel, QuestionModel, UserModel, blocked_by_ids,
+                    blocked_ids)
 from sockets import socketio
 
 DAY = datetime.timedelta(days=1)
@@ -349,7 +350,10 @@ def notify_new_message(message: ChatMessageModel) -> None:
 
     # The chat only shows once the question of the day is answered: no message notifications before voting.
     voters = _voters_of(_current_question(group)[2])
-    users = [user for user in recipients(group.id, 'messages', exclude_user_id=sender.id) if user.id in voters]
+    # A block in either direction hides the messages, so no notification either.
+    blocks = blocked_ids(sender.id) | blocked_by_ids(sender.id)
+    users = [user for user in recipients(group.id, 'messages', exclude_user_id=sender.id)
+             if user.id in voters and user.id not in blocks]
     deliver(_pairs_for(users, build))
 
 
